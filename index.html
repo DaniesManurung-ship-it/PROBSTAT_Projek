@@ -10,21 +10,19 @@
   <body>
     <div id="app">
       <header class="topbar">
-        <a class="brand" href="#home" aria-label="Probability 3D beranda">
+        <a class="brand" href="#page-home" aria-label="Probability 3D beranda">
           <span class="brand-mark">P<span>3D</span></span>
           <span class="brand-name">PROBABILITY <b>3D</b></span>
         </a>
         <nav class="top-nav" aria-label="Navigasi utama">
-          <a class="active" href="#home">Beranda</a>
-          <a href="#dashboard">Dashboard</a>
-          <a href="#lab">Laboratorium 3D</a>
-          <a href="#experiment">Simulasi</a>
-          <a href="#materials">Materi</a>
-          <a href="#cards-lab">Kartu 3D</a>
-          <a href="#guide">Panduan</a>
-          <a href="#coin-lab">Eksperimen Koin 3D</a>
-          <a href="#balls-lab">Bola 3D</a>
-          <a href="#ai-solver">AI Solver</a>
+          <a class="active" href="#page-home" data-page-link="home">Beranda</a>
+          <a href="#page-dice" data-page-link="dice">Dadu &amp; Simulasi</a>
+          <a href="#page-coin" data-page-link="coin">Koin</a>
+          <a href="#page-cards" data-page-link="cards">Kartu</a>
+          <a href="#page-balls" data-page-link="balls">Bola</a>
+          <a href="#page-solver" data-page-link="solver">Solver</a>
+          <a href="#page-distributions" data-page-link="distributions">Distribusi Diskrit</a>
+          <a href="#page-learning" data-page-link="learning">Materi &amp; Panduan</a>
         </nav>
         <div class="topbar-right"><span class="status-dot"></span> MODE BELAJAR</div>
       </header>
@@ -893,6 +891,32 @@
 
 <!-- AKHIR LABORATORIUM KOIN 3D -->
 
+        <section class="distributions-section" id="distributions" aria-labelledby="distributions-title">
+          <div class="section-heading-row">
+            <div>
+              <span class="section-kicker">KALKULATOR PROBABILITAS</span>
+              <h2 id="distributions-title">Distribusi diskrit</h2>
+              <p class="section-subtitle">Pelajari konsep, rumus, dan komponen distribusi, lalu ubah parameternya untuk menghitung peluang sendiri.</p>
+            </div>
+          </div>
+          <div class="distribution-overview" aria-label="Ringkasan pemilihan distribusi diskrit">
+            <div class="distribution-overview-row distribution-overview-header"><span>Distribusi</span><span>Kapan digunakan?</span></div>
+            <div class="distribution-overview-row"><b>Binomial</b><span>n percobaan independen, dua hasil, dan peluang sukses konstan.</span></div>
+            <div class="distribution-overview-row"><b>Multinomial</b><span>n percobaan dengan lebih dari dua kategori hasil.</span></div>
+            <div class="distribution-overview-row"><b>Hipergeometrik</b><span>Pengambilan tanpa pengembalian dari populasi terbatas.</span></div>
+            <div class="distribution-overview-row"><b>Geometrik</b><span>Menghitung percobaan sampai sukses pertama.</span></div>
+            <div class="distribution-overview-row"><b>Binomial Negatif</b><span>Menghitung percobaan sampai sukses ke-k.</span></div>
+            <div class="distribution-overview-row"><b>Poisson</b><span>Menghitung banyak kejadian dalam interval dengan rata-rata λ.</span></div>
+          </div>
+          <div class="distribution-selection">
+            <div class="distribution-selection-copy">
+              <span class="section-kicker">PILIH DISTRIBUSI</span>
+              <p>Identifikasi kondisi percobaan terlebih dahulu, baru pilih distribusinya.</p>
+            </div>
+            <div class="distribution-tabs" id="distribution-tabs" role="tablist" aria-label="Pilih materi distribusi diskrit"></div>
+          </div>
+          <div class="distribution-content" id="distributions-content" aria-live="polite"></div>
+        </section>
 
         <section class="materials-section" id="materials" aria-labelledby="materials-title">
           <div class="section-heading-row">
@@ -971,6 +995,10 @@
 <script
   type="module"
   src="/src/features/solver/guided-learning.js">
+</script>
+<script
+  type="module"
+  src="/src/features/distributions/distributions-controller.js">
 </script>
   </body>
 </html>

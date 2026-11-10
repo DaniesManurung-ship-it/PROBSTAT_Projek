@@ -2,6 +2,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from
   'three/addons/controls/OrbitControls.js';
+import { observeRendererSize } from '../../utils/visualization/observe-renderer-size.js';
 
 /* ======================================
    BALL PROBABILITY LABORATORY
@@ -617,14 +618,6 @@ function startBallsLab() {
      RESIZE
   ====================================== */
 
-  function resizeScene() {
-    const width  = Math.max(ui.host.clientWidth,  280);
-    const height = Math.max(ui.host.clientHeight, 260);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height, false);
-  }
-
   /* ======================================
      RENDER LOOP
   ====================================== */
@@ -695,14 +688,13 @@ function startBallsLab() {
     if (liveUI) updateLivePanel();
   });
 
-  window.addEventListener('resize', resizeScene);
+  const disposeRendererResize = observeRendererSize(ui.host, renderer, camera);
 
   /* ======================================
      START
   ====================================== */
 
   createBalls();
-  resizeScene();
   animate();
 
   liveUI = buildLivePanel();
@@ -714,7 +706,7 @@ function startBallsLab() {
 
   window.addEventListener('pagehide', () => {
     cancelAnimationFrame(animationFrame);
-    window.removeEventListener('resize', resizeScene);
+    disposeRendererResize();
     controls.dispose();
     renderer.dispose();
     sphereGeometry.dispose();
