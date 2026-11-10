@@ -30,6 +30,11 @@ const routes = [
     sectionIds: ['ai-solver'],
   },
   {
+    id: 'quiz',
+    label: 'Kuis',
+    sectionIds: ['quiz-system'],
+  },
+  {
     id: 'distributions',
     label: 'Distribusi Diskrit',
     sectionIds: ['distributions'],
