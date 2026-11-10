@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from
   'three/addons/controls/OrbitControls.js';
 import { observeRendererSize } from '../../utils/visualization/observe-renderer-size.js';
+import { getSceneThemeColors, subscribeToThemeChange } from '../../app/theme.js';
 
 /* ======================================
    BALL PROBABILITY LABORATORY
@@ -83,7 +84,8 @@ function startBallsLab() {
   ====================================== */
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#0a1425');
+  const themeColors = getSceneThemeColors();
+  scene.background = new THREE.Color(themeColors.background || '#edf7ef');
 
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
   camera.position.set(3.4, 2.5, 5.7);
@@ -101,24 +103,30 @@ function startBallsLab() {
   controls.maxDistance = 9;
   controls.target.set(0, 0, 0);
 
-  scene.add(new THREE.HemisphereLight(0xe8f2ff, 0x34425c, 2.5));
+  scene.add(new THREE.HemisphereLight(0xf4fff6, 0x829584, 2.5));
 
   const mainLight = new THREE.DirectionalLight(0xffffff, 3);
   mainLight.position.set(4, 6, 5);
   scene.add(mainLight);
 
-  const blueLight = new THREE.PointLight(0x398bff, 22, 12);
+  const blueLight = new THREE.PointLight(0x80bd8b, 14, 12);
   blueLight.position.set(-3, 1, 2);
   scene.add(blueLight);
 
   /* Floor */
   const floor = new THREE.Mesh(
     new THREE.CircleGeometry(2.4, 64),
-    new THREE.MeshStandardMaterial({ color: 0x132a49, roughness: 0.7 })
+    new THREE.MeshStandardMaterial({ color: themeColors.floor || 0xdce9dd, roughness: 0.7 })
   );
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -1.35;
   scene.add(floor);
+  const unsubscribeTheme = subscribeToThemeChange((theme, colors) => {
+    scene.background.set(colors.background);
+    floor.material.color.set(colors.floor);
+    blueLight.color.set(theme === 'dark' ? 0x398bff : 0x80bd8b);
+    blueLight.intensity = theme === 'dark' ? 22 : 14;
+  });
 
   /* Glass jar */
   const jarWall = new THREE.Mesh(
@@ -707,6 +715,7 @@ function startBallsLab() {
   window.addEventListener('pagehide', () => {
     cancelAnimationFrame(animationFrame);
     disposeRendererResize();
+    unsubscribeTheme();
     controls.dispose();
     renderer.dispose();
     sphereGeometry.dispose();

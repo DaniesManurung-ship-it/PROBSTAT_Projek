@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { createDie } from './create-die.js';
+import { getSceneThemeColors, subscribeToThemeChange } from '../../app/theme.js';
 
 function getTargetQuaternion(die, value) {
   const face = die.userData.faceDefinitions.find((item) => item.value === value);
@@ -13,8 +14,9 @@ export function createDiceScene(container) {
   if (!container) throw new Error('Elemen #dice-scene tidak ditemukan.');
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#101b2c');
-  scene.fog = new THREE.Fog('#101b2c', 9, 18);
+  const themeColors = getSceneThemeColors();
+  scene.background = new THREE.Color(themeColors.background || '#e8f2e9');
+  scene.fog = new THREE.Fog(themeColors.fog || '#e8f2e9', 9, 18);
 
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
   camera.position.set(4.8, 7.3, 6.4);
@@ -24,29 +26,29 @@ export function createDiceScene(container) {
     renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
   } catch (error) {
     container.innerHTML = '<div class="webgl-fallback">Browser ini belum mendukung WebGL. Coba gunakan Chrome atau Edge versi terbaru.</div>';
-    return { rollTo: async () => {}, dispose: () => {} };
+    return { rollTo: async () => {}, setDiceCount: () => {}, dispose: () => {} };
   }
 
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.shadowMap.enabled = true;
   renderer.outputColorSpace = THREE.SRGBColorSpace;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.25;
+  renderer.toneMappingExposure = 1.05;
   container.appendChild(renderer.domElement);
 
-  scene.add(new THREE.HemisphereLight(0xc9e3ff, 0x243047, 2.1));
-  const keyLight = new THREE.DirectionalLight(0xffffff, 3.2);
+  scene.add(new THREE.HemisphereLight(0xf1fff4, 0x748b7a, 1.6));
+  const keyLight = new THREE.DirectionalLight(0xffffff, 2.5);
   keyLight.position.set(-3, 7, 5);
   keyLight.castShadow = true;
   keyLight.shadow.mapSize.set(1024, 1024);
   scene.add(keyLight);
-  const rimLight = new THREE.PointLight(0x4a9dff, 18, 12);
+  const rimLight = new THREE.PointLight(0x71c991, 8, 12);
   rimLight.position.set(3, 2, -3);
   scene.add(rimLight);
 
   const floor = new THREE.Mesh(
     new THREE.PlaneGeometry(200, 200),
-    new THREE.MeshStandardMaterial({ color: 0x17263b, roughness: 0.88, metalness: 0.08 }),
+    new THREE.MeshStandardMaterial({ color: 0xc3d6c6, roughness: 0.88, metalness: 0.02 }),
   );
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -0.78;
@@ -55,7 +57,7 @@ export function createDiceScene(container) {
 
   const stage = new THREE.Mesh(
     new THREE.CylinderGeometry(2.65, 2.85, 0.22, 80),
-    new THREE.MeshStandardMaterial({ color: 0x20334d, roughness: 0.45, metalness: 0.45 }),
+    new THREE.MeshStandardMaterial({ color: 0xa2bca8, roughness: 0.55, metalness: 0.12 }),
   );
   stage.position.y = -0.63;
   stage.receiveShadow = true;
@@ -64,19 +66,21 @@ export function createDiceScene(container) {
 
   const ring = new THREE.Mesh(
     new THREE.TorusGeometry(2.55, 0.018, 8, 100),
-    new THREE.MeshBasicMaterial({ color: 0x3f91d9 }),
+    new THREE.MeshBasicMaterial({ color: 0x4baf78 }),
   );
   ring.rotation.x = Math.PI / 2;
   ring.position.y = -0.505;
   scene.add(ring);
 
-  const dieA = createDie();
-  const dieB = createDie();
-  dieA.position.set(-0.82, 0.12, 0);
-  dieB.position.set(0.82, 0.12, 0);
-  dieA.scale.setScalar(0.94);
-  dieB.scale.setScalar(0.94);
-  scene.add(dieA, dieB);
+  const unsubscribeTheme = subscribeToThemeChange((theme, colors) => {
+    scene.background.set(colors.background);
+    scene.fog.color.set(colors.fog);
+    floor.material.color.set(colors.floor);
+    stage.material.color.set(colors.platform);
+    ring.material.color.set(theme === 'dark' ? 0x3f91d9 : 0x4baf78);
+  });
+
+  const dice = [];
 
   const controls = new OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
@@ -139,28 +143,69 @@ export function createDiceScene(container) {
   resize();
   animationFrameId = requestAnimationFrame(render);
 
-  function rollTo(valueA, valueB, duration = 1.45) {
-    if (![valueA, valueB].every((value) => Number.isInteger(value) && value >= 1 && value <= 6)) {
+  function setDiceCount(count) {
+    if (!Number.isInteger(count) || count < 1 || count > 3) {
+      throw new RangeError('Jumlah dadu harus berupa bilangan bulat 1-3.');
+    }
+    if (animation) {
+      animation.resolve();
+      animation = null;
+    }
+    while (dice.length > count) {
+      const die = dice.pop();
+      scene.remove(die);
+      die.traverse((object) => {
+        object.geometry?.dispose();
+        const materials = Array.isArray(object.material) ? object.material : [object.material];
+        materials.filter(Boolean).forEach((material) => material.dispose());
+      });
+    }
+    while (dice.length < count) {
+      const die = createDie();
+      die.scale.setScalar(count === 3 ? 0.78 : 0.94);
+      dice.push(die);
+      scene.add(die);
+    }
+    const spacing = count === 3 ? 1.25 : count === 2 ? 1.64 : 0;
+    dice.forEach((die, index) => {
+      die.scale.setScalar(count === 3 ? 0.78 : 0.94);
+      die.position.set((index - (count - 1) / 2) * spacing, 0.12, 0);
+    });
+  }
+
+  function rollTo(...args) {
+    const values = Array.isArray(args[0]) ? args[0] : args.slice(0, 2);
+    const duration = Array.isArray(args[0]) ? (args[1] ?? 1.45) : (args[2] ?? 1.45);
+    if (!values.length || !values.every((value) => Number.isInteger(value) && value >= 1 && value <= 6)) {
       return Promise.reject(new RangeError('Nilai dadu harus antara 1 dan 6.'));
     }
+    setDiceCount(values.length);
     if (animation) animation.resolve();
     return new Promise((resolve) => {
       animation = {
         elapsed: 0,
         duration,
         resolve,
-        items: [
-          { die: dieA, target: getTargetQuaternion(dieA, valueA), speedX: 11, speedY: 13, speedZ: 8, settleStart: null },
-          { die: dieB, target: getTargetQuaternion(dieB, valueB), speedX: 12, speedY: 10, speedZ: 9, settleStart: null },
-        ],
+        items: dice.map((die, index) => ({
+          die,
+          target: getTargetQuaternion(die, values[index]),
+          speedX: 10 + index * 1.4,
+          speedY: 12 - index * 0.8,
+          speedZ: 8 + index * 0.6,
+          settleStart: null,
+        })),
       };
     });
   }
 
+  setDiceCount(2);
+
   return {
     rollTo,
+    setDiceCount,
     dispose() {
       resizeObserver.disconnect();
+      unsubscribeTheme();
       cancelAnimationFrame(animationFrameId);
       controls.dispose();
       renderer.dispose();
