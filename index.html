@@ -1,0 +1,976 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b1220" />
+    <meta name="description" content="Belajar probabilitas melalui eksperimen dan visualisasi 3D interaktif." />
+    <title>Probability 3D — Belajar Peluang Secara Visual</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <a class="brand" href="#home" aria-label="Probability 3D beranda">
+          <span class="brand-mark">P<span>3D</span></span>
+          <span class="brand-name">PROBABILITY <b>3D</b></span>
+        </a>
+        <nav class="top-nav" aria-label="Navigasi utama">
+          <a class="active" href="#home">Beranda</a>
+          <a href="#dashboard">Dashboard</a>
+          <a href="#lab">Laboratorium 3D</a>
+          <a href="#experiment">Simulasi</a>
+          <a href="#materials">Materi</a>
+          <a href="#cards-lab">Kartu 3D</a>
+          <a href="#guide">Panduan</a>
+          <a href="#coin-lab">Eksperimen Koin 3D</a>
+          <a href="#balls-lab">Bola 3D</a>
+          <a href="#ai-solver">AI Solver</a>
+        </nav>
+        <div class="topbar-right"><span class="status-dot"></span> MODE BELAJAR</div>
+      </header>
+
+      <main class="page-shell">
+        <section class="intro-row" id="home">
+          <div>
+            <div class="eyebrow"><span class="eyebrow-line"></span> INTERACTIVE PROBABILITY LAB</div>
+            <h1>Jangan hanya hitung peluang.<br /><span>Lihat bagaimana peluang bekerja.</span></h1>
+            <p class="intro-copy">Jelajahi konsep probabilitas melalui materi, eksperimen interaktif, dan visualisasi 3D yang menjelaskan proses penyelesaian.</p>
+          </div>
+          <div class="topic-chip"><span class="topic-icon">⚄</span><span><b>Materi aktif</b><small>Peluang dua buah dadu</small></span></div>
+        </section>
+
+        <section class="dashboard-section" id="dashboard" aria-labelledby="dashboard-title">
+          <div class="section-heading-row">
+            <div>
+              <span class="section-kicker">PUSAT AKTIVITAS</span>
+              <h2 id="dashboard-title">Dashboard pembelajaran</h2>
+              <p class="section-subtitle">Lihat materi yang tersedia dan lanjutkan eksperimen peluangmu.</p>
+            </div>
+            <a class="text-link" href="#lab">Mulai belajar <span>→</span></a>
+          </div>
+
+          <div class="dashboard-stats">
+            <article class="stat-card">
+              <span class="stat-icon">◈</span>
+              <div><strong>01</strong><span>Eksperimen aktif</span></div>
+              <small>Laboratorium dua dadu</small>
+            </article>
+            <article class="stat-card">
+              <span class="stat-icon">◎</span>
+              <div><strong>04</strong><span>Jenis objek belajar</span></div>
+              <small>Dadu, koin, kartu, dan bola</small>
+            </article>
+            <article class="stat-card">
+              <span class="stat-icon">✦</span>
+              <div><strong>01</strong><span>Contoh pembahasan</span></div>
+              <small>Peluang jumlah dua dadu = 7</small>
+            </article>
+          </div>
+
+          <div class="dashboard-grid">
+            <article class="dashboard-feature">
+              <span class="section-kicker">LANJUTKAN BELAJAR</span>
+              <h3>Eksperimen peluang dua dadu</h3>
+              <p>Lempar dua dadu, amati 36 kemungkinan hasil, lalu temukan enam pasangan yang jumlahnya 7.</p>
+              <a class="btn btn-primary" href="#lab">Buka laboratorium <span>→</span></a>
+            </article>
+            <article class="dashboard-checklist">
+              <span class="section-kicker">ALUR BELAJAR</span>
+              <h3>Empat langkah memahami peluang</h3>
+              <ol>
+                <li><span class="check-number">01</span><span><b>Kenali ruang sampel</b><small>Daftar semua hasil yang mungkin.</small></span></li>
+                <li><span class="check-number">02</span><span><b>Tentukan kejadian</b><small>Pilih hasil yang sesuai pertanyaan.</small></span></li>
+                <li><span class="check-number">03</span><span><b>Hitung peluang</b><small>Bandingkan kejadian dengan ruang sampel.</small></span></li>
+                <li><span class="check-number upcoming">04</span><span><b>Coba eksperimen sendiri</b><small>Bandingkan hasil simulasi dan teori.</small></span></li>
+              </ol>
+            </article>
+          </div>
+        </section>
+
+        <section class="workspace" id="lab">
+          <div class="visual-column">
+            <div class="panel-heading">
+              <div><span class="section-kicker">01 / EKSPERIMEN VIRTUAL</span><h2>Ruang eksperimen 3D</h2></div>
+              <span class="live-pill"><i></i> 3D LIVE</span>
+            </div>
+            <div class="scene-card">
+              <div class="scene-topline"><span><i class="tiny-orbit"></i> DRAG UNTUK MEMUTAR PANDANGAN</span><span class="scene-hint">SCENE 01 — DICE LAB</span></div>
+              <div id="dice-scene" class="three-canvas" aria-label="Area visualisasi dadu tiga dimensi"></div>
+              <div class="dice-readout">
+                <div class="die-readout"><span>DADU A</span><b id="die-a-value">1</b></div>
+                <div class="readout-plus">+</div>
+                <div class="die-readout"><span>DADU B</span><b id="die-b-value">1</b></div>
+                <div class="readout-equals">=</div>
+                <div class="sum-readout"><span>JUMLAH</span><b id="sum-value">2</b></div>
+              </div>
+              <div class="scene-controls">
+                <button class="btn btn-primary" id="roll-dice"><span>↻</span> Lempar dadu</button>
+                <button class="btn btn-quiet" id="show-favorable">Lihat 6 kombinasi jumlah 7</button>
+              </div>
+              <p class="scene-footnote"><span>✦</span> Gunakan mouse untuk memutar kamera. Animasi dadu mengikuti hasil eksperimen.</p>
+            </div>
+            <div class="sample-panel">
+              <div class="sample-heading"><div><span class="section-kicker">02 / RUANG SAMPEL</span><h3>36 kemungkinan hasil</h3></div><span class="sample-count"><b>6</b> hasil berjumlah 7</span></div>
+              <p class="muted small-copy">Pilih salah satu pasangan untuk melihat kedua dadu menunjukkan angka tersebut.</p>
+              <div class="sample-grid" id="sample-grid" aria-label="36 kemungkinan hasil dua dadu"></div>
+              <div class="legend"><span><i class="legend-dot favorable"></i> Jumlah = 7</span><span><i class="legend-dot regular"></i> Kemungkinan lainnya</span><span><i class="legend-dot selected"></i> Pilihanmu</span></div>
+            </div>
+          </div>
+
+          <aside class="explanation-column">
+            <div class="question-card">
+              <span class="section-kicker">SOAL YANG DIPELAJARI</span>
+              <div class="question-icon">?</div>
+              <h2>Dua buah dadu dilempar secara bersamaan. Berapa peluang munculnya jumlah mata dadu 7?</h2>
+              <div class="question-tags"><span>RUANG SAMPEL</span><span>KEJADIAN</span><span>PELUANG TEORITIS</span></div>
+            </div>
+
+            <div class="steps-card">
+              <div class="steps-header"><div><span class="section-kicker">03 / IKUTI ALURNYA</span><h3>Bagaimana jawaban ditemukan?</h3></div><span class="step-counter" id="step-counter">01 / 04</span></div>
+              <div class="step-progress" id="step-progress"><i class="active"></i><i></i><i></i><i></i></div>
+              <div class="step-content" aria-live="polite">
+                <span class="step-label" id="step-label">LANGKAH 1</span>
+                <h4 id="step-title">Kenali seluruh kemungkinan</h4>
+                <p id="step-description">Setiap dadu memiliki 6 sisi. Karena ada dua dadu, setiap hasil dadu pertama dapat dipasangkan dengan 6 hasil dadu kedua.</p>
+                <div class="step-math" id="step-math">6 × 6 = <b>36 kemungkinan</b></div>
+              </div>
+              <div class="step-actions"><button class="btn btn-quiet" id="prev-step" disabled>← Kembali</button><button class="btn btn-next" id="next-step">Langkah berikutnya <span>→</span></button></div>
+            </div>
+
+            <div class="answer-card">
+              <div class="answer-top"><span class="section-kicker">04 / KESIMPULAN</span><span class="answer-badge">HASIL TEORITIS</span></div>
+              <div class="answer-value"><strong>1/6</strong><span>= 16,67%</span></div>
+              <p>Enam dari 36 kemungkinan menghasilkan jumlah mata dadu 7.</p>
+              <div class="answer-bar"><i></i></div>
+              <div class="answer-bar-labels"><span>0%</span><b>6 dari 36 hasil</b><span>100%</span></div>
+            </div>
+          </aside>
+        </section>
+
+        <section class="experiment-section" id="experiment" aria-labelledby="experiment-title">
+          <div class="section-heading-row">
+            <div>
+              <span class="section-kicker">05 / EKSPERIMEN BERULANG</span>
+              <h2 id="experiment-title">Apakah hasil percobaan selalu sama?</h2>
+              <p class="section-subtitle">Lakukan banyak pelemparan, amati frekuensi jumlah 7, lalu bandingkan hasil percobaan dengan peluang teoritis.</p>
+            </div>
+          </div>
+
+          <div class="experiment-layout">
+            <article class="experiment-controls panel-surface">
+              <span class="section-kicker">ATUR PERCOBAAN</span>
+              <label class="field-label" for="trial-count">Jumlah pelemparan dua dadu</label>
+              <select id="trial-count" class="trial-select">
+                <option value="10">10 percobaan</option>
+                <option value="50">50 percobaan</option>
+                <option value="100" selected>100 percobaan</option>
+                <option value="500">500 percobaan</option>
+                <option value="1000">1.000 percobaan</option>
+              </select>
+              <div class="experiment-actions">
+                <button class="btn btn-primary" id="run-experiment" type="button">▶ Jalankan percobaan</button>
+                <button class="btn btn-quiet" id="reset-experiment" type="button">Reset</button>
+              </div>
+              <p class="experiment-status" id="experiment-status" aria-live="polite">Belum ada percobaan. Pilih jumlah percobaan, lalu mulai simulasi.</p>
+              <div class="experiment-preview-note"><span>✦</span> Objek dadu 3D akan memperagakan hingga 8 hasil pertama. Statistik dihitung dari seluruh percobaan yang dipilih.</div>
+            </article>
+
+            <article class="experiment-results panel-surface">
+              <div class="experiment-results-heading">
+                <div><span class="section-kicker">HASIL SIMULASI</span><h3>Frekuensi jumlah mata dadu</h3></div>
+                <span class="target-tag">TARGET: 7</span>
+              </div>
+              <div class="frequency-chart" id="frequency-chart" role="img" aria-label="Grafik frekuensi jumlah mata dua dadu dari 2 sampai 12"></div>
+              <div class="frequency-legend"><span><i class="legend-dot regular"></i> Jumlah lainnya</span><span><i class="legend-dot favorable"></i> Jumlah 7</span></div>
+            </article>
+
+            <article class="experiment-summary panel-surface">
+              <div class="summary-metric"><span>JUMLAH PERCOBAAN</span><b id="trial-total">—</b></div>
+              <div class="summary-metric"><span>JUMLAH 7 MUNCUL</span><b id="hit-total">—</b></div>
+              <div class="summary-metric"><span>PELUANG HASIL SIMULASI</span><b id="experimental-rate">—</b></div>
+              <div class="summary-metric"><span>PELUANG TEORITIS</span><b id="theoretical-rate">16,67%</b></div>
+              <div class="comparison-track" aria-label="Perbandingan persentase hasil simulasi"><i id="experiment-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></i></div>
+              <p id="experiment-insight" class="experiment-insight">Jalankan percobaan untuk membandingkan frekuensi hasil simulasi dengan peluang teoritis.</p>
+            </article>
+          </div>
+        </section>
+
+        
+<!-- TAHAP 4: LABORATORIUM KOIN 3D -->
+<section class="coin-section" id="coin-lab">
+  <div class="section-heading-row">
+    <div>
+      <span class="section-kicker">06 / EKSPERIMEN KOIN 3D</span>
+      <h2>Apakah peluang angka dan gambar sama?</h2>
+      <p class="section-subtitle">
+        Lempar koin virtual dan amati bagaimana hasil percobaan
+        dibandingkan dengan peluang teoritis.
+      </p>
+    </div>
+  </div>
+
+  <div class="coin-lab-layout">
+    <article class="coin-scene-card">
+      <span class="section-kicker">OBJEK 3D INTERAKTIF</span>
+
+      <div id="coin-scene" class="coin-scene"></div>
+
+      <div class="coin-scene-controls">
+        <button class="btn btn-primary" id="flip-coin" type="button">
+          ↻ Lempar koin
+        </button>
+
+        <button class="btn btn-quiet" id="reset-coin" type="button">
+          Reset
+        </button>
+      </div>
+
+      <p id="coin-status" class="coin-status" aria-live="polite">
+        Tekan tombol Lempar koin untuk memulai.
+      </p>
+    </article>
+
+    <article class="coin-summary-card">
+      <span class="section-kicker">HASIL EKSPERIMEN</span>
+
+      <div class="coin-stat-grid">
+        <div class="coin-stat">
+          <span>Total percobaan</span>
+          <strong id="coin-total">0</strong>
+        </div>
+
+        <div class="coin-stat">
+          <span>Angka</span>
+          <strong id="coin-heads">0</strong>
+          <small id="coin-head-percent">0%</small>
+        </div>
+
+        <div class="coin-stat">
+          <span>Gambar</span>
+          <strong id="coin-tails">0</strong>
+          <small id="coin-tail-percent">0%</small>
+        </div>
+
+        <div class="coin-stat">
+          <span>Peluang teoritis</span>
+          <strong>50%</strong>
+        </div>
+      </div>
+
+      <div class="coin-last-result">
+        <span>HASIL TERAKHIR</span>
+        <strong id="coin-last-result">Belum ada</strong>
+      </div>
+
+      <div class="coin-progress-heading">
+        <span>Frekuensi sisi ANGKA</span>
+        <b>Teori: 50%</b>
+      </div>
+
+      <div class="coin-progress">
+        <i id="coin-bar-heads"></i>
+        <span></span>
+      </div>
+
+      <p id="coin-insight" class="coin-insight">
+        Mulai melempar koin untuk melihat perbandingan
+        peluang eksperimen dan peluang teoritis.
+      </p>
+    </article>
+  </div>
+</section>
+
+
+<!-- ======================================
+     TAHAP 4B: LABORATORIUM KARTU 3D
+====================================== -->
+
+<section class="cards-section" id="cards-lab">
+
+  <div class="cards-heading">
+    <span class="section-kicker">07 / PLAYING CARD EXPERIMENT</span>
+    <h2>Jelajahi peluang melalui kartu remi</h2>
+    <p>
+      Ambil kartu dari satu dek, perhatikan simbolnya,
+      dan pelajari bagaimana peluang terbentuk.
+    </p>
+  </div>
+
+  <div class="cards-layout">
+
+    <!-- AREA VISUALISASI 3D -->
+
+    <article class="cards-scene-card">
+
+      <span class="section-kicker">
+        DECK OF 52 CARDS
+      </span>
+
+      <div id="cards-scene" class="cards-scene"></div>
+
+      <div class="cards-actions">
+
+        <button
+          class="cards-button cards-primary"
+          id="draw-card"
+          type="button">
+          🂠 Ambil Kartu
+        </button>
+
+        <button
+          class="cards-button"
+          id="reset-cards"
+          type="button">
+          Reset Dek
+        </button>
+
+      </div>
+
+      <p id="cards-status" class="cards-status" aria-live="polite">
+        Pilih kejadian, lalu ambil kartu untuk memulai eksperimen.
+      </p>
+
+    </article>
+
+
+    <!-- PANEL STATISTIK -->
+
+    <article class="cards-stats-card">
+
+      <span class="section-kicker">
+        ANALISIS PELUANG KARTU
+      </span>
+
+      <label for="card-event">
+        Kejadian yang ingin dicari
+      </label>
+
+      <select id="card-event" class="cards-select">
+        <option value="red">Kartu merah</option>
+        <option value="black">Kartu hitam</option>
+        <option value="ace">Kartu As</option>
+        <option value="face">Kartu bergambar (J, Q, K)</option>
+        <option value="spade">Kartu sekop</option>
+      </select>
+
+      <div class="cards-stat-grid">
+
+        <div class="cards-stat">
+          <span>Kartu diambil</span>
+          <strong id="cards-total">0</strong>
+        </div>
+
+        <div class="cards-stat">
+          <span>Sisa kartu</span>
+          <strong id="cards-remaining">52</strong>
+        </div>
+
+        <div class="cards-stat">
+          <span>Kejadian ditemukan</span>
+          <strong id="cards-hits">0</strong>
+        </div>
+
+        <div class="cards-stat">
+          <span>Peluang teoritis</span>
+          <strong id="cards-theory">50%</strong>
+        </div>
+
+      </div>
+
+      <div class="cards-result">
+        <span>KARTU TERAKHIR</span>
+        <strong id="cards-last">Belum ada</strong>
+      </div>
+
+      <div class="cards-rate-heading">
+        <span>Frekuensi hasil percobaan</span>
+        <strong id="cards-hit-rate">0%</strong>
+      </div>
+
+      <div class="cards-rate-track">
+        <div id="cards-hit-bar"></div>
+      </div>
+
+      <div id="cards-insight" class="cards-insight">
+        Belum ada percobaan. Mulailah mengambil kartu
+        untuk memahami peluangnya.
+      </div>
+
+    </article>
+
+  </div>
+
+</section>
+
+
+<!-- ======================================
+     TAHAP 5: LABORATORIUM BOLA 3D
+====================================== -->
+
+<section class="balls-section" id="balls-lab">
+
+  <div class="balls-heading">
+    <span class="section-kicker">08 / BALL PROBABILITY EXPERIMENT</span>
+    <h2>Memahami peluang melalui pengambilan bola</h2>
+    <p>
+      Atur jumlah bola, pilih warna yang dicari, lalu
+      saksikan bagaimana peluang berubah ketika bola diambil.
+    </p>
+  </div>
+
+  <div class="balls-layout">
+
+    <!-- AREA VISUALISASI -->
+
+    <article class="balls-scene-card">
+
+      <span class="section-kicker">INTERACTIVE 3D CONTAINER</span>
+
+      <div id="balls-scene" class="balls-scene"></div>
+
+      <div class="balls-legend">
+        <span><i class="legend-red"></i> Merah</span>
+        <span><i class="legend-blue"></i> Biru</span>
+        <span><i class="legend-yellow"></i> Kuning</span>
+      </div>
+
+      <div class="balls-actions">
+
+        <button
+          id="ball-draw"
+          class="balls-button balls-primary"
+          type="button">
+          Ambil satu bola
+        </button>
+
+        <button
+          id="ball-reset"
+          class="balls-button"
+          type="button">
+          Reset eksperimen
+        </button>
+
+      </div>
+
+      <p
+        id="ball-status"
+        class="balls-status"
+        aria-live="polite">
+        Atur jumlah bola, lalu mulai eksperimen.
+      </p>
+
+    </article>
+
+
+    <!-- PANEL PENGATURAN DAN PERHITUNGAN -->
+
+    <article class="balls-panel">
+
+      <span class="section-kicker">PENGATURAN EKSPERIMEN</span>
+
+      <div class="balls-config-grid">
+
+        <label>
+          Bola merah
+          <input
+            id="ball-red-count"
+            type="number"
+            min="0"
+            max="30"
+            value="5">
+        </label>
+
+        <label>
+          Bola biru
+          <input
+            id="ball-blue-count"
+            type="number"
+            min="0"
+            max="30"
+            value="3">
+        </label>
+
+        <label>
+          Bola kuning
+          <input
+            id="ball-yellow-count"
+            type="number"
+            min="0"
+            max="30"
+            value="2">
+        </label>
+
+      </div>
+
+      <button
+        id="ball-apply"
+        class="balls-button balls-apply"
+        type="button">
+        Terapkan konfigurasi
+      </button>
+
+
+      <label class="balls-select-label" for="ball-target-color">
+        Warna yang ingin dicari
+      </label>
+
+      <select id="ball-target-color" class="balls-select">
+        <option value="red">Bola merah</option>
+        <option value="blue">Bola biru</option>
+        <option value="yellow">Bola kuning</option>
+      </select>
+
+
+      <label class="balls-select-label" for="ball-mode">
+        Metode pengambilan
+      </label>
+
+      <select id="ball-mode" class="balls-select">
+        <option value="without">Tanpa pengembalian</option>
+        <option value="with">Dengan pengembalian</option>
+      </select>
+
+
+      <div class="balls-divider"></div>
+
+      <span class="section-kicker">HASIL PERCOBAAN</span>
+
+      <div class="balls-stat-grid">
+
+        <div class="balls-stat">
+          <span>Total pengambilan</span>
+          <strong id="ball-total-draws">0</strong>
+        </div>
+
+        <div class="balls-stat">
+          <span>Bola tersisa</span>
+          <strong id="ball-remaining">10</strong>
+        </div>
+
+        <div class="balls-stat">
+          <span>Kejadian ditemukan</span>
+          <strong id="ball-hits">0</strong>
+        </div>
+
+        <div class="balls-stat">
+          <span>Peluang teoritis awal</span>
+          <strong id="ball-theory">50%</strong>
+        </div>
+
+      </div>
+
+
+      <div class="balls-last-result">
+        <span>HASIL TERAKHIR</span>
+        <strong id="ball-last">Belum ada</strong>
+      </div>
+
+
+      <div class="balls-rate-heading">
+        <span>Frekuensi percobaan</span>
+        <strong id="ball-empirical">0%</strong>
+      </div>
+
+      <div class="balls-rate-track">
+        <div id="ball-hit-bar"></div>
+      </div>
+
+
+      <div class="balls-next-chance">
+        <span>Peluang pengambilan berikutnya</span>
+        <strong id="ball-next-chance">50%</strong>
+      </div>
+
+      <div id="ball-insight" class="balls-insight">
+        Belum ada percobaan. Mulai mengambil bola
+        untuk memahami perubahan peluang.
+      </div>
+
+    </article>
+
+  </div>
+
+</section>
+
+
+<!-- ======================================
+     TAHAP 6: AI PROBABILITY SOLVER
+====================================== -->
+
+<section class="solver-section" id="ai-solver">
+
+  <div class="solver-heading">
+    <span class="section-kicker">09 / INTELLIGENT PROBABILITY ENGINE</span>
+    <h2>Biarkan sistem membantu memahami soalmu</h2>
+    <p>
+      Masukkan soal peluang. Sistem akan menganalisis,
+      menghitung, dan memilih visualisasi yang sesuai.
+    </p>
+  </div>
+
+  <div class="solver-input-card">
+
+    <div class="solver-input-heading">
+      <div>
+        <span class="section-kicker">QUESTION INPUT</span>
+        <h3>Masukkan soal probabilitas</h3>
+      </div>
+      <span class="solver-badge">Smart Solver Prototype</span>
+    </div>
+
+    <textarea
+      id="solver-question"
+      rows="4"
+      placeholder="Contoh: Dua buah dadu dilempar bersamaan. Berapa peluang mendapatkan jumlah mata dadu 7?"
+      aria-label="Masukkan soal probabilitas"></textarea>
+
+    <div class="solver-examples">
+
+      <span>Contoh soal:</span>
+
+      <button type="button" data-solver-example="Dua buah dadu dilempar bersamaan. Berapa peluang mendapatkan jumlah mata dadu 7?">
+        Dua dadu
+      </button>
+
+      <button type="button" data-solver-example="Sebuah koin dilempar. Berapa peluang muncul sisi angka?">
+        Koin
+      </button>
+
+      <button type="button" data-solver-example="Dari 52 kartu remi, berapa peluang mengambil kartu As?">
+        Kartu
+      </button>
+
+      <button type="button" data-solver-example="Dalam sebuah kotak terdapat 5 bola merah, 3 bola biru, dan 2 bola kuning. Berapa peluang mengambil bola merah?">
+        Bola
+      </button>
+
+      
+<button
+  type="button"
+  data-solver-example="Permutasi: berapa banyak susunan 3 orang dari 8 orang?">
+  Permutasi
+</button>
+
+<button
+  type="button"
+  data-solver-example="Kombinasi: berapa banyak cara memilih 3 orang dari 8 orang?">
+  Kombinasi
+</button>
+
+<button
+  type="button"
+  data-solver-example="Dalam kelas terdapat 40 siswa. Sebanyak 20 siswa menyukai matematika, 15 siswa menyukai fisika, dan 10 siswa menyukai keduanya. Berapa peluang siswa menyukai matematika jika diketahui menyukai fisika?">
+  Peluang bersyarat
+</button>
+
+
+    </div>
+
+    <button
+      type="button"
+      class="solver-submit"
+      id="solver-submit">
+      ✦ Analisis dan Selesaikan Soal
+    </button>
+
+    <p id="solver-status" class="solver-status" aria-live="polite">
+      Sistem siap menerima soal probabilitas.
+    </p>
+
+  </div>
+
+
+  <!-- HASIL ANALISIS -->
+
+  <div id="solver-output" class="solver-output" hidden>
+
+    <div class="solver-result-heading">
+      <div>
+        <span class="section-kicker">ANALYSIS RESULT</span>
+        <h3>Hasil penyelesaian</h3>
+      </div>
+
+      <span class="solver-badge solver-success">
+        Soal berhasil dianalisis
+      </span>
+    </div>
+
+    
+<!-- ======================================
+     TAHAP 8: STEP BY STEP LEARNING ENGINE
+====================================== -->
+
+<section class="guided-learning" id="guided-learning">
+
+  <div class="guided-heading">
+    <span class="section-kicker">INTERACTIVE LEARNING JOURNEY</span>
+    <h3>Pahami prosesnya, langkah demi langkah</h3>
+    <p>
+      Ikuti visualisasi 3D untuk memahami bagaimana
+      jawaban diperoleh, bukan sekadar melihat hasil akhir.
+    </p>
+  </div>
+
+  <div class="guided-progress-heading">
+    <span id="guided-step-count">LANGKAH 1 DARI 4</span>
+    <span id="guided-progress-percent">25%</span>
+  </div>
+
+  <div class="guided-progress-track">
+    <div id="guided-progress-bar"></div>
+  </div>
+
+  <div class="guided-layout">
+
+    <article class="guided-scene-card">
+
+      <div class="guided-scene-heading">
+        <span class="section-kicker">3D STEP VISUALIZATION</span>
+        <span class="guided-live">
+          <i></i> INTERACTIVE
+        </span>
+      </div>
+
+      <div id="guided-scene"></div>
+
+      <p id="guided-scene-caption">
+        Visualisasi proses pembelajaran akan tampil di sini.
+      </p>
+
+      <div class="guided-scene-tip">
+        ↗ Putar objek menggunakan mouse untuk melihat dari berbagai sudut.
+      </div>
+
+    </article>
+
+    <article class="guided-explanation-card">
+
+      <span class="section-kicker">PENJELASAN LANGKAH</span>
+
+      <h4 id="guided-step-title">
+        Kenali objek dan informasi
+      </h4>
+
+      <p id="guided-step-description">
+        Sistem akan memperkenalkan objek yang terdapat dalam soal.
+      </p>
+
+      <div class="guided-math-box">
+
+        <span>PROSES MATEMATIKA</span>
+
+        <strong id="guided-step-math">-</strong>
+
+      </div>
+
+      <div class="guided-step-note">
+        <strong>Yang perlu kamu pahami</strong>
+        <p id="guided-step-note">
+          Perhatikan objek yang ditampilkan sebelum melanjutkan.
+        </p>
+      </div>
+
+    </article>
+
+  </div>
+
+  <div class="guided-controls">
+
+    <button
+      id="guided-prev"
+      class="guided-control"
+      type="button"
+      disabled>
+      ← Sebelumnya
+    </button>
+
+    <button
+      id="guided-play"
+      class="guided-control guided-play"
+      type="button">
+      ▶ Putar otomatis
+    </button>
+
+    <button
+      id="guided-next"
+      class="guided-control guided-next"
+      type="button">
+      Selanjutnya →
+    </button>
+
+  </div>
+
+  <div class="guided-final-message" id="guided-final-message">
+    Kamu sudah menyelesaikan seluruh langkah pembelajaran.
+  </div>
+
+</section>
+
+<!-- AKHIR STEP BY STEP LEARNING -->
+
+
+
+    <div class="solver-result-grid">
+
+      <!-- VISUALISASI 3D -->
+
+      <article class="solver-visual-card">
+
+        <span class="section-kicker">
+          AUTOMATIC 3D VISUALIZATION
+        </span>
+
+        <div
+          id="solver-scene"
+          class="solver-scene">
+        </div>
+
+        <p id="solver-visual-description">
+          Visualisasi akan muncul di sini.
+        </p>
+
+        <div class="solver-sample-wrapper">
+          <span class="section-kicker">
+            RUANG SAMPEL / KEMUNGKINAN
+          </span>
+
+          <div id="solver-sample-space"></div>
+        </div>
+
+      </article>
+
+
+      <!-- PEMBAHASAN -->
+
+      <article class="solver-explanation-card">
+
+        <span class="section-kicker">
+          MATHEMATICAL EXPLANATION
+        </span>
+
+        <div class="solver-answer">
+          <span>HASIL AKHIR</span>
+
+          <strong id="solver-answer">-</strong>
+
+          <small id="solver-percentage">-</small>
+        </div>
+
+        <div class="solver-formula">
+          <span>Rumus penyelesaian</span>
+          <strong id="solver-fraction">-</strong>
+        </div>
+
+        <h4>Langkah penyelesaian</h4>
+
+        <ol
+          id="solver-steps"
+          class="solver-steps">
+        </ol>
+
+        <div class="solver-conclusion">
+          <strong>Kesimpulan</strong>
+
+          <p id="solver-summary"></p>
+        </div>
+
+      </article>
+
+    </div>
+
+  </div>
+
+  <div class="solver-disclaimer">
+    <span>ⓘ</span>
+    Versi prototipe mendukung pola soal probabilitas tertentu.
+    Soal di luar cakupan akan ditandai agar tidak menghasilkan
+    jawaban yang tidak dapat diverifikasi.
+  </div>
+
+</section>
+
+<!-- AKHIR AI PROBABILITY SOLVER -->
+
+<!-- AKHIR LABORATORIUM KOIN 3D -->
+
+
+        <section class="materials-section" id="materials" aria-labelledby="materials-title">
+          <div class="section-heading-row">
+            <div>
+              <span class="section-kicker">PETA MATERI</span>
+              <h2 id="materials-title">Pilih objek eksperimen</h2>
+              <p class="section-subtitle">Setiap objek akan memiliki simulasi dan cara penjelasan yang berbeda.</p>
+            </div>
+          </div>
+          <div class="material-grid">
+            <a class="material-card material-active" href="#lab">
+              <span class="material-visual dice-emoji">⚄</span>
+              <span class="material-status available">Tersedia sekarang</span>
+              <h3>Peluang dadu</h3>
+              <p>Ruang sampel, pasangan hasil, dan peluang jumlah mata dadu.</p>
+              <span class="material-link">Buka eksperimen <b>→</b></span>
+            </a>
+            <article class="material-card material-soon">
+              <span class="material-visual">◉</span>
+              <span class="material-status planned">Tahap berikutnya</span>
+              <h3>Peluang koin</h3>
+              <p>Amati sisi angka dan gambar serta pohon kemungkinan pelemparan.</p>
+            </article>
+            <article class="material-card material-soon">
+              <span class="material-visual">♠</span>
+              <span class="material-status planned">Tahap berikutnya</span>
+              <h3>Peluang kartu</h3>
+              <p>Pelajari peluang berdasarkan jenis, warna, dan nilai kartu.</p>
+            </article>
+            <article class="material-card material-soon">
+              <span class="material-visual">●</span>
+              <span class="material-status planned">Tahap berikutnya</span>
+              <h3>Peluang bola</h3>
+              <p>Simulasikan pengambilan bola dengan dan tanpa pengembalian.</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="guide-section" id="guide" aria-labelledby="guide-title">
+          <div class="section-heading-row">
+            <div>
+              <span class="section-kicker">PANDUAN PENGGUNA</span>
+              <h2 id="guide-title">Cara menggunakan Probability 3D</h2>
+              <p class="section-subtitle">Ikuti alur sederhana ini saat belajar melalui laboratorium.</p>
+            </div>
+          </div>
+          <div class="guide-grid">
+            <article class="guide-card"><span>01</span><h3>Buka eksperimen</h3><p>Pilih materi yang tersedia. Saat ini, eksperimen dua dadu sudah bisa dicoba.</p></article>
+            <article class="guide-card"><span>02</span><h3>Amati visual 3D</h3><p>Putar sudut pandang dengan mouse dan tekan tombol lempar untuk menjalankan simulasi.</p></article>
+            <article class="guide-card"><span>03</span><h3>Jelajahi ruang sampel</h3><p>Pilih kotak kombinasi untuk melihat angka pada kedua dadu secara langsung.</p></article>
+            <article class="guide-card"><span>04</span><h3>Ikuti pembahasan</h3><p>Gunakan tombol langkah berikutnya untuk menghubungkan visualisasi dengan rumus.</p></article>
+          </div>
+        </section>
+
+        <section class="learning-note" id="how-it-works">
+          <div class="note-icon">✳</div>
+          <div><b>Belajar dengan melihat, mencoba, dan memahami.</b><p>Visualisasi ini adalah prototipe awal. Coba lempar dadu, pilih pasangan pada ruang sampel, dan ikuti langkah penyelesaiannya.</p></div>
+        </section>
+        <footer><span>PROBABILITY 3D</span><span>Prototype awal · Dibangun dengan JavaScript & Three.js</span></footer>
+      </main>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+    <script type="module" src="/src/features/coin/coin-lab.js"></script>
+    <script
+  type="module"
+  src="/src/features/cards/cards-lab.js">
+</script>
+<script
+  type="module"
+  src="/src/features/balls/balls-lab.js">
+</script>
+<script
+  type="module"
+  src="/src/features/solver/probability-solver.js">
+</script>
+<script
+  type="module"
+  src="/src/features/solver/guided-learning.js">
+</script>
+  </body>
+</html>
