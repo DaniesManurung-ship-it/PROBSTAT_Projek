@@ -704,9 +704,6 @@ function addCards() {
 }
 
 
-function addBalls(problem) {
-
-    
 function addCounting(problem) {
   const group = new THREE.Group();
 
@@ -748,6 +745,9 @@ function addCounting(problem) {
 
   return group;
 }
+
+
+function addBalls(problem) {
 
   const group = new THREE.Group();
 
@@ -824,13 +824,18 @@ function addCounting(problem) {
    3D VENN DIAGRAM VISUALIZATION
 ========================================== */
 
+
 function addVenn(problem) {
+
   const group = new THREE.Group();
 
+  const regions = problem.regions;
+
+  // MATERIAL DUA LINGKARAN
   const materialA = new THREE.MeshBasicMaterial({
     color: 0x348be0,
     transparent: true,
-    opacity: 0.48,
+    opacity: 0.58,
     side: THREE.DoubleSide,
     depthWrite: false
   });
@@ -838,34 +843,46 @@ function addVenn(problem) {
   const materialB = new THREE.MeshBasicMaterial({
     color: 0x20b889,
     transparent: true,
-    opacity: 0.48,
+    opacity: 0.58,
     side: THREE.DoubleSide,
     depthWrite: false
   });
 
-  function makeCircle(x, material, borderColor) {
+  // MEMBUAT LINGKARAN
+  function createCircle(x, material, borderColor) {
+
     const circle = new THREE.Mesh(
-      new THREE.CircleGeometry(1.12, 72),
+      new THREE.CircleGeometry(1.15, 96),
       material
     );
 
     circle.position.set(x, 0, 0);
+
     group.add(circle);
 
     const border = new THREE.Mesh(
       new THREE.TorusGeometry(
-        1.12, 0.025, 12, 72
+        1.15,
+        0.025,
+        12,
+        96
       ),
       new THREE.MeshBasicMaterial({
         color: borderColor
       })
     );
 
-    border.position.set(x, 0, 0.02);
+    border.position.set(x, 0, 0.04);
+
     group.add(border);
   }
 
-  function makeRegionLabel(title, value, x, y) {
+  createCircle(-0.55, materialA, 0x65b6ff);
+  createCircle(0.55, materialB, 0x55e0b0);
+
+  // MEMBUAT LABEL JUMLAH WILAYAH
+  function createLabel(title, value, x, y) {
+
     const canvas = document.createElement('canvas');
 
     canvas.width = 512;
@@ -873,68 +890,79 @@ function addVenn(problem) {
 
     const ctx = canvas.getContext('2d');
 
-    ctx.fillStyle = 'rgba(9, 24, 42, 0.88)';
-    ctx.beginPath();
-    ctx.roundRect(12, 12, 488, 232, 28);
-    ctx.fill();
+    ctx.fillStyle = '#10243c';
+    ctx.fillRect(0, 0, 512, 256);
 
-    ctx.strokeStyle = '#76bfff';
-    ctx.lineWidth = 5;
-    ctx.stroke();
+    ctx.strokeStyle = '#78baff';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(5, 5, 502, 246);
 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    ctx.fillStyle = '#b9d9f7';
-    ctx.font = 'bold 48px Arial';
-    ctx.fillText(title, 256, 82);
+    ctx.fillStyle = '#b7d9fa';
+    ctx.font = 'bold 39px Arial';
+    ctx.fillText(title, 256, 75);
 
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 82px Arial';
+    ctx.font = 'bold 85px Arial';
     ctx.fillText(String(value), 256, 174);
 
     const texture = new THREE.CanvasTexture(canvas);
+
     texture.colorSpace = THREE.SRGBColorSpace;
 
     const label = new THREE.Mesh(
-      new THREE.PlaneGeometry(0.85, 0.42),
+      new THREE.PlaneGeometry(0.76, 0.38),
       new THREE.MeshBasicMaterial({
         map: texture,
-        transparent: true,
-        depthWrite: false
+        transparent: false,
+        depthTest: false
       })
     );
 
-    label.position.set(x, y, 0.08);
+    label.position.set(x, y, 0.12);
+    label.renderOrder = 10;
 
     group.add(label);
   }
 
-  makeCircle(-0.53, materialA, 0x57aaff);
-  makeCircle(0.53, materialB, 0x55e0b0);
-
-  const regions = problem.regions;
-
-  makeRegionLabel(
+  // A SAJA
+  createLabel(
     `${problem.eventA} saja`,
     regions.aOnly,
-    -1.03,
+    -1.05,
     0
   );
 
-  makeRegionLabel(
+  // IRISAN A DAN B
+  createLabel(
     'Keduanya',
     regions.intersection,
     0,
-    0.02
+    0.04
   );
 
-  makeRegionLabel(
+  // B SAJA
+  createLabel(
     `${problem.eventB} saja`,
     regions.bOnly,
-    1.03,
+    1.05,
     0
   );
+
+  // TIDAK KEDUANYA
+  createLabel(
+    'Di luar A dan B',
+    regions.neither,
+    0,
+    -1.43
+  );
+
+  // POSISI KAMERA AGAR DIAGRAM TERLIHAT JELAS
+  camera.position.set(0, 0.2, 5.5);
+
+  camera.lookAt(0, 0, 0);
 
   return group;
 }
