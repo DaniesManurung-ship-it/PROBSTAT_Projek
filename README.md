@@ -1,6 +1,6 @@
-# Probability 3D — Starter Project
+# Probability 3D — Aplikasi Pembelajaran Probabilitas
 
-Starter website pembelajaran probabilitas dengan JavaScript, Vite, dan Three.js. Prototipe pertama berisi laboratorium dua dadu: dadu 3D yang dapat diputar, animasi lempar, 36 kemungkinan hasil, dan pembahasan bertahap.
+Website pembelajaran probabilitas dengan JavaScript, Vite, dan Three.js. Aplikasi mencakup laboratorium eksperimen dadu, koin, kartu, dan bola serta kalkulator enam distribusi diskrit dengan hasil, pembahasan, dan visualisasi interaktif.
 
 ## 1. Persiapan
 
@@ -52,17 +52,22 @@ probability-3d/
 ├── .gitignore
 ├── public/                       # file publik (favicon, gambar, model 3D)
 ├── tests/
-│   └── dice-probability.test.js  # tes dasar mesin probabilitas
+│   ├── dice-probability.test.js  # tes mesin probabilitas dadu
+│   └── distributions.test.js    # tes enam distribusi diskrit
 └── src/
     ├── main.js                   # entry point aplikasi
     ├── app/
     │   └── app.js                # menghubungkan komponen dan fitur
     ├── components/               # komponen UI yang dapat dipakai ulang
     ├── features/
+    │   ├── distributions/        # kalkulator dan fungsi matematika distribusi diskrit
+    │   ├── experiment/           # simulasi pelemparan dadu berulang
+    │   ├── dice/                 # interaksi dan penjelasan peluang dadu
     │   ├── probability/
-    │   │   └── dice-probability.js # logika matematika murni
-    │   └── dice/
-    │       └── dice-controller.js # interaksi tombol dan ruang sampel
+    │   ├── coin/                 # laboratorium koin
+    │   ├── cards/                # laboratorium kartu remi
+    │   ├── balls/                # laboratorium pengambilan bola
+    │   └── solver/               # solver pola soal dan panduan bertahap
     ├── visualization/
     │   └── three/
     │       ├── create-die.js      # membentuk dadu 3D dan titik pada sisinya
@@ -79,15 +84,23 @@ probability-3d/
 - `visualization/three/dice-scene.js` menyiapkan scene 3D, kamera, cahaya, lantai, OrbitControls, dan animasi lempar.
 - `features/dice/dice-controller.js` menghubungkan tombol, pilihan 36 kombinasi, angka hasil dadu, dan langkah pembahasan.
 - `app/app.js` menginisialisasi semuanya.
+- `app/navigation.js` mengelompokkan konten menjadi halaman Beranda, Dadu & Simulasi, Koin, Kartu, Bola, Solver, Distribusi Diskrit, dan Materi & Panduan. Navbar, tombol internal, serta tombol kembali/maju browser berpindah halaman tanpa memuat ulang aplikasi.
 
-## 6. Catatan pengembangan
+## 6. Fitur Distribusi Diskrit
 
-Ini adalah **prototipe awal**, belum merupakan sistem AI yang memahami semua jenis soal. Untuk tahap berikutnya, kembangkan dengan urutan:
+Bagian **Distribusi Diskrit** berisi kalkulator untuk:
 
-1. Rapikan dan uji simulasi dadu, termasuk kondisi layar ponsel.
-2. Tambahkan visualisasi koin, kartu, dan bola dengan aturan matematika masing-masing.
-3. Buat format data soal terstruktur agar mesin matematika dan visualisasi menerima sumber data yang sama.
-4. Tambahkan input soal bebas dan analisis bahasa/AI setelah mesin matematika dasar teruji.
-5. Tambahkan akun, penyimpanan riwayat, latihan, dan dashboard jika diperlukan.
+1. Binomial — tepat, paling banyak, paling sedikit, dan antara.
+2. Multinomial — kategori dapat ditambahkan secara dinamis.
+3. Hipergeometrik — pengambilan tanpa pengembalian.
+4. Geometrik — percobaan sampai sukses pertama.
+5. Binomial Negatif — percobaan sampai sukses ke-k.
+6. Poisson — jumlah kejadian pada interval dengan rata-rata λ.
+
+Setiap materi menyajikan pengertian, kondisi penggunaan, contoh, rumus dan arti simbol, input yang dapat diubah, validasi, hasil desimal dan persentase, pembahasan bertahap, serta grafik peluang. Logika matematika murni dipisahkan dari manipulasi UI pada `src/features/distributions/distribution-math.js`. Uji perhitungan tersedia melalui `npm test`.
+
+## 7. Catatan pengembangan
+
+Probability 3D tetap merupakan prototipe pembelajaran. Solver soal bebas mengenali pola tertentu secara lokal dan bukan model AI umum. Kalkulator distribusi diskrit menerima parameter terstruktur dan menghitung hasil memakai fungsi matematika lokal; batas input dijaga agar perhitungan dan visualisasi tetap praktis.
 
 **Prinsip arsitektur:** mesin matematika adalah sumber kebenaran. Three.js hanya memvisualisasikan data hasil perhitungan; jangan menjadikan animasi sebagai penentu jawaban.

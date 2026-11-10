@@ -1,6 +1,7 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { observeRendererSize } from '../../utils/visualization/observe-renderer-size.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -18,8 +19,9 @@ function simplifyFraction(num, den) {
 
 function faceTexture(label, symbol) {
   const canvas = document.createElement('canvas');
-  canvas.width = canvas.height = 512;
+  canvas.width = canvas.height = 1024;
   const ctx = canvas.getContext('2d');
+  ctx.scale(2, 2);
 
   const gradient = ctx.createLinearGradient(0, 0, 512, 512);
   gradient.addColorStop(0, '#ffe7a0');
@@ -376,14 +378,6 @@ function startCoinLab() {
      RENDER LOOP
   ====================================== */
 
-  function resize() {
-    const width  = Math.max(ui.host.clientWidth,  280);
-    const height = Math.max(ui.host.clientHeight, 260);
-    camera.aspect = width / height;
-    camera.updateProjectionMatrix();
-    renderer.setSize(width, height, false);
-  }
-
   function render() {
     frame = requestAnimationFrame(render);
 
@@ -415,9 +409,8 @@ function startCoinLab() {
 
   ui.flip.addEventListener('click', toss);
   ui.reset.addEventListener('click', reset);
-  window.addEventListener('resize', resize);
 
-  resize();
+  const disposeRendererResize = observeRendererSize(ui.host, renderer, camera);
   updateStats();
   render();
 
@@ -430,7 +423,7 @@ function startCoinLab() {
 
   window.addEventListener('pagehide', () => {
     cancelAnimationFrame(frame);
-    window.removeEventListener('resize', resize);
+    disposeRendererResize();
     controls.dispose();
     renderer.dispose();
 
