@@ -25,6 +25,7 @@
           <a href="#coin-lab">Eksperimen Koin 3D</a>
           <a href="#balls-lab">Bola 3D</a>
           <a href="#ai-solver">AI Solver</a>
+          <a href="#quiz-system">Quiz & Evaluation</a>
         </nav>
         <div class="topbar-right"><span class="status-dot"></span> MODE BELAJAR</div>
       </header>
@@ -593,6 +594,300 @@
 </section>
 
 
+<!-- =============================================
+     PROBABILITY 3D - QUIZ & EVALUATION SYSTEM
+============================================= -->
+
+<section id="quiz-system" class="quiz-system-section">
+
+  <div class="quiz-page-heading">
+
+    <span class="section-kicker">
+      10 / KNOWLEDGE ASSESSMENT
+    </span>
+
+    <h2>Uji pemahaman probabilitasmu</h2>
+
+    <p>
+      Kerjakan latihan, periksa pemahaman,
+      dan pelajari setiap kesalahan melalui pembahasan.
+    </p>
+
+  </div>
+
+
+  <!-- QUIZ DASHBOARD -->
+
+  <div id="quiz-setup" class="quiz-setup">
+
+    <div class="quiz-setup-heading">
+
+      <div>
+        <span class="section-kicker">START YOUR QUIZ</span>
+        <h3>Atur sesi pembelajaran</h3>
+      </div>
+
+      <span class="quiz-setup-icon">✦</span>
+
+    </div>
+
+
+    <div class="quiz-setting-grid">
+
+      <div class="quiz-setting">
+
+        <label for="quiz-category">
+          Kategori materi
+        </label>
+
+        <select id="quiz-category">
+
+          <option value="all">
+            Semua materi
+          </option>
+
+          <option value="dice">
+            Peluang dadu
+          </option>
+
+          <option value="coin">
+            Peluang koin
+          </option>
+
+          <option value="cards">
+            Peluang kartu
+          </option>
+
+          <option value="balls">
+            Peluang bola
+          </option>
+
+          <option value="counting">
+            Permutasi dan kombinasi
+          </option>
+
+          <option value="conditional">
+            Peluang bersyarat
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <div class="quiz-setting">
+
+        <label for="quiz-difficulty">
+          Tingkat kesulitan
+        </label>
+
+        <select id="quiz-difficulty">
+
+          <option value="easy">Mudah</option>
+
+          <option value="medium" selected>
+            Sedang
+          </option>
+
+          <option value="hard">Sulit</option>
+
+        </select>
+
+      </div>
+
+
+      <div class="quiz-setting">
+
+        <label for="quiz-mode">
+          Mode pengerjaan
+        </label>
+
+        <select id="quiz-mode">
+
+          <option value="learning">
+            Learning Mode
+          </option>
+
+          <option value="challenge">
+            Challenge Mode
+          </option>
+
+        </select>
+
+      </div>
+
+    </div>
+
+
+    <div class="quiz-session-information">
+
+      <div>
+        <span>Jumlah soal</span>
+        <strong>10 soal</strong>
+      </div>
+
+      <div>
+        <span>Learning Mode</span>
+        <strong>Tanpa batas waktu</strong>
+      </div>
+
+      <div>
+        <span>Challenge Mode</span>
+        <strong>15 menit</strong>
+      </div>
+
+      <div>
+        <span>Nilai maksimum</span>
+        <strong>100 poin</strong>
+      </div>
+
+    </div>
+
+
+    <div class="quiz-mode-description" id="quiz-mode-description">
+      Learning Mode memberikan pembahasan langsung
+      setelah setiap jawaban diperiksa.
+    </div>
+
+
+    <button
+      type="button"
+      id="quiz-start"
+      class="quiz-action-primary">
+
+      ✦ Mulai Quiz Sekarang
+
+    </button>
+
+    <p class="quiz-privacy-note">
+      Hasil latihan disimpan di browser perangkat ini.
+    </p>
+
+  </div>
+
+
+  <!-- QUIZ SESSION -->
+
+  <div
+    id="quiz-session"
+    class="quiz-session"
+    hidden>
+
+    <div class="quiz-session-top">
+
+      <div>
+
+        <span class="section-kicker">
+          YOUR LEARNING SESSION
+        </span>
+
+        <strong id="quiz-mode-label">
+          LEARNING MODE
+        </strong>
+
+      </div>
+
+      <div
+        id="quiz-timer"
+        class="quiz-timer"
+        hidden>
+        15:00
+      </div>
+
+    </div>
+
+
+    <div class="quiz-progress-heading">
+
+      <span id="quiz-number">
+        SOAL 1 DARI 10
+      </span>
+
+      <span id="quiz-progress-text">
+        10%
+      </span>
+
+    </div>
+
+
+    <div class="quiz-progress-track">
+      <div id="quiz-progress"></div>
+    </div>
+
+
+    <article class="quiz-question-card">
+
+      <div class="quiz-question-meta">
+
+        <span id="quiz-type">
+          Pilihan ganda
+        </span>
+
+        <span>10 poin</span>
+
+      </div>
+
+
+      <h3 id="quiz-question">
+        Pertanyaan akan muncul di sini.
+      </h3>
+
+
+      <div id="quiz-answer-area">
+      </div>
+
+
+      <div
+        id="quiz-feedback"
+        class="quiz-feedback"
+        hidden>
+      </div>
+
+
+      <div class="quiz-navigation">
+
+        <button
+          type="button"
+          id="quiz-previous"
+          class="quiz-action-secondary"
+          disabled>
+          ← Sebelumnya
+        </button>
+
+        <button
+          type="button"
+          id="quiz-check"
+          class="quiz-action-primary">
+          Periksa jawaban
+        </button>
+
+        <button
+          type="button"
+          id="quiz-next"
+          class="quiz-action-primary"
+          hidden>
+          Selanjutnya →
+        </button>
+
+      </div>
+
+    </article>
+
+  </div>
+
+
+  <!-- QUIZ RESULTS -->
+
+  <div
+    id="quiz-results"
+    class="quiz-results"
+    hidden>
+  </div>
+
+</section>
+
+<!-- END QUIZ SYSTEM -->
+
 <!-- ======================================
      TAHAP 6: AI PROBABILITY SOLVER
 ====================================== -->
@@ -971,6 +1266,10 @@
 <script
   type="module"
   src="/src/features/solver/guided-learning.js">
+</script>
+<script
+  type="module"
+  src="/src/features/quiz/quiz-system.js">
 </script>
   </body>
 </html>
