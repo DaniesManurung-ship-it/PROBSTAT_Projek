@@ -21,13 +21,13 @@ const FACE_DEFINITIONS = [
 
 export function createDie() {
   const group = new THREE.Group();
-  const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xf7f9fc, roughness: 0.28, metalness: 0.04 });
+  const bodyMaterial = new THREE.MeshStandardMaterial({ color: 0xf2efe3, roughness: 0.38, metalness: 0.02 });
   const body = new THREE.Mesh(new RoundedBoxGeometry(1, 1, 1, 5, 0.105), bodyMaterial);
   body.castShadow = true;
   body.receiveShadow = true;
   group.add(body);
 
-  const pipMaterial = new THREE.MeshStandardMaterial({ color: 0x17243a, roughness: 0.38 });
+  const pipMaterial = new THREE.MeshStandardMaterial({ color: 0x1d2820, roughness: 0.38 });
   const pipGeometry = new THREE.SphereGeometry(0.067, 18, 14);
   const halfSize = 0.505;
   const spacing = 0.205;

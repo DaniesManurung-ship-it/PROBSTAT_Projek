@@ -1,17 +1,32 @@
 import './navigation.js';
+import { initTheme } from './theme.js';
 import { createDiceScene } from '../visualization/three/dice-scene.js';
 import { createDiceController } from '../features/dice/dice-controller.js';
 import { createDiceExperiment } from '../features/experiment/dice-experiment.js';
 
 export function initApp() {
+  initTheme();
+
   const elements = {
     sceneContainer: document.querySelector('#dice-scene'),
-    dieAValue: document.querySelector('#die-a-value'),
-    dieBValue: document.querySelector('#die-b-value'),
+    diceCount: document.querySelector('#dice-count'),
+    targetSum: document.querySelector('#target-sum'),
+    applyConfiguration: document.querySelector('#apply-dice-config'),
+    configurationStatus: document.querySelector('#dice-config-status'),
+    diceValues: document.querySelector('#dice-values'),
     sumValue: document.querySelector('#sum-value'),
     sampleGrid: document.querySelector('#sample-grid'),
+    sampleHeading: document.querySelector('#sample-heading'),
+    sampleCount: document.querySelector('#sample-count'),
+    sampleExplanation: document.querySelector('#sample-explanation'),
+    favorableLegend: document.querySelector('#favorable-legend'),
+    question: document.querySelector('#dice-question'),
+    answerFraction: document.querySelector('#answer-fraction'),
+    answerPercent: document.querySelector('#answer-percent'),
+    answerDescription: document.querySelector('#answer-description'),
+    answerCount: document.querySelector('#answer-count'),
+    answerBar: document.querySelector('#answer-bar'),
     rollDice: document.querySelector('#roll-dice'),
-    showFavorable: document.querySelector('#show-favorable'),
     stepLabel: document.querySelector('#step-label'),
     stepTitle: document.querySelector('#step-title'),
     stepDescription: document.querySelector('#step-description'),
@@ -29,7 +44,7 @@ export function initApp() {
   }
 
   const scene = createDiceScene(elements.sceneContainer);
-  createDiceController({ scene, elements });
+  const diceController = createDiceController({ scene, elements });
 
   const experimentElements = {
     trialCount: document.querySelector('#trial-count'),
@@ -43,6 +58,8 @@ export function initApp() {
     experimentBar: document.querySelector('#experiment-bar'),
     experimentInsight: document.querySelector('#experiment-insight'),
     frequencyChart: document.querySelector('#frequency-chart'),
+    experimentTarget: document.querySelector('#experiment-target'),
+    hitTotalLabel: document.querySelector('#hit-total-label'),
   };
 
   const missingExperimentElements = Object.entries(experimentElements)
@@ -50,7 +67,12 @@ export function initApp() {
   if (missingExperimentElements.length) {
     console.error('Elemen simulasi belum ditemukan:', missingExperimentElements.map(([name]) => name));
   } else {
-    createDiceExperiment({ scene, elements: experimentElements });
+    createDiceExperiment({
+      scene,
+      elements: experimentElements,
+      getDiceConfiguration: diceController.getConfiguration,
+      onDiceConfigurationChange: diceController.onConfigurationChange,
+    });
   }
 
   window.addEventListener('pagehide', () => scene.dispose(), { once: true });

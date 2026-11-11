@@ -143,7 +143,7 @@ function makeCountingQuestion(data) {
 
 function generateDice(difficulty) {
 
-  
+
 if (difficulty === 'easy') {
 
 if (difficulty === 'medium') {
@@ -394,7 +394,7 @@ function generateCards(difficulty) {
 
   const suits = ['Hati', 'Wajik', 'Keriting', 'Sekop'];
 
-  
+
 if (difficulty === 'easy') {
 
   const events = [
@@ -1040,7 +1040,7 @@ export function createQuizQuestions(
 
   let wasRecycled = false;
 
-  
+
 let recycleAttempts = 0;
 
 while (

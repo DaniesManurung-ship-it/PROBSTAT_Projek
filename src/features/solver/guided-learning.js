@@ -1,6 +1,7 @@
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { getSceneThemeColors, subscribeToThemeChange } from '../../app/theme.js';
 
 /* ==========================================
    PROBABILITY 3D
@@ -39,6 +40,8 @@ if (Object.values(ui).every(Boolean)) {
   let stageGroup = null;
   let resizeObserver = null;
   let renderFrame = null;
+  let floorMesh = null;
+  let unsubscribeTheme = null;
 
   const TOTAL_STEPS = 4;
 
@@ -125,18 +128,18 @@ if (Object.values(ui).every(Boolean)) {
   }
 
   function addFloor(group) {
-    const floor = new THREE.Mesh(
+    floorMesh = new THREE.Mesh(
       new THREE.CircleGeometry(2.7, 64),
       new THREE.MeshStandardMaterial({
-        color: 0x142b49,
+        color: getSceneThemeColors().floor || 0xdce9dd,
         roughness: 0.65
       })
     );
 
-    floor.rotation.x = -Math.PI / 2;
-    floor.position.y = -1.2;
+    floorMesh.rotation.x = -Math.PI / 2;
+    floorMesh.position.y = -1.2;
 
-    group.add(floor);
+    group.add(floorMesh);
   }
 
   /* ======================================
@@ -949,8 +952,9 @@ function getSteps(problem) {
   function initializeScene() {
     scene = new THREE.Scene();
 
+    const themeColors = getSceneThemeColors();
     scene.background =
-      new THREE.Color('#091425');
+      new THREE.Color(themeColors.background || '#edf7ef');
 
     camera = new THREE.PerspectiveCamera(
       38,
@@ -984,8 +988,8 @@ function getSteps(problem) {
 
     scene.add(
       new THREE.HemisphereLight(
-        0xe5f1ff,
-        0x34435b,
+        0xf4fff6,
+        0x829584,
         2.4
       )
     );
@@ -1000,14 +1004,20 @@ function getSteps(problem) {
     scene.add(light);
 
     const pointLight = new THREE.PointLight(
-      0x368eff,
-      18,
+      0x80bd8b,
+      14,
       12
     );
 
     pointLight.position.set(-3, 1, 2);
 
     scene.add(pointLight);
+    unsubscribeTheme = subscribeToThemeChange((theme, colors) => {
+      scene.background.set(colors.background);
+      if (floorMesh) floorMesh.material.color.set(colors.floor);
+      pointLight.color.set(theme === 'dark' ? 0x368eff : 0x80bd8b);
+      pointLight.intensity = theme === 'dark' ? 18 : 14;
+    });
 
     function resize() {
       const width = Math.max(
@@ -1085,6 +1095,7 @@ function getSteps(problem) {
       cancelAnimationFrame(renderFrame);
 
       resizeObserver?.disconnect();
+      unsubscribeTheme?.();
 
       window.removeEventListener('resize', () => {});
 

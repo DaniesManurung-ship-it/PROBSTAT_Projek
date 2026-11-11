@@ -6,6 +6,7 @@ import {
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { getSceneThemeColors, subscribeToThemeChange } from '../../app/theme.js';
 
 /* ==========================================
    PROBABILITY 3D - SMART SOLVER ENGINE
@@ -518,6 +519,7 @@ let controls;
 let visualizationGroup;
 let animationFrame;
 let resizeObserver;
+let unsubscribeTheme;
 
 function createTexture(label, background, foreground) {
   const canvas = document.createElement('canvas');
@@ -1440,8 +1442,9 @@ function initializeScene() {
   try {
     scene = new THREE.Scene();
 
+    const themeColors = getSceneThemeColors();
     scene.background =
-      new THREE.Color('#0a1425');
+      new THREE.Color(themeColors.background || '#edf7ef');
 
     camera = new THREE.PerspectiveCamera(
       38,
@@ -1479,8 +1482,8 @@ function initializeScene() {
 
     scene.add(
       new THREE.HemisphereLight(
-        0xe5f0ff,
-        0x34425b,
+        0xf4fff6,
+        0x829584,
         2.3
       )
     );
@@ -1494,19 +1497,24 @@ function initializeScene() {
 
     scene.add(light);
 
+    const platformMaterial = new THREE.MeshStandardMaterial({
+      color: themeColors.platform || 0xc6decc,
+      roughness: 0.6
+    });
     const platform = new THREE.Mesh(
       new THREE.CylinderGeometry(
         1.6, 1.6, 0.1, 48
       ),
-      new THREE.MeshStandardMaterial({
-        color: 0x172d4b,
-        roughness: 0.6
-      })
+      platformMaterial
     );
 
     platform.position.y = -1.05;
 
     scene.add(platform);
+    unsubscribeTheme = subscribeToThemeChange((theme, colors) => {
+      scene.background.set(colors.background);
+      platformMaterial.color.set(colors.platform);
+    });
 
     resizeScene();
 
@@ -1625,6 +1633,7 @@ window.addEventListener(
     cancelAnimationFrame(animationFrame);
 
     resizeObserver?.disconnect();
+    unsubscribeTheme?.();
 
     controls?.dispose();
 

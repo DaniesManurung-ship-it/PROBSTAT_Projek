@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from
   'three/addons/controls/OrbitControls.js';
 import { observeRendererSize } from '../../utils/visualization/observe-renderer-size.js';
+import { getSceneThemeColors, subscribeToThemeChange } from '../../app/theme.js';
 
 /* ======================================
    PLAYING CARD PROBABILITY LAB
@@ -194,7 +195,8 @@ function startCardsLab() {
   ====================================== */
 
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#0b1424');
+  const themeColors = getSceneThemeColors();
+  scene.background = new THREE.Color(themeColors.background || '#edf7ef');
 
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
   camera.position.set(0, 0.5, 6.5);
@@ -212,19 +214,25 @@ function startCardsLab() {
   controls.maxDistance = 9;
   controls.target.set(0, 0, 0);
 
-  scene.add(new THREE.HemisphereLight(0xe5efff, 0x34415b, 2));
+  scene.add(new THREE.HemisphereLight(0xf4fff6, 0x829584, 2));
 
   const light = new THREE.DirectionalLight(0xffffff, 3);
   light.position.set(3, 5, 5);
   scene.add(light);
 
-  const blueLight = new THREE.PointLight(0x438fff, 20, 10);
+  const blueLight = new THREE.PointLight(0x80bd8b, 14, 10);
   blueLight.position.set(-3, 1, -2);
   scene.add(blueLight);
+  const unsubscribeTheme = subscribeToThemeChange((theme, colors) => {
+    scene.background.set(colors.background);
+    table.material.color.set(colors.floor);
+    blueLight.color.set(theme === 'dark' ? 0x438fff : 0x80bd8b);
+    blueLight.intensity = theme === 'dark' ? 20 : 14;
+  });
 
   const table = new THREE.Mesh(
     new THREE.BoxGeometry(5.5, 0.15, 3),
-    new THREE.MeshStandardMaterial({ color: 0x173052, roughness: 0.55 })
+    new THREE.MeshStandardMaterial({ color: 0xdce9dd, roughness: 0.65 })
   );
   table.position.y = -1.25;
   scene.add(table);
@@ -653,6 +661,7 @@ function startCardsLab() {
   window.addEventListener('pagehide', () => {
     cancelAnimationFrame(animationFrame);
     disposeRendererResize();
+    unsubscribeTheme();
     controls.dispose();
     renderer.dispose();
     cardGeometry.dispose();
