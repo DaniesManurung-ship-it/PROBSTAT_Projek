@@ -26,13 +26,18 @@ const routes = [
   },
   {
     id: 'solver',
-    label: 'Solver',
-    sectionIds: ['ai-solver'],
+    label: 'AI Solver',
+    sectionIds: ['ai-solver', 'guided-learning'],
   },
   {
     id: 'distributions',
     label: 'Distribusi Diskrit',
     sectionIds: ['distributions'],
+  },
+  {
+    id: 'quiz',
+    label: 'Quiz & Evaluasi',
+    sectionIds: ['quiz-system'],
   },
   {
     id: 'learning',
