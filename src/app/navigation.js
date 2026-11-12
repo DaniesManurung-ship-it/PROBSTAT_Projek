@@ -26,12 +26,12 @@ const routes = [
   },
   {
     id: 'solver',
-    label: 'Solver',
-    sectionIds: ['ai-solver'],
+    label: 'AI Solver',
+    sectionIds: ['ai-solver', 'guided-learning'],
   },
   {
     id: 'quiz',
-    label: 'Kuis',
+    label: 'Quiz & Evaluasi',
     sectionIds: ['quiz-system'],
   },
   {
@@ -58,14 +58,19 @@ const navLinks = [...document.querySelectorAll('.top-nav [data-page-link]')];
 
 if (main && navLinks.length) {
   for (const route of routes) {
-    const page = document.createElement('div');
-    page.className = 'route-page';
-    page.id = `page-${route.id}`;
-    page.dataset.page = route.id;
-    page.setAttribute('aria-label', route.label);
-    page.hidden = route.id !== 'home';
-    pages.set(route.id, page);
+    /* Jika route ID sudah ada (duplikat), tambahkan sectionIds ke page yang sudah ada */
+    if (!pages.has(route.id)) {
+      const page = document.createElement('div');
+      page.className = 'route-page';
+      page.id = `page-${route.id}`;
+      page.dataset.page = route.id;
+      page.setAttribute('aria-label', route.label);
+      page.hidden = route.id !== 'home';
+      pages.set(route.id, page);
+      routeByTarget.set(page.id, route.id);
+    }
 
+    const page = pages.get(route.id);
     route.sectionIds.forEach((sectionId) => {
       const section = document.getElementById(sectionId);
       if (section) {
@@ -73,13 +78,12 @@ if (main && navLinks.length) {
         routeByTarget.set(sectionId, route.id);
       }
     });
-
-    routeByTarget.set(page.id, route.id);
   }
 
   const footer = main.querySelector(':scope > footer');
   if (footer) pages.get('learning').appendChild(footer);
-  main.replaceChildren(...routes.map(({ id }) => pages.get(id)));
+  /* Gunakan [...pages.values()] agar tidak duplikat meski ada route ID yang sama */
+  main.replaceChildren(...[...pages.values()]);
 
   function getRouteFromHash() {
     const targetId = decodeURIComponent(window.location.hash.slice(1));

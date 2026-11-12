@@ -20,9 +20,9 @@
           <a href="#page-cards" data-page-link="cards">Kartu</a>
           <a href="#page-balls" data-page-link="balls">Bola</a>
           <a href="#page-solver" data-page-link="solver">Solver</a>
-          <a href="#page-quiz" data-page-link="quiz">Kuis</a>
           <a href="#page-distributions" data-page-link="distributions">Distribusi Diskrit</a>
           <a href="#page-continuous" data-page-link="continuous">Distribusi Kontinu</a>
+          <a href="#page-quiz" data-page-link="quiz">Quiz &amp; Evaluasi</a>
           <a href="#page-learning" data-page-link="learning">Materi &amp; Panduan</a>
         </nav>
         <button class="theme-toggle" id="theme-toggle" type="button" aria-label="Ganti ke mode gelap" aria-pressed="false" title="Ganti ke mode gelap">
@@ -38,6 +38,10 @@
       </header>
 
       <main class="page-shell">
+
+        <!-- ======================================
+             BERANDA
+        ====================================== -->
         <section class="intro-row" id="home">
           <div>
             <div class="eyebrow"><span class="eyebrow-line"></span> INTERACTIVE PROBABILITY LAB</div>
@@ -95,6 +99,9 @@
           </div>
         </section>
 
+        <!-- ======================================
+             DADU: LAB 3D + RUANG SAMPEL
+        ====================================== -->
         <section class="workspace" id="lab">
           <div class="visual-column">
             <div class="panel-heading">
@@ -178,6 +185,9 @@
           </aside>
         </section>
 
+        <!-- ======================================
+             DADU: EKSPERIMEN BERULANG
+        ====================================== -->
         <section class="experiment-section" id="experiment" aria-labelledby="experiment-title">
           <div class="section-heading-row">
             <div>
@@ -1293,6 +1303,9 @@
           <div class="continuous-content" id="continuous-content" aria-live="polite"></div>
         </section>
 
+        <!-- ======================================
+             MATERI & PANDUAN
+        ====================================== -->
         <section class="materials-section" id="materials" aria-labelledby="materials-title">
           <div class="section-heading-row">
             <div>
@@ -1309,24 +1322,27 @@
               <p>Ruang sampel, pasangan hasil, dan peluang jumlah mata dadu.</p>
               <span class="material-link">Buka eksperimen <b>→</b></span>
             </a>
-            <article class="material-card material-soon">
+            <a class="material-card material-active" href="#coin-lab">
               <span class="material-visual">◉</span>
-              <span class="material-status planned">Tahap berikutnya</span>
+              <span class="material-status available">Tersedia sekarang</span>
               <h3>Peluang koin</h3>
               <p>Amati sisi angka dan gambar serta pohon kemungkinan pelemparan.</p>
-            </article>
-            <article class="material-card material-soon">
+              <span class="material-link">Buka eksperimen <b>→</b></span>
+            </a>
+            <a class="material-card material-active" href="#cards-lab">
               <span class="material-visual">♠</span>
-              <span class="material-status planned">Tahap berikutnya</span>
+              <span class="material-status available">Tersedia sekarang</span>
               <h3>Peluang kartu</h3>
               <p>Pelajari peluang berdasarkan jenis, warna, dan nilai kartu.</p>
-            </article>
-            <article class="material-card material-soon">
+              <span class="material-link">Buka eksperimen <b>→</b></span>
+            </a>
+            <a class="material-card material-active" href="#balls-lab">
               <span class="material-visual">●</span>
-              <span class="material-status planned">Tahap berikutnya</span>
+              <span class="material-status available">Tersedia sekarang</span>
               <h3>Peluang bola</h3>
               <p>Simulasikan pengambilan bola dengan dan tanpa pengembalian.</p>
-            </article>
+              <span class="material-link">Buka eksperimen <b>→</b></span>
+            </a>
           </div>
         </section>
 
@@ -1339,8 +1355,8 @@
             </div>
           </div>
           <div class="guide-grid">
-            <article class="guide-card"><span>01</span><h3>Buka eksperimen</h3><p>Pilih materi yang tersedia. Saat ini, eksperimen dua dadu sudah bisa dicoba.</p></article>
-            <article class="guide-card"><span>02</span><h3>Amati visual 3D</h3><p>Putar sudut pandang dengan mouse dan tekan tombol lempar untuk menjalankan simulasi.</p></article>
+            <article class="guide-card"><span>01</span><h3>Buka eksperimen</h3><p>Pilih materi dari navigasi atas. Semua lab dadu, koin, kartu, dan bola sudah bisa dicoba.</p></article>
+            <article class="guide-card"><span>02</span><h3>Amati visual 3D</h3><p>Putar sudut pandang dengan mouse dan tekan tombol lempar/ambil untuk menjalankan simulasi.</p></article>
             <article class="guide-card"><span>03</span><h3>Jelajahi ruang sampel</h3><p>Pilih kotak kombinasi untuk melihat angka pada kedua dadu secara langsung.</p></article>
             <article class="guide-card"><span>04</span><h3>Ikuti pembahasan</h3><p>Gunakan tombol langkah berikutnya untuk menghubungkan visualisasi dengan rumus.</p></article>
           </div>
@@ -1350,9 +1366,13 @@
           <div class="note-icon">✳</div>
           <div><b>Belajar dengan melihat, mencoba, dan memahami.</b><p>Visualisasi ini adalah prototipe awal. Coba lempar dadu, pilih pasangan pada ruang sampel, dan ikuti langkah penyelesaiannya.</p></div>
         </section>
-        <footer><span>PROBABILITY 3D</span><span>Prototype awal · Dibangun dengan JavaScript & Three.js</span></footer>
+
+        <footer><span>PROBABILITY 3D</span><span>Prototype awal · Dibangun dengan JavaScript &amp; Three.js</span></footer>
+
       </main>
     </div>
+
+    <!-- Scripts -->
     <script type="module" src="/src/main.js"></script>
     <script type="module" src="/src/features/coin/coin-lab.js"></script>
     <script

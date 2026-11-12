@@ -3668,6 +3668,7 @@ html[data-theme="dark"] .route-page #sample-grid .outcome.favorable .outcome-sum
   line-height: 1.8;
 }
 
+
 .quiz-action-primary,
 .quiz-action-secondary {
   padding: 12px 16px;
@@ -4189,7 +4190,7 @@ html[data-theme="dark"] .route-page #sample-grid .outcome.favorable .outcome-sum
   display: block;
   height: 100%;
   border-radius: inherit;
-  background: linear-gradient(
+  background: lineient(
     90deg,
     #2789e5,
     #58d2a3
@@ -4330,6 +4331,9 @@ html[data-theme="dark"] .route-page #sample-grid .outcome.favorable .outcome-sum
   }
 }
 
+/* ======================================
+   SCENE HEIGHT OVERRIDES (responsive)
+====================================== */
 .coin-scene { height: clamp(360px, 50vw, 520px); }
 .balls-scene { height: clamp(360px, 50vw, 520px); }
 .cards-scene { height: clamp(360px, 46vw, 500px); }
@@ -4444,7 +4448,7 @@ html[data-theme="dark"] .route-page #sample-grid .outcome.favorable .outcome-sum
 .distribution-legend i { width: 8px; height: 8px; border-radius: 50%; }
 .distribution-trial-sequence { display: flex; flex-wrap: wrap; gap: 5px; margin: 12px 0 7px; padding: 11px; border: 1px solid rgba(164,188,220,.1); border-radius: 9px; background: rgba(255,255,255,.02); }
 .distribution-trial-sequence span { width: 34px; min-height: 39px; display: grid; place-items: center; padding: 3px; border: 1px solid rgba(164,188,220,.12); border-radius: 6px; }
-.distribution-trial-sequence span.is-success { color: #8be4bd; border-color: rgba(86,214,160,.22); background: rgba(86,214,160,.08); }
+.distribution-trial-sequence span.is-success { color: #8be4bd; border-color: rgba(86,214,160,.22); background: rgba(86,214,160,.07); }
 .distribution-trial-sequence span.is-failure { color: #b5c3d4; background: rgba(255,255,255,.03); }
 .distribution-trial-sequence b { font-size: 10px; }
 .distribution-trial-sequence small { color: #8196af; font-size: 7px; }
