@@ -40,6 +40,11 @@ const routes = [
     sectionIds: ['distributions'],
   },
   {
+    id: 'continuous',
+    label: 'Distribusi Kontinu',
+    sectionIds: ['continuous-distributions'],
+  },
+  {
     id: 'learning',
     label: 'Materi & Panduan',
     sectionIds: ['materials', 'guide', 'how-it-works'],
