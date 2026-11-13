@@ -8,7 +8,7 @@ Saat dibuka dari alamat utama, aplikasi menampilkan opening Probability 3D sebel
 
 Pasang terlebih dahulu:
 - **Visual Studio Code**
-- **Node.js 20.19+** (disarankan versi LTS yang memenuhi syarat)
+- **Node.js 22.12+** (diperlukan oleh Google Gen AI SDK dan Vite)
 - Browser modern seperti Chrome atau Edge
 
 Periksa Node.js dan npm di terminal VS Code:
@@ -28,17 +28,33 @@ npm -v
 
 ```bash
 npm install
+```
+
+6. Salin `.env.example` menjadi `.env`, lalu isi `GEMINI_API_KEY` dan `GEMINI_MODEL` secara lokal. Jangan commit `.env` atau membagikan API key.
+7. Model contoh `gemini-3.8-flash` tercantum sebagai model stabil di dokumentasi resmi; structured output dikirim menggunakan JSON Schema:
+   - [Daftar model Gemini](https://ai.google.dev/gemini-api/docs/models)
+   - [Structured outputs](https://ai.google.dev/gemini-api/docs/structured-output)
+8. Jalankan backend dan frontend di dua terminal VS Code:
+
+```bash
+node --env-file-if-exists=.env server/index.js
+```
+
+```bash
 npm run dev
 ```
 
-6. Buka alamat lokal yang muncul di terminal (biasanya `http://localhost:5173`).
+9. Buka alamat lokal yang muncul di terminal Vite (biasanya `http://localhost:5173`).
 
 Untuk menghentikan server, tekan `Ctrl + C` di terminal.
+
+Backend membaca `GEMINI_API_KEY` hanya dari `.env`; key tidak masuk ke bundle, browser, localStorage, atau log. Vite meneruskan permintaan `/api` ke backend lokal pada port 3001. Soal yang dikenali parser lokal dihitung tanpa API; soal lain hanya dikirim satu kali untuk interpretasi terstruktur, lalu divalidasi dan dihitung oleh mesin lokal.
 
 ## 3. Perintah yang tersedia
 
 ```bash
 npm run dev      # menjalankan website untuk development
+node --env-file-if-exists=.env server/index.js # menjalankan endpoint interpretasi Gemini
 npm run build    # membuat hasil produksi ke folder dist
 npm run preview  # melihat hasil build secara lokal
 npm test         # menjalankan tes perhitungan peluang
@@ -103,6 +119,6 @@ Setiap materi menyajikan pengertian, kondisi penggunaan, contoh, rumus dan arti 
 
 ## 7. Catatan pengembangan
 
-Probability 3D tetap merupakan prototipe pembelajaran. Solver soal bebas mengenali pola tertentu secara lokal dan bukan model AI umum. Kalkulator distribusi diskrit menerima parameter terstruktur dan menghitung hasil memakai fungsi matematika lokal; batas input dijaga agar perhitungan dan visualisasi tetap praktis.
+Probability 3D tetap merupakan prototipe pembelajaran. AI hanya menginterpretasikan bahasa dan tidak menghitung jawaban. Mesin lokal saat ini mendukung sebagian soal dadu standar, koin tunggal, kartu remi standar, bola merah/biru/kuning dengan satu atau dua pengambilan, permutasi/kombinasi, serta peluang bersyarat berbasis data siswa matematika/fisika. Soal di luar cakupan atau yang kurang informasi akan meminta klarifikasi atau ditandai belum didukung.
 
 **Prinsip arsitektur:** mesin matematika adalah sumber kebenaran. Three.js hanya memvisualisasikan data hasil perhitungan; jangan menjadikan animasi sebagai penentu jawaban.

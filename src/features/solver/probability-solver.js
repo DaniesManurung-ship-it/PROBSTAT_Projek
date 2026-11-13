@@ -3,6 +3,10 @@ import {
   analyzeAdvancedProblem,
   analyzeConditionalProblem
 } from './advanced-probability.js';
+import {
+  toCanonicalProblem,
+  validateInterpretation
+} from './interpretation-contract.js';
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -29,6 +33,34 @@ const ui = {
   visualDescription: $('solver-visual-description'),
   sample: $('solver-sample-space')
 };
+
+let activeAnalysis = 0;
+
+async function requestInterpretation(question) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 18000);
+
+  try {
+    const response = await fetch('/api/interpret', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question }),
+      cache: 'no-store',
+      signal: controller.signal
+    });
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.error || 'Layanan interpretasi AI tidak tersedia.');
+    }
+
+    const validation = validateInterpretation(result.interpretation);
+    if (!validation.valid) throw new Error(validation.error);
+    return validation.data;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
 
 /* ==========================================
    MATHEMATICAL UTILITIES
@@ -1562,27 +1594,83 @@ function resizeScene() {
    RUN ANALYSIS
 ========================================== */
 
-function runAnalysis() {
+async function runAnalysis() {
+  if (ui.submit.disabled) return;
+  const requestId = ++activeAnalysis;
   const rawText = ui.question.value;
 
   ui.status.classList.remove('error');
 
   const problem = analyzeProblem(rawText);
 
-  if (problem.error) {
+  if (!rawText.trim()) {
     ui.output.hidden = true;
-
     ui.status.textContent = problem.error;
-
     ui.status.classList.add('error');
-
     return;
   }
 
-  ui.status.textContent =
-    'Analisis berhasil. Hasil perhitungan dan visualisasi telah dibuat.';
+  if (!problem.error) {
+    ui.status.textContent =
+      'Soal dikenali oleh parser lokal. Jawaban dihitung oleh mesin matematika.';
+    showSolution(problem);
+    return;
+  }
 
-  showSolution(problem);
+  ui.submit.disabled = true;
+  ui.output.hidden = true;
+  ui.status.textContent =
+    'Pola lokal belum cukup mengenali soal. AI sedang menafsirkan bahasa soal...';
+
+  try {
+    const interpretation = await requestInterpretation(rawText);
+    if (requestId !== activeAnalysis) return;
+
+    if (interpretation.status === 'unsupported') {
+      ui.output.hidden = true;
+      ui.status.textContent =
+        `${interpretation.interpretation || 'Jenis soal ini berada di luar cakupan.'} Mesin lokal saat ini belum mendukung kategori tersebut.`;
+      return;
+    }
+
+    if (interpretation.status === 'clarification') {
+      ui.output.hidden = true;
+      const missing = interpretation.missingInformation.length
+        ? ` Informasi yang perlu dilengkapi: ${interpretation.missingInformation.join(', ')}.`
+        : '';
+      ui.status.textContent =
+        `${interpretation.interpretation || 'Saya memahami sebagian soal.'} ${interpretation.clarification}${missing}`.trim();
+      return;
+    }
+
+    const canonicalProblem = toCanonicalProblem(interpretation);
+    if (!canonicalProblem) {
+      ui.output.hidden = true;
+      ui.status.textContent =
+        'Interpretasi berhasil, tetapi jenis soal ini belum didukung mesin perhitungan lokal.';
+      return;
+    }
+
+    const interpretedProblem = analyzeProblem(canonicalProblem);
+    if (interpretedProblem.error) {
+      ui.output.hidden = true;
+      ui.status.textContent =
+        `Soal dipahami sebagai: ${interpretation.interpretation} Namun mesin perhitungan lokal belum dapat menyelesaikan kategori ini.`;
+      return;
+    }
+
+    ui.status.textContent =
+      `AI memahami soal sebagai: ${interpretation.interpretation} Jawaban dihitung oleh mesin matematika lokal.`;
+    showSolution(interpretedProblem);
+  } catch (error) {
+    if (requestId !== activeAnalysis) return;
+    ui.output.hidden = true;
+    ui.status.textContent =
+      `${problem.error} Interpretasi AI tidak tersedia: ${error.name === 'AbortError' ? 'permintaan melewati batas waktu.' : error.message} Solver lokal tetap aktif untuk pola soal yang dikenali.`;
+    ui.status.classList.add('error');
+  } finally {
+    if (requestId === activeAnalysis) ui.submit.disabled = false;
+  }
 }
 
 /* ==========================================

@@ -10,9 +10,10 @@
     "test": "node --test"
   },
   "engines": {
-    "node": "^20.19.0 || >=22.12.0"
+    "node": ">=22.0.0"
   },
   "dependencies": {
+    "@google/genai": "^3.3.0",
     "three": "^0.187.0"
   },
   "devDependencies": {
