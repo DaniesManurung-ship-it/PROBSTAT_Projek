@@ -10,6 +10,7 @@ function successfulInterpretation() {
     confidence: 0.95,
     diceCount: 1,
     sidesPerDie: 6,
+    trialCount: null,
     eventType: 'even',
     target: null,
     coinSide: 'unknown',
@@ -105,4 +106,76 @@ test('health endpoint does not expose configuration values', async (t) => {
 
   assert.equal(response.status, 200);
   assert.deepEqual(Object.keys(body), ['configured']);
+});
+
+test('returns diagnostic status and forwards correction context to the interpreter', async (t) => {
+  let receivedContext;
+  const interpretation = successfulInterpretation();
+  interpretation.status = 'needs_confirmation';
+  const baseUrl = await startServer(t, {
+    interpret: async (_question, context) => {
+      receivedContext = context;
+      return interpretation;
+    }
+  });
+
+  const response = await fetch(`${baseUrl}/api/interpret`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      question: 'dua dadu angka 12',
+      previousInterpretation: successfulInterpretation(),
+      correction: 'Maksudnya jumlah mata kedua dadu.'
+    })
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(body.interpretationStatus, 'needs_confirmation');
+  assert.equal(body.interpretationSource, 'gemini');
+  assert.equal(body.requestStatus, 'completed');
+  assert.equal(receivedContext.correction, 'Maksudnya jumlah mata kedua dadu.');
+  assert.equal(receivedContext.previousInterpretation.status, 'success');
+});
+
+test('returns valid sanitized JSON when interpretation fails', async (t) => {
+  const baseUrl = await startServer(t, {
+    interpret: async () => {
+      const error = new Error('private provider details');
+      error.statusCode = 504;
+      throw error;
+    }
+  });
+  const response = await fetch(`${baseUrl}/api/interpret`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: 'soal peluang' })
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 504);
+  assert.equal(body.requestStatus, 'timeout');
+  assert.equal(body.interpretationSource, 'gemini');
+  assert.doesNotMatch(JSON.stringify(body), /private provider details/);
+});
+
+test('distinguishes upstream AI unavailability from missing configuration', async (t) => {
+  const baseUrl = await startServer(t, {
+    interpret: async () => {
+      const error = new Error('provider is temporarily unavailable');
+      error.statusCode = 503;
+      error.code = 'AI_UNAVAILABLE';
+      throw error;
+    }
+  });
+  const response = await fetch(`${baseUrl}/api/interpret`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: 'soal peluang' })
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 503);
+  assert.equal(body.requestStatus, 'unavailable');
+  assert.match(body.error, /sementara tidak tersedia/);
 });

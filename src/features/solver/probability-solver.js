@@ -7,6 +7,7 @@ import {
   toCanonicalProblem,
   validateInterpretation
 } from './interpretation-contract.js';
+import { solveDiceInterpretation } from './dice-interpretation-engine.js';
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -31,12 +32,22 @@ const ui = {
   summary: $('solver-summary'),
   scene: $('solver-scene'),
   visualDescription: $('solver-visual-description'),
-  sample: $('solver-sample-space')
+  sample: $('solver-sample-space'),
+  interpretationCard: $('solver-interpretation-card'),
+  interpretationText: $('solver-interpretation-text'),
+  clarification: $('solver-clarification'),
+  correction: $('solver-correction'),
+  correctionInput: $('solver-correction-input'),
+  correctionSubmit: $('solver-correction-submit'),
+  confirm: $('solver-confirm-interpretation'),
+  change: $('solver-change-interpretation')
 };
 
 let activeAnalysis = 0;
+let pendingInterpretation = null;
+let pendingQuestion = '';
 
-async function requestInterpretation(question) {
+async function requestInterpretation(question, context = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 18000);
 
@@ -44,19 +55,43 @@ async function requestInterpretation(question) {
     const response = await fetch('/api/interpret', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify({ question, ...context }),
       cache: 'no-store',
       signal: controller.signal
     });
-    const result = await response.json();
+    const body = await response.text();
+    let result;
+    try {
+      result = body ? JSON.parse(body) : null;
+    } catch {
+      throw new Error('Server mengirim respons yang tidak valid. Coba lagi.');
+    }
 
     if (!response.ok) {
-      throw new Error(result.error || 'Layanan interpretasi AI tidak tersedia.');
+      const error = new Error(result?.error || `Layanan interpretasi AI gagal (HTTP ${response.status}).`);
+      error.requestStatus = result?.requestStatus || 'error';
+      throw error;
+    }
+
+    if (!result || !result.interpretation) {
+      throw new Error('Server mengirim respons kosong. Coba lagi.');
     }
 
     const validation = validateInterpretation(result.interpretation);
     if (!validation.valid) throw new Error(validation.error);
-    return validation.data;
+    return {
+      interpretation: validation.data,
+      diagnostics: {
+        interpretationSource: result.interpretationSource || 'gemini',
+        requestStatus: result.requestStatus || 'completed',
+        interpretationStatus: validation.data.status
+      }
+    };
+  } catch (error) {
+    if (error.name === 'AbortError') {
+      throw new Error('Permintaan AI melewati batas waktu. Periksa koneksi lalu coba lagi.');
+    }
+    throw error;
   } finally {
     clearTimeout(timeout);
   }
@@ -397,13 +432,6 @@ function solveBalls(text) {
     return {
       error:
         'Soal menyebut dua pengambilan, tetapi belum menjelaskan apakah bola dikembalikan. Tambahkan "dengan pengembalian" atau "tanpa pengembalian".'
-    };
-  }
-
-  if (twoDraws && targetCount < 2 && withoutReplacement) {
-    return {
-      error:
-        `Hanya ada ${targetCount} bola ${target}. Tidak mungkin mengambil dua bola ${target} tanpa pengembalian.`
     };
   }
 
@@ -1395,7 +1423,16 @@ function renderSamples(problem) {
       chip.textContent =
         `${item.first}+${item.second}`;
 
-      chip.title = `Jumlah ${item.sum}`;
+      const eventType = problem.interpretation?.eventType || 'sum_equals';
+      const target = problem.interpretation?.target;
+      const detail = {
+        sum_equals: `jumlah ${item.sum}`,
+        product_equals: `hasil kali ${item.first * item.second}`,
+        same_faces: item.first === item.second ? 'kedua dadu sama' : 'kedua dadu berbeda',
+        at_least_one_face_equals: `${Number(item.first === target) + Number(item.second === target)} dadu menunjukkan ${target}`,
+        at_most_one_face_equals: `${Number(item.first === target) + Number(item.second === target)} dadu menunjukkan ${target}`
+      }[eventType] || `jumlah ${item.sum}`;
+      chip.title = `Dadu ${item.first} dan ${item.second}; ${detail}`;
     } else {
       chip.textContent = item.value;
     }
@@ -1594,12 +1631,124 @@ function resizeScene() {
    RUN ANALYSIS
 ========================================== */
 
+function setDiagnostics(source, requestStatus, interpretationStatus) {
+  ui.status.dataset.interpretationSource = source;
+  ui.status.dataset.requestStatus = requestStatus;
+  ui.status.dataset.interpretationStatus = interpretationStatus;
+}
+
+function hideInterpretationCard() {
+  ui.interpretationCard.hidden = true;
+  ui.correction.hidden = true;
+  ui.confirm.hidden = true;
+  ui.change.hidden = true;
+}
+
+function showInterpretationCard(interpretation, question) {
+  pendingInterpretation = interpretation;
+  pendingQuestion = question;
+  ui.output.hidden = true;
+  ui.interpretationCard.hidden = false;
+  ui.interpretationText.textContent = interpretation.interpretation ||
+    'Saya belum yakin memahami maksud soal.';
+  ui.clarification.textContent = interpretation.clarification ||
+    (interpretation.missingInformation.length
+      ? `Informasi yang belum ada: ${interpretation.missingInformation[0]}.`
+      : '');
+  ui.confirm.hidden = interpretation.status !== 'needs_confirmation';
+  ui.change.hidden = interpretation.status !== 'needs_confirmation';
+  ui.correction.hidden = interpretation.status === 'needs_confirmation';
+  ui.correctionInput.value = '';
+  ui.correctionInput.placeholder = interpretation.status === 'clarification'
+    ? 'Jawab pertanyaan klarifikasi di atas...'
+    : 'Jelaskan maksud soal yang benar...';
+  ui.correctionSubmit.textContent = interpretation.status === 'clarification'
+    ? 'Kirim jawaban'
+    : 'Kirim koreksi';
+}
+
+function solveConfirmedInterpretation(interpretation, source, confirmedByUser = false) {
+  const confirmed = validateInterpretation({
+    ...interpretation,
+    status: 'success',
+    confidence: confirmedByUser
+      ? Math.max(interpretation.confidence, 0.75)
+      : interpretation.confidence,
+    missingInformation: []
+  });
+  if (!confirmed.valid || confirmed.data.status !== 'success') {
+    ui.status.textContent = confirmed.valid
+      ? 'Interpretasi belum lengkap dan belum dapat dihitung.'
+      : confirmed.error;
+    ui.status.classList.add('error');
+    return;
+  }
+
+  const validatedInterpretation = confirmed.data;
+  pendingInterpretation = validatedInterpretation;
+  const diceResult = solveDiceInterpretation(validatedInterpretation);
+  const canonicalProblem = diceResult
+    ? null
+    : toCanonicalProblem(validatedInterpretation);
+  const result = diceResult || (canonicalProblem
+    ? analyzeProblem(canonicalProblem)
+    : null);
+
+  if (!result || result.error) {
+    ui.output.hidden = true;
+    ui.status.textContent = 'Interpretasi dipahami, tetapi kategori ini belum didukung mesin perhitungan lokal.';
+    ui.status.classList.add('error');
+    setDiagnostics(source, 'completed', 'unsupported');
+    return;
+  }
+
+  result.interpretation = validatedInterpretation;
+  ui.interpretationCard.hidden = true;
+  ui.status.classList.remove('error');
+  ui.status.textContent = `Interpretasi ${source === 'local' ? 'lokal' : 'AI'} dikonfirmasi. Jawaban dihitung oleh mesin matematika lokal.`;
+  setDiagnostics(source, 'completed', 'success');
+  showSolution(result);
+}
+
+function processInterpretation(interpretation, diagnostics, question) {
+  setDiagnostics(
+    diagnostics.interpretationSource,
+    diagnostics.requestStatus,
+    interpretation.status
+  );
+  ui.status.classList.remove('error');
+
+  if (interpretation.status === 'unsupported') {
+    hideInterpretationCard();
+    ui.output.hidden = true;
+    ui.status.textContent =
+      `${interpretation.interpretation || 'Jenis soal ini berada di luar cakupan.'} Mesin lokal saat ini belum mendukung kategori tersebut.`;
+    return;
+  }
+
+  if (['needs_confirmation', 'clarification', 'uncertain'].includes(interpretation.status)) {
+    showInterpretationCard(interpretation, question);
+    ui.status.textContent = interpretation.status === 'needs_confirmation'
+      ? 'Periksa interpretasi sementara sebelum perhitungan.'
+      : interpretation.status === 'clarification'
+        ? 'Satu informasi tambahan diperlukan sebelum soal dapat dihitung.'
+        : 'AI belum yakin memahami soal. Jelaskan kembali maksudnya.';
+    return;
+  }
+
+  hideInterpretationCard();
+  solveConfirmedInterpretation(interpretation, diagnostics.interpretationSource);
+}
+
 async function runAnalysis() {
   if (ui.submit.disabled) return;
   const requestId = ++activeAnalysis;
   const rawText = ui.question.value;
 
   ui.status.classList.remove('error');
+  hideInterpretationCard();
+  pendingInterpretation = null;
+  pendingQuestion = '';
 
   const problem = analyzeProblem(rawText);
 
@@ -1613,65 +1762,77 @@ async function runAnalysis() {
   if (!problem.error) {
     ui.status.textContent =
       'Soal dikenali oleh parser lokal. Jawaban dihitung oleh mesin matematika.';
+    setDiagnostics('local', 'completed', 'success');
     showSolution(problem);
     return;
   }
 
   ui.submit.disabled = true;
   ui.output.hidden = true;
+  ui.status.classList.add('is-loading');
   ui.status.textContent =
-    'Pola lokal belum cukup mengenali soal. AI sedang menafsirkan bahasa soal...';
+    'AI sedang memahami maksud matematika dari soal...';
 
   try {
-    const interpretation = await requestInterpretation(rawText);
+    const response = await requestInterpretation(rawText);
     if (requestId !== activeAnalysis) return;
-
-    if (interpretation.status === 'unsupported') {
-      ui.output.hidden = true;
-      ui.status.textContent =
-        `${interpretation.interpretation || 'Jenis soal ini berada di luar cakupan.'} Mesin lokal saat ini belum mendukung kategori tersebut.`;
-      return;
-    }
-
-    if (interpretation.status === 'clarification') {
-      ui.output.hidden = true;
-      const missing = interpretation.missingInformation.length
-        ? ` Informasi yang perlu dilengkapi: ${interpretation.missingInformation.join(', ')}.`
-        : '';
-      ui.status.textContent =
-        `${interpretation.interpretation || 'Saya memahami sebagian soal.'} ${interpretation.clarification}${missing}`.trim();
-      return;
-    }
-
-    const canonicalProblem = toCanonicalProblem(interpretation);
-    if (!canonicalProblem) {
-      ui.output.hidden = true;
-      ui.status.textContent =
-        'Interpretasi berhasil, tetapi jenis soal ini belum didukung mesin perhitungan lokal.';
-      return;
-    }
-
-    const interpretedProblem = analyzeProblem(canonicalProblem);
-    if (interpretedProblem.error) {
-      ui.output.hidden = true;
-      ui.status.textContent =
-        `Soal dipahami sebagai: ${interpretation.interpretation} Namun mesin perhitungan lokal belum dapat menyelesaikan kategori ini.`;
-      return;
-    }
-
-    ui.status.textContent =
-      `AI memahami soal sebagai: ${interpretation.interpretation} Jawaban dihitung oleh mesin matematika lokal.`;
-    showSolution(interpretedProblem);
+    processInterpretation(response.interpretation, response.diagnostics, rawText);
   } catch (error) {
     if (requestId !== activeAnalysis) return;
     ui.output.hidden = true;
     ui.status.textContent =
-      `${problem.error} Interpretasi AI tidak tersedia: ${error.name === 'AbortError' ? 'permintaan melewati batas waktu.' : error.message} Solver lokal tetap aktif untuk pola soal yang dikenali.`;
+      `Parser lokal belum dapat menyelesaikan soal. ${error.message}`;
     ui.status.classList.add('error');
+    setDiagnostics('gemini', error.requestStatus || 'error', 'uncertain');
   } finally {
-    if (requestId === activeAnalysis) ui.submit.disabled = false;
+    if (requestId === activeAnalysis) {
+      ui.submit.disabled = false;
+      ui.status.classList.remove('is-loading');
+    }
   }
 }
+
+ui.confirm.addEventListener('click', () => {
+  if (!pendingInterpretation || pendingInterpretation.status !== 'needs_confirmation') return;
+  solveConfirmedInterpretation({ ...pendingInterpretation }, 'gemini', true);
+});
+
+ui.change.addEventListener('click', () => {
+  ui.correction.hidden = false;
+  ui.correctionInput.focus();
+});
+
+ui.correctionSubmit.addEventListener('click', async () => {
+  const correction = ui.correctionInput.value.trim();
+  if (!correction || !pendingInterpretation || ui.correctionSubmit.disabled) return;
+
+  const requestId = ++activeAnalysis;
+  const previousInterpretation = pendingInterpretation;
+  const question = pendingQuestion;
+  ui.correctionSubmit.disabled = true;
+  ui.status.classList.remove('error');
+  ui.status.classList.add('is-loading');
+  ui.status.textContent = 'AI sedang memperbarui interpretasi berdasarkan jawabanmu...';
+
+  try {
+    const response = await requestInterpretation(question, {
+      previousInterpretation,
+      correction
+    });
+    if (requestId !== activeAnalysis) return;
+    processInterpretation(response.interpretation, response.diagnostics, question);
+  } catch (error) {
+    if (requestId !== activeAnalysis) return;
+    ui.status.textContent = `Interpretasi belum dapat diperbarui: ${error.message}`;
+    ui.status.classList.add('error');
+    setDiagnostics('gemini', error.requestStatus || 'error', 'uncertain');
+  } finally {
+    if (requestId === activeAnalysis) {
+      ui.correctionSubmit.disabled = false;
+      ui.status.classList.remove('is-loading');
+    }
+  }
+});
 
 /* ==========================================
    EXAMPLE BUTTONS

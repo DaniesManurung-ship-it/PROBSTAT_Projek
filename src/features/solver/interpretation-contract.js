@@ -10,6 +10,7 @@ const categories = new Set([
 
 const statuses = new Set([
   'success',
+  'needs_confirmation',
   'clarification',
   'uncertain',
   'unsupported'
@@ -20,6 +21,10 @@ const eventTypes = new Set([
   'odd',
   'face_equals',
   'sum_equals',
+  'product_equals',
+  'same_faces',
+  'at_least_one_face_equals',
+  'at_most_one_face_equals',
   'coin_side',
   'card_event',
   'color_draw',
@@ -35,6 +40,7 @@ const fields = [
   'confidence',
   'diceCount',
   'sidesPerDie',
+  'trialCount',
   'eventType',
   'target',
   'coinSide',
@@ -75,24 +81,33 @@ function checkProbabilityData(data) {
 
   if (data.category === 'dice') {
     if (![1, 2].includes(data.diceCount)) addMissing('jumlah dadu (1 atau 2)');
-    if (data.sidesPerDie !== 6) addMissing('dadu standar bersisi enam');
+    if (data.sidesPerDie === null) addMissing('jumlah sisi setiap dadu');
 
     if (data.diceCount === 1 && !['even', 'odd', 'face_equals'].includes(data.eventType)) {
       addMissing('kejadian yang ditanyakan pada satu dadu');
     }
 
-    if (data.diceCount === 2 && data.eventType !== 'sum_equals') {
-      addMissing('jumlah mata yang ditanyakan untuk dua dadu');
+    if (data.diceCount === 2 && ![
+      'sum_equals',
+      'product_equals',
+      'same_faces',
+      'at_least_one_face_equals',
+      'at_most_one_face_equals'
+    ].includes(data.eventType)) {
+      addMissing('hubungan atau kejadian yang ditanyakan pada dua dadu');
     }
 
-    if (data.eventType === 'face_equals' &&
-      (!Number.isInteger(data.target) || data.target < 1 || data.target > 6)) {
-      addMissing('angka dadu antara 1 dan 6');
+    if (['face_equals', 'at_least_one_face_equals', 'at_most_one_face_equals'].includes(data.eventType) &&
+      !Number.isInteger(data.target)) {
+      addMissing('angka dadu yang ditanyakan');
     }
 
-    if (data.eventType === 'sum_equals' &&
-      (!Number.isInteger(data.target) || data.target < 2 || data.target > 12)) {
-      addMissing('jumlah mata dadu antara 2 dan 12');
+    if (data.eventType === 'sum_equals' && !Number.isInteger(data.target)) {
+      addMissing('jumlah mata dadu yang ditanyakan');
+    }
+
+    if (data.eventType === 'product_equals' && !Number.isInteger(data.target)) {
+      addMissing('hasil kali mata dadu yang ditanyakan');
     }
   }
 
@@ -137,11 +152,8 @@ function checkProbabilityData(data) {
       addMissing('pengambilan dengan atau tanpa pengembalian');
     }
 
-    if (data.drawCount === 2 && data.replacement === 'without' &&
-      hasCounts && counts[data.ballTarget] < 2) {
-      return {
-        error: `Jumlah bola ${data.ballTarget} tidak cukup untuk pengambilan dua bola tanpa pengembalian.`
-      };
+    if (data.drawCount === 2 && data.replacement === 'without' && total < 2) {
+      addMissing('jumlah bola total minimal dua untuk pengambilan tanpa pengembalian');
     }
   }
 
@@ -175,7 +187,7 @@ function checkProbabilityData(data) {
         ? data.physicsCount
         : data.mathCount;
       if (denominator === 0) {
-        return { error: 'Jumlah kejadian yang menjadi syarat adalah nol, sehingga peluang bersyarat tidak terdefinisi.' };
+        addMissing('kejadian syarat harus memiliki anggota agar peluang bersyarat terdefinisi');
       }
     }
   }
@@ -204,7 +216,7 @@ export function validateInterpretation(value) {
     !['null', 'object'].includes(value.ballCounts === null ? 'null' :
       typeof value.ballCounts === 'object' && !Array.isArray(value.ballCounts) ? 'object' : 'invalid') ||
     !['diceCount', 'sidesPerDie', 'target', 'drawCount', 'n', 'r', 'population',
-      'mathCount', 'physicsCount', 'bothCount'].every((key) => isIntegerOrNull(value[key]))
+      'trialCount', 'mathCount', 'physicsCount', 'bothCount'].every((key) => isIntegerOrNull(value[key]))
   ) {
     return { valid: false, error: 'Respons interpretasi AI tidak sesuai format yang diharapkan.' };
   }
@@ -219,23 +231,46 @@ export function validateInterpretation(value) {
     }
   }
 
+  if (value.trialCount !== null && value.trialCount < 1) {
+    return { valid: false, error: 'Jumlah percobaan harus berupa bilangan bulat positif.' };
+  }
+
   if (value.category === 'out_of_scope' || value.status === 'unsupported') {
     return { valid: true, data: { ...value, status: 'unsupported' } };
+  }
+
+  if (value.category === 'dice' &&
+    ((value.diceCount !== null && value.diceCount > 2) ||
+      (value.sidesPerDie !== null && value.sidesPerDie !== 6) ||
+      (value.trialCount !== null && value.trialCount > 1))) {
+    return {
+      valid: true,
+      data: {
+        ...value,
+        status: 'unsupported',
+        clarification: value.clarification ||
+          'Mesin probabilitas saat ini belum mendukung karakteristik atau pengulangan dadu ini.'
+      }
+    };
   }
 
   const checked = checkProbabilityData(value);
   if (checked.error) return { valid: false, error: checked.error };
 
   const missingInformation = [...new Set(checked.missing)];
-  const needsClarification = value.status !== 'success' ||
-    value.confidence < 0.75 ||
-    missingInformation.length > 0;
+  const status = missingInformation.length > 0 || value.status === 'clarification'
+    ? 'clarification'
+    : value.status === 'needs_confirmation'
+      ? 'needs_confirmation'
+      : value.status === 'uncertain' || value.confidence < 0.75
+        ? 'uncertain'
+        : 'success';
 
   return {
     valid: true,
     data: {
       ...value,
-      status: needsClarification ? 'clarification' : 'success',
+      status,
       missingInformation
     }
   };
@@ -253,7 +288,14 @@ export function toCanonicalProblem(data) {
           : data.target;
       return `Sebuah dadu dilempar. Berapa peluang muncul angka ${event}?`;
     }
-    return `Dua buah dadu dilempar bersamaan. Berapa peluang jumlah mata dadu ${data.target}?`;
+    const event = {
+      sum_equals: `jumlah mata kedua dadu sama dengan ${data.target}`,
+      product_equals: `hasil kali mata kedua dadu sama dengan ${data.target}`,
+      same_faces: 'kedua dadu menunjukkan angka yang sama',
+      at_least_one_face_equals: `minimal satu dadu menunjukkan angka ${data.target}`,
+      at_most_one_face_equals: `maksimal satu dadu menunjukkan angka ${data.target}`
+    }[data.eventType];
+    return `Dua buah dadu dilempar bersamaan. Berapa peluang ${event}?`;
   }
 
   if (data.category === 'coin') {

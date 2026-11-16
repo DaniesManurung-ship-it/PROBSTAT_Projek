@@ -1204,6 +1204,23 @@
       Sistem siap menerima soal probabilitas.
     </p>
 
+    <section id="solver-interpretation-card" class="solver-interpretation-card" hidden aria-live="polite">
+      <div>
+        <span class="section-kicker">KONFIRMASI INTERPRETASI</span>
+        <p id="solver-interpretation-text"></p>
+        <p id="solver-clarification" class="solver-clarification"></p>
+      </div>
+      <div class="solver-interpretation-actions">
+        <button type="button" class="solver-interpretation-button primary" id="solver-confirm-interpretation" hidden>Ya, benar — hitung</button>
+        <button type="button" class="solver-interpretation-button" id="solver-change-interpretation" hidden>Ubah maksud</button>
+      </div>
+      <div id="solver-correction" class="solver-correction" hidden>
+        <label for="solver-correction-input">Koreksi atau jawaban klarifikasi</label>
+        <textarea id="solver-correction-input" rows="2" maxlength="2000"></textarea>
+        <button type="button" class="solver-interpretation-button primary" id="solver-correction-submit">Kirim koreksi</button>
+      </div>
+    </section>
+
   </div>
 
 

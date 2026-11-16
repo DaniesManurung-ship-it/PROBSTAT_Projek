@@ -1,4 +1,4 @@
-node --env-file-if-exists=.env server/index.jsconst PROBABILITY_EPSILON = 1e-12;
+const PROBABILITY_EPSILON = 1e-12;
 
 function assertFinite(value, label) {
   if (!Number.isFinite(value)) throw new RangeError(`${label} harus berupa angka yang valid.`);

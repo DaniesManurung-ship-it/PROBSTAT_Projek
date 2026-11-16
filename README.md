@@ -48,7 +48,7 @@ npm run dev
 
 Untuk menghentikan server, tekan `Ctrl + C` di terminal.
 
-Backend membaca `GEMINI_API_KEY` hanya dari `.env`; key tidak masuk ke bundle, browser, localStorage, atau log. Vite meneruskan permintaan `/api` ke backend lokal pada port 3001. Soal yang dikenali parser lokal dihitung tanpa API; soal lain hanya dikirim satu kali untuk interpretasi terstruktur, lalu divalidasi dan dihitung oleh mesin lokal.
+Backend membaca `GEMINI_API_KEY` hanya dari `.env`; key tidak masuk ke bundle, browser, localStorage, atau log. Vite meneruskan permintaan `/api` ke backend lokal pada port 3001. Soal yang dikenali parser lokal dihitung tanpa API; soal lain dikirim ke Gemini untuk ekstraksi semantik terstruktur. Interpretasi divalidasi sebelum dihitung mesin lokal. Jika maksudnya ambigu, pengguna dapat mengonfirmasi atau mengoreksi; informasi penting yang hilang akan diminta sebelum perhitungan.
 
 ## 3. Perintah yang tersedia
 
@@ -119,6 +119,6 @@ Setiap materi menyajikan pengertian, kondisi penggunaan, contoh, rumus dan arti 
 
 ## 7. Catatan pengembangan
 
-Probability 3D tetap merupakan prototipe pembelajaran. AI hanya menginterpretasikan bahasa dan tidak menghitung jawaban. Mesin lokal saat ini mendukung sebagian soal dadu standar, koin tunggal, kartu remi standar, bola merah/biru/kuning dengan satu atau dua pengambilan, permutasi/kombinasi, serta peluang bersyarat berbasis data siswa matematika/fisika. Soal di luar cakupan atau yang kurang informasi akan meminta klarifikasi atau ditandai belum didukung.
+Probability 3D tetap merupakan prototipe pembelajaran. AI hanya menginterpretasikan bahasa dan tidak menghitung jawaban. Mesin lokal saat ini mendukung sebagian soal dadu standar (termasuk jumlah, hasil kali, kesamaan muka, dan batas jumlah muka target), koin tunggal, kartu remi standar, bola merah/biru/kuning dengan satu atau dua pengambilan, permutasi/kombinasi, serta peluang bersyarat berbasis data siswa matematika/fisika. Interpretasi ambigu meminta konfirmasi; informasi yang kurang meminta klarifikasi; eksperimen atau karakteristik yang belum didukung ditandai secara eksplisit.
 
 **Prinsip arsitektur:** mesin matematika adalah sumber kebenaran. Three.js hanya memvisualisasikan data hasil perhitungan; jangan menjadikan animasi sebagai penentu jawaban.

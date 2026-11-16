@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { validateInterpretation } from '../src/features/solver/interpretation-contract.js';
 
 const HOST = '127.0.0.1';
 const PORT = Number(process.env.API_PORT || 3001);
@@ -53,9 +54,9 @@ export function createApiServer({
   const rateLimits = new Map();
   const cache = new Map();
 
-  const handler = interpret || (async (question) => {
+  const handler = interpret || (async (question, context) => {
     const { interpretProbabilityQuestion } = await import('./gemini.js');
-    return interpretProbabilityQuestion(question);
+    return interpretProbabilityQuestion(question, context);
   });
 
   const server = createServer(async (request, response) => {
@@ -102,31 +103,89 @@ export function createApiServer({
       }
 
       const question = body.question.trim();
-      const cached = getCached(cache, question);
-      if (cached.value) {
-        sendJson(response, 200, { interpretation: cached.value, cached: true });
+      const correction = body.correction ?? '';
+      if (typeof correction !== 'string' || correction.length > MAX_INPUT_LENGTH) {
+        sendJson(response, 400, { error: 'Koreksi harus berupa teks maksimal 2000 karakter.' });
         return;
       }
 
-      const interpretation = await handler(question);
-      if (interpretation.status === 'success') {
+      let previousInterpretation = null;
+      if (body.previousInterpretation !== undefined && body.previousInterpretation !== null) {
+        const validation = validateInterpretation(body.previousInterpretation);
+        if (!validation.valid) {
+          sendJson(response, 400, { error: 'Konteks interpretasi sebelumnya tidak valid.' });
+          return;
+        }
+        previousInterpretation = validation.data;
+      }
+
+      const hasContext = Boolean(correction.trim() || previousInterpretation);
+      const cached = hasContext
+        ? { key: null, value: null }
+        : getCached(cache, question);
+      if (cached.value) {
+        sendJson(response, 200, {
+          interpretation: cached.value,
+          cached: true,
+          interpretationSource: 'gemini',
+          requestStatus: 'completed',
+          interpretationStatus: cached.value.status
+        });
+        return;
+      }
+
+      const rawInterpretation = await handler(question, {
+        previousInterpretation,
+        correction: correction.trim()
+      });
+      const validation = validateInterpretation(rawInterpretation);
+      if (!validation.valid) {
+        const error = new Error(validation.error);
+        error.statusCode = 502;
+        throw error;
+      }
+      const interpretation = validation.data;
+      if (interpretation.status === 'success' && !hasContext) {
         setCached(cache, cached.key, interpretation);
       }
-      sendJson(response, 200, { interpretation, cached: false });
+      sendJson(response, 200, {
+        interpretation,
+        cached: false,
+        interpretationSource: 'gemini',
+        requestStatus: 'completed',
+        interpretationStatus: interpretation.status
+      });
     } catch (error) {
-      const statusCode = [400, 413, 415, 429, 502, 503, 504].includes(error.statusCode)
+      const statusCode = [400, 401, 403, 404, 413, 415, 429, 502, 503, 504].includes(error.statusCode)
         ? error.statusCode
         : 500;
       const message = statusCode >= 500
         ? (statusCode === 429
           ? 'Batas penggunaan layanan AI tercapai. Coba lagi nanti.'
           : statusCode === 503
-            ? 'Layanan AI belum dikonfigurasi.'
+            ? error.code === 'AI_NOT_CONFIGURED'
+              ? 'Layanan AI belum dikonfigurasi.'
+              : 'Layanan AI sementara tidak tersedia. Coba lagi nanti.'
             : statusCode === 504
               ? 'Layanan AI melewati batas waktu.'
               : 'Layanan AI sedang tidak tersedia.')
         : error.message;
-      sendJson(response, statusCode, { error: message });
+      sendJson(response, statusCode, {
+        error: message,
+        interpretationSource: 'gemini',
+        requestStatus: statusCode === 504
+          ? 'timeout'
+          : statusCode === 503
+            ? 'unavailable'
+            : statusCode === 401
+              ? 'authentication_error'
+              : statusCode === 403
+                ? 'permission_error'
+                : statusCode === 404
+                  ? 'model_not_found'
+                  : 'error',
+        interpretationStatus: null
+      });
     }
   });
 
