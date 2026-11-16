@@ -46,8 +46,13 @@ const routes = [
   },
   {
     id: 'learning',
-    label: 'Materi & Panduan',
-    sectionIds: ['materials', 'guide', 'how-it-works'],
+    label: 'Materi',
+    sectionIds: ['materials'],
+  },
+  {
+    id: 'guide',
+    label: 'Panduan',
+    sectionIds: ['guide', 'how-it-works'],
   },
 ];
 
@@ -107,8 +112,10 @@ if (main && navLinks.length) {
       requestAnimationFrame(() => {
         document.getElementById(scrollTarget)?.scrollIntoView({ block: 'start' });
       });
-    } else {
+    } else if (activeRoute === 'home') {
       window.scrollTo(0, 0);
+    } else {
+      document.querySelector('.topbar')?.scrollIntoView({ block: 'start' });
     }
   }
 

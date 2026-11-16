@@ -1,11 +1,17 @@
 import './navigation.js';
+import { initBrandMotion } from './brand.js';
+import { initNavbarCard } from './navbar-card.js';
 import { initTheme } from './theme.js';
+import { initMaterialsPage } from '../features/learning/materials-page.js';
 import { createDiceScene } from '../visualization/three/dice-scene.js';
 import { createDiceController } from '../features/dice/dice-controller.js';
 import { createDiceExperiment } from '../features/experiment/dice-experiment.js';
 
 export function initApp() {
+  initBrandMotion();
+  initNavbarCard();
   initTheme();
+  initMaterialsPage();
 
   const elements = {
     sceneContainer: document.querySelector('#dice-scene'),

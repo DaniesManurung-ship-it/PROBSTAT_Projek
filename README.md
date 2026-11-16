@@ -2,6 +2,8 @@
 
 Website pembelajaran probabilitas dengan JavaScript, Vite, dan Three.js. Aplikasi mencakup laboratorium eksperimen dadu, koin, kartu, dan bola serta kalkulator enam distribusi diskrit dengan hasil, pembahasan, dan visualisasi interaktif.
 
+Saat dibuka dari alamat utama, aplikasi menampilkan opening Probability 3D sebelum beranda. Gulir atau pilih **SCROLL TO EXPLORE** untuk melanjutkan; tautan langsung ke rute tertentu melewati opening.
+
 ## 1. Persiapan
 
 Pasang terlebih dahulu:

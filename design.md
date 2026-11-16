@@ -1,410 +1,458 @@
-# DESIGN.md --- Probability 3D
+# DESIGN.md — Probability 3D Interactive Library Homepage
 
-## Panduan Desain UI/UX, Visual, Animasi, dan Design System
+## 1. Tujuan desain
 
-Dokumen ini menjadi pedoman utama desain antarmuka Probability 3D. Semua
-halaman, komponen, visualisasi, dan interaksi harus mengikuti aturan ini
-agar tampilan website konsisten.
+Bangun beranda Probability 3D sebagai **perpustakaan interaktif 3D** yang menjadikan buku-buku di rak sebagai navigasi utama website.
 
-------------------------------------------------------------------------
+Gunakan screenshot referensi yang dilampirkan sebagai acuan utama untuk suasana, komposisi, interaksi, dan cara konten ditampilkan. Hasil akhir harus terasa seperti pengunjung sedang melihat sebuah perpustakaan fisik yang hidup: ada rak kayu, buku-buku dengan sampul berbeda, pencahayaan hangat, jendela, lampu, jam, dan objek dekoratif.
 
-# 1. Arah dan Identitas Desain
+Jangan membuat landing page biasa yang hanya memakai gambar rak sebagai background. Rak, buku, preview, zoom, dan perpindahan tampilan harus benar-benar interaktif dan menjadi bagian dari antarmuka.
 
-Buat Probability 3D sebagai platform pembelajaran Probabilitas dan
-Statistika yang modern, segar, interaktif, dan premium.
+**Konsep utama:** setiap buku adalah satu menu/fitur Probability 3D. Pengunjung menjelajahi rak, mengarahkan cursor ke buku untuk melihat preview, membuka buku untuk membaca informasi lebih lengkap, lalu masuk ke halaman fitur yang dipilih.
 
-**Konsep visual utama: Soft Green Glassmorphism + Pastel Gradient +
-Smooth Motion.**
+## 2. Referensi visual dan prinsip desain
 
-Karakter desain: - Estetik, minimalis, bersih, dan elegan. - Terang dan
-menyegarkan, bukan dark theme. - Glassmorphism pada navbar, sidebar,
-card, panel, modal, dan komponen tertentu. - Background pastel dengan
-gradasi lembut. - Animasi halus pada interaksi. - Keterbacaan dan
-kenyamanan belajar tetap menjadi prioritas. - Tidak terlihat seperti
-template dashboard generik.
+Gunakan screenshot yang diberikan sebagai referensi untuk:
+- Perpustakaan dengan suasana malam, hangat, tenang, dan sedikit sinematik.
+- Rak buku kayu besar sebagai objek utama di tengah halaman.
+- Buku-buku berdiri berjajar dengan tinggi, ketebalan, warna, dan kemiringan yang bervariasi.
+- Dinding, jendela malam, lampu gantung, jam, vas, dan ornamen sebagai latar.
+- Pencahayaan amber/gold yang jatuh pada rak dan punggung buku.
+- Informasi buku yang muncul di dekat area buku terpilih.
+- Mode eksplorasi berupa buku-buku besar yang tersusun berjajar.
+- Transisi yang terasa seperti kamera bergerak mendekati rak atau buku.
 
-Gunakan gambar referensi glassmorphism yang diberikan sebagai arah
-visual: latar pastel hijau-mint, bentuk lingkaran transparan yang
-melayang, panel kaca buram, border putih tipis, dan pencahayaan lembut.
-Terapkan prinsip visualnya, bukan menyalin komposisinya secara mentah.
+Jadikan referensi sebagai pedoman art direction dan pola interaksi. Jangan menyalin logo, nama, teks, ilustrasi, foto, atau aset eksklusif website referensi. Buat seluruh aset dan konten Probability 3D sendiri.
 
-# 2. Sistem Warna
+## 3. Art direction
 
-Putih dan hijau adalah identitas utama website. Namun, bukan berarti
-semua objek di dalam website harus berwarna hijau.
+### 3.1 Suasana
 
-## 2.1 Warna UI dan lingkungan
+- Nuansa perpustakaan klasik yang elegan, hangat, dan imersif.
+- Dominasi warna kayu gelap, cokelat tua, espresso, beige, krem, amber, dan gold.
+- Gunakan pencahayaan lembut dengan bayangan yang realistis.
+- Background dibuat lebih gelap daripada buku agar buku menjadi fokus.
+- Berikan tekstur halus pada kayu, sampul buku, kertas, dan dinding.
+- Hindari tampilan terlalu ramai, terlalu terang, atau seperti dashboard.
 
-  Token            Warna       Penggunaan
-  ---------------- ----------- ---------------------------------
-  Primary Green    `#249B68`   Tombol utama, menu aktif, aksen
-  Deep Green       `#176B4B`   Heading dan teks aksen
-  Soft Mint        `#DDF5E8`   Highlight dan permukaan lembut
-  Pale Green       `#ECF9EF`   Background pendukung
-  White            `#FFFFFF`   Panel dan permukaan utama
-  Warm White       `#FAFCFA`   Background konten
-  Main Text        `#24352D`   Teks utama
-  Secondary Text   `#718078`   Deskripsi dan label
-  Border           `#E3EEE7`   Garis pembatas
+Warna Probability 3D tetap dapat digunakan sebagai aksen identitas pada detail tertentu, label, ikon, atau halaman tujuan. Namun, suasana perpustakaan pada beranda harus tetap menjadi karakter visual utama.
 
-## 2.2 Warna pendukung
+### 3.2 Komposisi utama
 
-Gunakan biru lembut, ungu lembut, kuning pastel, oranye lembut, dan
-merah lembut hanya untuk membedakan kategori atau status. Setiap warna
-harus memiliki fungsi yang jelas.
+- Rak buku menjadi pusat perhatian dan mengisi sebagian besar area visual.
+- Rak harus terlihat memiliki kedalaman: sisi kayu, papan horizontal, sekat, bayangan bagian dalam, dan beberapa tingkat rak.
+- Buku disusun dengan variasi ukuran dan warna yang terkontrol.
+- Sisakan ruang untuk navigasi dan panel informasi agar tidak menutupi seluruh rak.
+- Elemen dekorasi seperti jendela, lampu, jam, vas, atau globe mendukung suasana tetapi tidak mengalahkan buku.
+- Gunakan perspektif kamera yang konsisten. Jangan membuat rak tampak datar seperti ilustrasi 2D.
 
-## 2.3 Warna objek pembelajaran --- aturan penting
+### 3.3 Tipografi
 
-Palet hijau-putih hanya untuk lingkungan website dan komponen UI.
-**Jangan memaksa objek pembelajaran mengikuti palet tersebut.**
+- Gunakan tipografi editorial yang elegan dan mudah dibaca.
+- Judul buku dapat memakai serif/display font.
+- Deskripsi, label, dan kontrol memakai sans-serif yang bersih.
+- Teks pada punggung buku harus terbaca pada ukuran desktop yang wajar.
+- Jangan menampilkan terlalu banyak paragraf di atas rak.
 
--   Dadu: putih atau ivory dengan titik hitam.
--   Koin: emas, perak, atau tembaga.
--   Bola: merah, biru, kuning, atau warna kategori yang dibutuhkan.
--   Kartu remi: kartu putih dengan simbol merah dan hitam.
--   Grafik: gunakan beberapa warna kategori yang mudah dibedakan.
--   Objek lain: pilih warna berdasarkan bentuk, konteks, dan ketepatan
-    konsep.
+## 4. Struktur scene beranda
 
-Jangan otomatis membuat dadu, koin, bola, atau objek eksperimen menjadi
-hijau, transparan, atau seperti kaca.
+### 4.1 Scene perpustakaan
 
-# 3. Background dan Dekorasi
+Scene utama menampilkan satu rak besar dengan beberapa tingkat. Setiap tingkat berisi buku yang dapat dipilih.
 
-Background harus hidup tetapi tetap lembut dan tidak mengganggu konten.
+Elemen lingkungan yang dapat digunakan:
+- Rak kayu besar.
+- Jendela dengan pemandangan malam.
+- Lampu gantung dengan cahaya hangat.
+- Jam dinding atau jam meja.
+- Vas dan tanaman/ranting dekoratif.
+- Buku-buku tambahan yang tidak menjadi menu.
+- Objek kecil seperti dadu, kartu, bola, koin, atau globe sebagai dekorasi bertema pembelajaran.
 
-Gunakan: - Gradient putih ke mint atau hijau pastel. - Soft radial
-gradient. - Lingkaran besar transparan di beberapa sudut. - Abstract
-blobs dengan blur lembut. - Bentuk geometris transparan sebagai
-dekorasi. - Pencahayaan lembut di belakang panel utama.
+Objek dekoratif yang bukan menu tidak boleh terlihat seperti tombol navigasi. Buku menu harus dapat dikenali sebagai elemen interaktif.
 
-Contoh gradient:
+### 4.2 Navigasi atas
 
-``` css
-background: linear-gradient(135deg, #F7FFF8 0%, #E7F8ED 48%, #EAF9F5 100%);
-```
+Sediakan navigasi minimal:
+- Logo Probability 3D di kiri atas.
+- Link seperti About dan Contact bila memang tersedia di project.
+- Tombol mode tampilan/menu di kanan atas.
+- Ikon garis tiga (hamburger) di pojok kanan atas untuk membuka mode daftar buku.
 
-Aturan: 1. Dekorasi boleh berada sebagian di luar viewport agar terasa
-organik. 2. Jangan menempatkan dekorasi tepat di belakang teks padat. 3.
-Gunakan opacity rendah dan blur secukupnya. 4. Background tidak boleh
-membuat teks atau kontrol sulit dibaca. 5. Jangan menggunakan terlalu
-banyak bentuk dekoratif dalam satu halaman.
+Navigasi harus tetap terlihat di berbagai tingkat zoom, tetapi tidak mendominasi scene.
 
-# 4. Glassmorphism System
+### 4.3 Label scene
 
-Glassmorphism harus terlihat seperti kaca buram yang lembut, bukan
-sekadar card putih transparan.
+Tambahkan label kecil, misalnya `Probability 3D Library`, pada area bawah/kiri atau posisi lain yang tidak mengganggu rak. Label ini berfungsi sebagai penanda konteks, bukan judul besar yang menutupi scene.
 
-Karakteristik: - Background putih semi-transparan. -
-`backdrop-filter: blur(...)`. - Border putih transparan. - Shadow lembut
-dan menyebar. - Sudut membulat. - Highlight tipis pada tepi atau bagian
-atas.
+## 5. Buku sebagai menu navigasi
 
-Contoh CSS awal:
+Setiap buku merupakan pintu masuk ke satu halaman atau fitur Probability 3D.
 
-``` css
-.glass {
-  background: rgba(255, 255, 255, 0.58);
-  backdrop-filter: blur(18px);
-  -webkit-backdrop-filter: blur(18px);
-  border: 1px solid rgba(255, 255, 255, 0.78);
-  box-shadow:
-    0 8px 32px rgba(43, 112, 76, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
-  border-radius: 22px;
-}
-```
+Contoh kategori buku/menu (sesuaikan dengan halaman yang benar-benar tersedia di project):
+- **Dadu** — simulasi pelemparan dadu dan peluang hasil.
+- **Kartu** — simulasi kartu, pengambilan kartu, dan peluang kombinasi.
+- **Bola** — pengambilan bola dari kotak/urna dan peluang kejadian.
+- **Koin** — simulasi lempar koin dan peluang sisi.
+- **Probabilitas** — materi dan konsep dasar probabilitas.
+- **Statistika** — materi, visualisasi, dan analisis statistika.
+- **Distribusi** — distribusi peluang dan visualisasinya.
+- **Kalkulator** — alat bantu perhitungan jika fitur tersedia.
+- **Latihan** — latihan soal atau kuis jika fitur tersedia.
+
+Jangan membuat menu yang mengarah ke halaman kosong. Jika suatu halaman belum tersedia, tandai sebagai belum tersedia atau jangan tampilkan sebagai buku aktif.
 
-Buat beberapa tingkat permukaan: - **Glass Light:** transparan untuk
-navbar dan floating control. - **Glass Medium:** untuk card dan panel
-umum. - **Glass Strong:** lebih opaque untuk form atau panel berisi
-teks. - **Solid Surface:** putih solid untuk area yang membutuhkan
-keterbacaan tinggi.
+### 5.1 Desain buku
+
+Setiap buku memiliki:
+- Warna sampul/punggung berbeda tetapi tetap harmonis dengan palet perpustakaan.
+- Judul pendek yang terbaca pada punggung buku.
+- Nomor atau kode kecil bila sesuai.
+- Ketebalan dan tinggi yang bervariasi.
+- Material seperti kain, kulit, kertas, atau hardcover.
+- Bayangan kontak pada rak agar terasa menempel secara fisik.
 
-Jangan menggunakan blur terlalu kuat, menumpuk terlalu banyak lapisan
-kaca, atau membuat teks samar. Sediakan fallback background solid jika
-`backdrop-filter` tidak didukung.
+Buku-buku menu harus memiliki hit area yang cukup besar. Area klik tidak boleh hanya berupa teks kecil pada punggung buku.
 
-# 5. Navbar dan Navigasi
+## 6. Interaksi hover: buku maju dan preview muncul
 
-Navbar harus menjadi salah satu komponen visual utama.
+Saat cursor diarahkan ke salah satu buku dalam mode rak normal:
 
-## 5.1 Top navbar
+1. Buku bergerak maju keluar dari rak ke arah kamera.
+2. Buku dapat sedikit membesar dan berotasi untuk menonjolkan punggung atau sampulnya.
+3. Buku lain tetap berada di rak dan sedikit meredup bila diperlukan.
+4. Muncul jendela informasi ringkas untuk buku yang sedang di-hover.
+5. Muncul preview kecil yang menggambarkan halaman tujuan.
+6. Preview menampilkan judul halaman, ilustrasi/thumbnail fitur, dan deskripsi singkat.
+7. Transisi harus halus, tidak berkedip, dan tidak membuat layout meloncat.
+
+Isi panel hover:
+- Nama fitur.
+- Satu kalimat penjelasan.
+- Ilustrasi kecil atau cuplikan antarmuka halaman tujuan.
+- Petunjuk tindakan, misalnya `Klik untuk membuka buku`.
+
+Panel preview harus muncul pada posisi yang tidak menutupi buku yang sedang dipilih. Jika ruang tidak cukup, pindahkan panel ke sisi layar yang memiliki ruang lebih luas.
 
-Jika menggunakan top navbar: - Gunakan floating glass navbar. - Posisi
-sticky di bagian atas jika sesuai. - Bentuk rounded pill atau rounded
-rectangle. - Background putih transparan. - Border putih tipis dan
-shadow lembut. - Logo Probability 3D di sebelah kiri. - Navigasi utama
-di tengah. - Profil atau pengaturan di sebelah kanan.
+### 6.1 Perilaku cursor
 
-Hover menu: - Background berubah menjadi mint transparan. - Ikon dan
-teks berubah menjadi hijau. - Transisi halus sekitar 200--300ms.
+- Hover harus terasa responsif, tetapi tidak terlalu sensitif.
+- Gunakan jeda singkat yang wajar sebelum preview muncul agar panel tidak berkedip ketika cursor melewati banyak buku.
+- Ketika cursor keluar dari buku dan panel preview, buku kembali ke posisi semula.
+- Perpindahan cursor dari buku ke panel preview tidak boleh langsung menutup panel.
+- Pada perangkat touch, gunakan tap untuk memilih buku; jangan mengandalkan hover.
 
-Menu aktif: - Background hijau muda. - Ikon dan label hijau tua. -
-Hindari indikator aktif yang terlalu mencolok.
+## 7. Klik buku pada mode rak normal
 
-## 5.2 Sidebar
+Gunakan interaksi dua tahap agar pengunjung dapat melihat informasi sebelum berpindah halaman.
 
-Jika halaman membutuhkan sidebar: - Gunakan panel glass yang ringan. -
-Lebar konsisten dan tidak terlalu besar. - Ikon Lucide sederhana. -
-Label mudah dibaca. - Jarak antarmenu cukup. - Menu aktif menggunakan
-highlight hijau pastel.
+### Tahap 1 — Buka buku
 
-Jangan menampilkan top navbar dan sidebar dengan terlalu banyak menu
-yang sama. Pilih struktur navigasi paling sederhana untuk halaman
-tersebut.
+Ketika buku diklik:
+- Buku bergerak lebih jauh ke depan.
+- Buku menampilkan animasi terbuka, seolah sampulnya dibuka.
+- Tampilkan jendela/detail panel yang lebih besar daripada preview hover.
+- Background/rak dapat sedikit diredupkan untuk menonjolkan detail.
+- Panel menampilkan informasi fitur yang lebih lengkap.
 
-# 6. Card Design
+Isi jendela detail:
+- Nama fitur.
+- Deskripsi yang lebih lengkap.
+- Gambaran/thumbnail halaman tujuan.
+- Informasi singkat tentang apa yang dapat dilakukan pengunjung di halaman tersebut.
+- Tombol `Masuk ke halaman` atau `Buka fitur`.
+- Kontrol `Tutup` atau cara kembali ke rak.
 
-Card harus konsisten dan memiliki hierarki visual yang jelas.
+### Tahap 2 — Masuk ke halaman
 
-## 6.1 Card umum
+Ketika pengunjung mengklik tombol `Masuk ke halaman`, atau mengklik buku yang sudah terbuka sesuai pola interaksi yang dipilih:
+- Jalankan transisi masuk ke halaman tujuan.
+- Gunakan animasi kamera mendekat, halaman buku terbuka, atau transisi visual lain yang konsisten.
+- Navigasikan ke route/URL fitur yang benar.
+- Jangan mengarahkan pengguna hanya berdasarkan teks judul; gunakan mapping route yang eksplisit untuk setiap buku.
 
-Gunakan: - Background glass medium atau solid white. - Border tipis. -
-Radius sekitar 18--24px. - Padding yang cukup. - Shadow lembut. - Jarak
-yang jelas antara judul dan deskripsi.
+Penting:
+- Klik pertama pada buku dalam mode rak normal membuka detail buku, bukan langsung berpindah halaman.
+- Aksi kedua yang jelas membawa pengguna ke halaman fitur.
+- Sediakan cara kembali ke rak tanpa harus me-refresh browser.
+- Klik di luar panel hanya menutup panel jika tidak berisiko menghilangkan progres atau mengganggu navigasi.
 
-## 6.2 Card interaktif
+## 8. Tombol hamburger: mode semua buku berjajar
 
-Saat hover: - Card bergerak naik sedikit, sekitar 3--5px. - Shadow
-bertambah sedikit. - Border berubah menjadi hijau transparan. -
-Ilustrasi dapat bergerak sangat halus. - Semua perubahan menggunakan
-transisi smooth.
+Ketika tombol garis tiga di pojok kanan atas diklik, aktifkan **Book Overview / Book Selection Mode**.
 
-Jangan membuat card membesar berlebihan atau bergerak terus-menerus
-tanpa alasan.
+Perilaku:
+1. Rak dan lingkungan dapat bergerak mundur, mengecil, atau sedikit diredupkan.
+2. Buku-buku menu keluar dari posisi rak secara terkoordinasi.
+3. Semua buku tersusun berjajar dalam satu baris atau susunan horizontal yang rapi.
+4. Susunan harus menyesuaikan lebar layar. Jika jumlah buku banyak, gunakan horizontal scrolling, carousel, atau baris bertingkat yang tetap mudah dipahami.
+5. Buku tetap tampak tiga dimensi dan memiliki jarak yang cukup.
+6. Tampilkan judul/label mode, misalnya `Pilih Buku`.
+7. Tombol hamburger berubah menjadi tombol close/back yang jelas untuk kembali ke mode rak normal.
 
-## 6.3 Card distribusi
+### 8.1 Hover pada mode semua buku
 
-Setiap card distribusi dapat berisi: - Ilustrasi sesuai distribusi. -
-Nama distribusi. - Deskripsi singkat. - Status atau progres. - Tombol
-atau affordance untuk membuka detail.
+Saat cursor diarahkan ke salah satu buku:
+- Buku yang dipilih maju ke depan dan sedikit membesar.
+- Buku lain dapat sedikit bergeser atau meredup, tetapi tetap terlihat.
+- Muncul jendela preview berisi judul, deskripsi singkat, dan gambaran kecil halaman tujuan.
+- Preview berpindah dengan halus ketika cursor berpindah ke buku lain.
+- Jangan menampilkan beberapa preview sekaligus.
 
-Jaga konsistensi ukuran, alignment, dan jarak antarkomponen.
+### 8.2 Klik pada mode semua buku
 
-# 7. Button, Input, dan Kontrol
+Ketika buku diklik:
+- Buka detail buku atau langsung tampilkan panel detail yang sama dengan tahap pertama pada mode rak normal.
+- Dari panel detail, pengguna dapat menekan `Masuk ke halaman`.
+- Jangan membuat perilaku klik berbeda-beda antar buku.
 
-## 7.1 Button
+Mode ini harus menjadi alternatif navigasi yang lebih cepat, bukan halaman baru yang memutus konteks perpustakaan.
 
-Buat variasi: - Primary: hijau. - Secondary: putih atau glass. -
-Tertiary: transparan dengan teks hijau. - Destructive: merah lembut.
+## 9. Zoom in dan zoom out
 
-Interaksi: - Hover: sedikit lebih terang dan naik tipis. - Active:
-sedikit mengecil. - Focus: outline jelas dan accessible. - Disabled:
-kontras lebih rendah tetapi tetap terbaca. - Loading: indikator loading
-halus.
+Beranda harus mendukung zoom in dan zoom out agar pengunjung dapat melihat rak secara dekat maupun keseluruhan.
 
-## 7.2 Input
+Sediakan:
+- Zoom in.
+- Zoom out.
+- Reset zoom / kembali ke tampilan awal.
+- Dukungan scroll wheel atau trackpad dengan perilaku yang terkontrol.
+- Dukungan pinch-to-zoom pada perangkat touch jika memungkinkan.
 
-Input harus: - Memiliki label jelas. - Menggunakan background putih
-semi-transparan atau solid. - Border tipis. - Radius sekitar 12--16px. -
-Focus ring hijau lembut. - Pesan validasi di dekat input.
+Aturan zoom:
+- Zoom berpusat pada posisi pointer atau titik fokus yang masuk akal.
+- Zoom tidak boleh membuat pengunjung kehilangan rak atau tidak tahu posisi kamera.
+- Batasi nilai minimum dan maksimum zoom.
+- Pergerakan kamera harus halus dan tidak melompat.
+- Navigasi atas dan kontrol zoom tetap dapat diakses.
+- Ketika detail buku terbuka, hindari zoom scene yang mengganggu panel detail.
+- Sediakan tombol reset agar pengguna dapat kembali ke komposisi awal kapan saja.
+
+Jika implementasi menggunakan kamera 3D, kontrol zoom dapat mengubah jarak kamera terhadap rak. Jika menggunakan scene 2.5D, gunakan transform scale/position dengan batas yang tepat. Jangan memperbesar seluruh halaman secara membabi buta hingga navigasi dan teks ikut rusak.
 
-Jangan mengandalkan placeholder sebagai pengganti label.
-
-## 7.3 Slider dan dropdown
-
--   Track slider menggunakan hijau muda.
--   Thumb menggunakan hijau utama.
--   Dropdown memiliki permukaan solid atau glass yang cukup opaque.
--   State hover, focus, selected, dan disabled harus konsisten.
-
-# 8. Tipografi dan Spacing
-
-Gunakan **Plus Jakarta Sans** atau **Inter**.
-
-Aturan: - Heading menggunakan warna hijau tua atau charcoal kehijauan. -
-Body text menggunakan warna gelap yang nyaman dibaca. - Secondary text
-menggunakan abu-abu kehijauan. - Hindari ukuran teks terlalu kecil. -
-Rumus matematika harus memiliki ruang tersendiri.
-
-Gunakan sistem spacing konsisten, misalnya kelipatan 4 atau 8px. Jangan
-membuat halaman terlalu padat. Berikan whitespace yang cukup antara
-heading, deskripsi, card, dan section.
-
-# 9. Animasi dan Motion Design
-
-Website harus terasa hidup dan interaktif. Terapkan animasi secara
-konsisten, tetapi jangan membuat semua objek bergerak tanpa tujuan.
-
-## 9.1 Page transition
-
--   Fade in ketika halaman dibuka.
--   Sedikit slide-up pada konten utama.
--   Transisi antarhalaman halus.
--   Hindari perpindahan layout mendadak.
-
-## 9.2 Background motion
-
--   Lingkaran dekoratif bergerak perlahan.
--   Gradient berubah sangat halus.
--   Floating blobs bergerak dengan durasi panjang.
--   Gunakan gerakan kecil agar tidak mengganggu.
-
-## 9.3 Navbar motion
-
--   Menu highlight berpindah dengan transisi.
--   Ikon memiliki micro-animation ringan.
--   Transparansi navbar dapat berubah secara halus saat scroll.
-
-## 9.4 Card motion
-
--   Fade-up saat pertama muncul.
--   Stagger animation untuk daftar card.
--   Hover lift.
--   Shadow dan border berubah smooth.
-
-## 9.5 Button motion
-
--   Hover transition.
--   Active press feedback.
--   Loading animation.
--   Success feedback setelah aksi berhasil.
-
-## 9.6 Learning interaction
-
--   Progress bar terisi secara animatif.
--   Grafik berubah dengan transisi.
--   Hasil kalkulator muncul bertahap.
--   Simulasi objek bergerak sesuai tindakan pengguna.
--   Feedback kuis muncul dengan animasi singkat.
-
-## 9.7 Durasi dan performa
-
-Panduan awal: - Micro-interaction: 150--250ms. - Hover card:
-200--300ms. - Page transition: 250--450ms. - Entrance animation:
-350--600ms. - Floating background: 12--25 detik per siklus.
-
-Gunakan easing lembut seperti `ease-out` atau cubic-bezier yang sesuai.
-Utamakan transform dan opacity. Hindari animasi berat pada blur, shadow,
-dan filter setiap frame.
-
-Hormati `prefers-reduced-motion`. Jika pengguna mengurangi animasi,
-nonaktifkan gerakan dekoratif dan pertahankan transisi penting seminimal
-mungkin.
-
-# 10. Ilustrasi dan Objek 3D
-
-Gunakan ilustrasi 3D sebagai aksen dan alat bantu pembelajaran, bukan
-sebagai dekorasi di setiap bagian.
-
-Arah visual: - Soft lighting. - Natural material. - Bayangan lembut. -
-Proporsi realistis. - Warna objek sesuai konteks. - Komposisi sederhana.
-
-Contoh: - Dadu putih dengan titik hitam. - Koin berwarna metalik. - Bola
-berwarna sesuai kategori. - Kartu remi dengan warna simbol asli. -
-Grafik dan diagram dengan warna kategori berbeda.
-
-**Jangan mengubah semua objek menjadi hijau, mint, transparan, atau
-glass material.** Glassmorphism berlaku untuk lingkungan dan UI, bukan
-otomatis untuk objek pembelajaran.
-
-# 11. Visualisasi Statistik
-
-Visualisasi harus mudah dibaca dan akurat.
-
-Gunakan: - Background chart putih atau transparan yang cukup opaque. -
-Gridline tipis. - Label sumbu jelas. - Tooltip mudah dipahami. - Warna
-kategori berbeda. - Animasi perubahan data yang halus.
-
-Hindari: - Grid terlalu kuat. - Label terlalu kecil. - Warna kategori
-yang sulit dibedakan. - Efek 3D yang membuat data sulit dibaca. -
-Animasi yang mengubah persepsi nilai data.
-
-Jangan mengorbankan akurasi visualisasi demi estetika.
-
-# 12. Modal, Tooltip, dan Feedback
-
-Modal: - Gunakan panel glass strong atau putih solid. - Background
-overlay lembut. - Radius konsisten. - Animasi scale kecil dan fade.
-
-Tooltip: - Ringkas. - Kontras cukup. - Muncul dengan fade. - Tidak
-menutupi kontrol penting.
-
-Feedback: - Success menggunakan hijau. - Warning menggunakan kuning atau
-oranye lembut. - Error menggunakan merah lembut. - Gunakan ikon dan
-teks, jangan hanya mengandalkan warna.
-
-# 13. Responsive Design
-
-Pastikan desain tetap estetik dan fungsional pada desktop, laptop,
-tablet, dan smartphone.
-
-Ketentuan: - Navbar desktop dapat berubah menjadi drawer atau bottom
-navigation. - Grid card menyesuaikan lebar layar. - Panel kalkulator
-berubah menjadi susunan vertikal. - Grafik tetap dapat dibaca. - Modal
-tidak keluar dari viewport. - Ukuran tombol dan kontrol nyaman
-disentuh. - Background dekoratif dapat dikurangi pada layar kecil untuk
-menjaga performa.
-
-# 14. Accessibility dan Kenyamanan
-
--   Pastikan kontras teks memadai.
--   Jangan menggunakan warna sebagai satu-satunya penanda status.
--   Sediakan focus state untuk navigasi keyboard.
--   Gunakan label input yang jelas.
--   Pastikan tombol memiliki area interaksi cukup.
--   Hindari animasi berkedip atau gerakan terlalu cepat.
--   Pastikan konten tetap dapat dibaca tanpa efek blur.
--   Sediakan dukungan reduced motion.
-
-# 15. Konsistensi Implementasi
-
-Sebelum membuat halaman baru, gunakan kembali komponen dan token desain
-yang sudah tersedia.
-
-Buat design tokens untuk: - Warna. - Gradient. - Glass surface. -
-Shadow. - Border. - Radius. - Typography. - Spacing. - Motion
-duration. - Easing.
-
-Gunakan komponen bersama untuk: - Navbar. - Sidebar. - Card. - Button. -
-Input. - Dropdown. - Modal. - Progress bar. - Tooltip. - Section
-heading.
-
-Jangan membuat style berbeda-beda untuk komponen yang sebenarnya sama.
-
-Jika project sudah memiliki struktur dan komponen yang berfungsi,
-pertahankan fungsinya. Fokus pada peningkatan tampilan tanpa merusak
-logika aplikasi.
-
-# 16. Checklist Sebelum Desain Dianggap Selesai
-
--   [ ] Website menggunakan tema terang, bukan dark theme.
--   [ ] Putih dan hijau menjadi identitas utama.
--   [ ] Background memiliki gradient pastel yang lembut.
--   [ ] Dekorasi lingkaran dan blob tidak mengganggu konten.
--   [ ] Navbar memiliki desain glassmorphism yang rapi.
--   [ ] Card memiliki glass effect yang konsisten.
--   [ ] Button dan input memiliki hover, focus, active, dan disabled
-    state.
--   [ ] Animasi terasa halus dan tidak berlebihan.
--   [ ] Objek pembelajaran tetap memiliki warna natural.
--   [ ] Grafik statistik mudah dibaca dan akurat.
--   [ ] Seluruh halaman menggunakan design system yang sama.
--   [ ] Tampilan responsif di desktop dan mobile.
--   [ ] Reduced motion didukung.
--   [ ] Tidak ada teks yang sulit dibaca karena transparansi.
--   [ ] Tidak ada dekorasi yang mengganggu interaksi utama.
-
-------------------------------------------------------------------------
-
-# FINAL DESIGN DIRECTION
-
-**Probability 3D harus memiliki tampilan Soft Green Glassmorphism yang
-estetik, terang, elegan, dan penuh micro-interactions.**
-
-Bayangkan background pastel mint dengan lingkaran transparan yang
-bergerak perlahan, navbar seperti kaca buram yang melayang, card putih
-transparan dengan border lembut, tombol hijau yang responsif, serta
-ilustrasi dan objek pembelajaran dengan warna aslinya.
-
-Desain harus terasa premium dan menyenangkan untuk digunakan dalam waktu
-lama.
-
-**Prioritas tertinggi:** 1. Kenyamanan visual. 2. Konsistensi desain. 3.
-Keterbacaan. 4. Animasi yang halus. 5. Glassmorphism yang terlihat nyata
-tetapi tidak mengganggu. 6. Objek pembelajaran yang realistis dan mudah
-dibedakan.
-
-Jadikan dokumen ini sebagai sumber aturan desain utama untuk seluruh
-pengembangan UI Probability 3D.
+## 10. Animasi dan transisi
+
+Animasi harus terasa seperti objek fisik yang memiliki berat, bukan elemen UI yang bergerak kaku.
+
+### 10.1 Animasi ambient
+
+- Cahaya lampu sedikit berdenyut secara sangat halus.
+- Partikel debu kecil dapat terlihat di area cahaya jika performa memungkinkan.
+- Ornamen tertentu dapat bergerak perlahan.
+- Hindari gerakan dekorasi berlebihan yang mengalihkan fokus.
+
+### 10.2 Animasi buku
+
+- Hover: buku maju, sedikit membesar, dan dapat berotasi.
+- Unhover: buku kembali ke posisi rak dengan easing yang natural.
+- Select: buku bergerak lebih jauh ke depan.
+- Open: sampul buku terbuka dengan gerakan engsel yang meyakinkan jika aset/teknologi memungkinkan.
+- Detail: panel informasi muncul dengan transisi opacity dan transform.
+- Navigate: gunakan transisi visual yang menghubungkan buku dengan halaman tujuan.
+
+### 10.3 Animasi mode overview
+
+- Buku bergerak keluar dari rak secara berurutan atau staggered.
+- Susunan buku terbentuk secara halus.
+- Buku terpilih merespons hover dengan jelas.
+- Saat kembali ke mode rak, buku kembali ke posisi awalnya secara terkoordinasi.
+
+### 10.4 Kualitas gerak
+
+- Gunakan easing natural seperti ease-out untuk gerak mendekat dan ease-in-out untuk transisi antar-mode.
+- Gunakan durasi yang konsisten dan tidak terlalu lambat.
+- Hindari animasi yang membuat pengguna menunggu.
+- Hindari efek bounce berlebihan.
+- Jangan menjalankan banyak animasi berat secara bersamaan tanpa alasan.
+- Hormati `prefers-reduced-motion` dengan menyediakan versi animasi minimal.
+
+## 11. Responsif: desktop, tablet, dan mobile
+
+### Desktop
+
+- Pengalaman utama menggunakan pointer dan hover.
+- Rak tampil besar dan menjadi pusat komposisi.
+- Hover preview dan zoom harus berfungsi.
+- Mode semua buku berjajar mudah diakses.
+
+### Tablet
+
+- Sesuaikan ukuran rak dan jumlah buku yang terlihat.
+- Gunakan tap untuk memilih buku.
+- Panel detail tidak boleh menutupi seluruh konteks jika masih ada ruang.
+
+### Mobile
+
+- Jangan memaksakan tampilan desktop yang diperkecil.
+- Gunakan tap untuk memilih buku dan membuka preview/detail.
+- Sediakan tombol zoom yang mudah dijangkau.
+- Mode overview dapat memakai horizontal carousel atau daftar buku yang dapat digeser.
+- Panel detail dapat tampil sebagai drawer atau modal layar penuh.
+- Pastikan tombol close/back selalu terlihat.
+- Hindari interaksi yang hanya bisa dilakukan dengan hover.
+
+## 12. Aksesibilitas dan kemudahan penggunaan
+
+- Semua buku menu harus dapat dipilih dengan keyboard.
+- Tampilkan focus state yang terlihat.
+- Gunakan label aksesibel untuk tombol hamburger, zoom, close, dan navigasi.
+- Jangan mengandalkan warna saja untuk menunjukkan buku yang aktif.
+- Kontras teks harus cukup.
+- Berikan alternatif navigasi berbasis daftar untuk pengguna yang kesulitan menggunakan scene 3D.
+- Pastikan pengguna dapat keluar dari mode overview dan panel detail dengan tombol Escape jika sesuai.
+- Jangan mengunci scroll atau membuat pengguna terjebak dalam scene.
+
+## 13. Arsitektur konten dan routing
+
+Data buku sebaiknya dikelola secara terstruktur, bukan ditulis berulang di banyak komponen.
+
+Setiap item buku minimal memiliki:
+- `id`
+- `title`
+- `shortDescription`
+- `description`
+- `coverColor` atau referensi material
+- `thumbnail` / preview image
+- `route`
+- `shelfPosition`
+- `overviewPosition` atau urutan pada mode overview
+- `available`
+
+Gunakan satu sumber data untuk:
+- Buku yang muncul di rak.
+- Buku pada mode overview.
+- Panel hover.
+- Panel detail.
+- Navigasi ke halaman tujuan.
+
+Pastikan setiap `route` sesuai dengan halaman yang benar-benar ada. Jangan membuat tautan palsu atau tombol yang tidak memiliki aksi.
+
+## 14. Ketentuan implementasi teknis
+
+Sebelum mengubah kode:
+1. Periksa framework, struktur folder, routing, dependency, dan komponen yang sudah ada.
+2. Pertahankan arsitektur project Probability 3D yang sudah berjalan.
+3. Identifikasi apakah project menggunakan Three.js, React Three Fiber, Spline, GSAP, Motion, atau library lain.
+4. Gunakan teknologi yang sudah tersedia jika memadai.
+5. Jangan memasang beberapa library yang memiliki fungsi sama tanpa kebutuhan jelas.
+
+Pilih pendekatan visual sesuai kemampuan project:
+- 3D penuh untuk rak, kamera, buku, pencahayaan, dan interaksi fisik jika project mendukung.
+- 2.5D/parallax dengan layer terpisah jika lebih ringan dan cukup untuk hasil yang dituju.
+- Jangan mengganti scene dengan satu screenshot statis.
+- Jika memakai model 3D, optimalkan polygon, tekstur, ukuran file, dan loading.
+- Lazy-load aset yang tidak langsung terlihat.
+- Sediakan fallback jika WebGL atau fitur 3D tidak tersedia.
+
+Performa:
+- Targetkan pengalaman yang lancar pada perangkat desktop menengah.
+- Hindari render ulang seluruh scene hanya karena cursor bergerak.
+- Gunakan event handling dan animation loop yang efisien.
+- Batasi jumlah partikel, shadow map, dan efek post-processing.
+- Bersihkan event listener, observer, dan animation context ketika komponen dilepas.
+- Tampilkan loading state yang elegan jika aset 3D perlu dimuat.
+
+## 15. Struktur komponen yang disarankan
+
+Nama komponen berikut adalah saran, bukan kewajiban. Sesuaikan dengan struktur project yang sudah ada.
+
+- `LibraryScene` — scene utama dan pengaturan kamera.
+- `LibraryEnvironment` — dinding, jendela, lampu, jam, dan dekorasi.
+- `Bookshelf` — model rak dan tingkat rak.
+- `BookItem` — satu buku yang dapat di-hover dan dipilih.
+- `BookHoverPreview` — panel informasi ringkas saat hover.
+- `BookDetailPanel` — jendela detail setelah buku dipilih.
+- `BookOverviewMode` — mode semua buku berjajar.
+- `LibraryNavigation` — logo, link, hamburger, dan kontrol navigasi.
+- `ZoomControls` — zoom in, zoom out, dan reset.
+- `PageTransition` — transisi menuju halaman fitur.
+
+Hindari menaruh seluruh logika scene, data buku, panel, dan routing dalam satu komponen besar.
+
+## 16. Alur interaksi yang wajib diuji
+
+### Alur A — Menjelajahi rak
+
+1. Pengunjung membuka beranda.
+2. Scene perpustakaan terlihat dengan buku-buku di rak.
+3. Pengunjung mengarahkan cursor ke buku Dadu.
+4. Buku Dadu bergerak maju.
+5. Preview Dadu muncul berisi deskripsi dan gambaran kecil halaman.
+6. Pengunjung menggerakkan cursor ke buku lain.
+7. Preview berpindah dan buku sebelumnya kembali ke posisi semula.
+
+### Alur B — Membuka detail dan masuk fitur
+
+1. Pengunjung mengklik buku Kartu.
+2. Buku bergerak ke depan dan terbuka.
+3. Panel detail Kartu muncul.
+4. Panel menampilkan deskripsi dan preview yang lebih besar.
+5. Pengunjung menekan `Masuk ke halaman`.
+6. Website berpindah ke halaman Kartu yang benar.
+
+### Alur C — Mode semua buku
+
+1. Pengunjung mengklik hamburger di kanan atas.
+2. Semua buku menu bergerak keluar dari rak.
+3. Buku tersusun berjajar dengan rapi.
+4. Pengunjung mengarahkan cursor ke buku Bola.
+5. Buku Bola maju dan preview halaman Bola muncul.
+6. Pengunjung memilih buku dan membuka detail.
+7. Pengunjung dapat masuk ke halaman Bola atau kembali ke mode rak.
+
+### Alur D — Zoom
+
+1. Pengunjung melakukan zoom in.
+2. Kamera mendekati rak tanpa mengubah proporsi objek secara aneh.
+3. Pengunjung melakukan zoom out.
+4. Pengunjung menekan reset.
+5. Scene kembali ke komposisi awal.
+
+### Alur E — Mobile
+
+1. Pengunjung membuka beranda melalui smartphone.
+2. Pengunjung tap salah satu buku.
+3. Preview/detail muncul tanpa memerlukan hover.
+4. Pengunjung dapat menutup detail dan memilih buku lain.
+5. Pengunjung dapat masuk ke halaman tujuan.
+6. Semua kontrol tetap dapat digunakan dengan touch.
+
+## 17. Kriteria penerimaan
+
+Desain dianggap selesai jika semua poin berikut terpenuhi:
+
+- [ ] Beranda benar-benar terasa seperti perpustakaan interaktif sesuai screenshot referensi.
+- [ ] Rak buku menjadi pusat visual dan bukan sekadar background.
+- [ ] Buku menu memiliki tampilan 3D/berlapis dan posisi yang konsisten.
+- [ ] Hover membuat buku maju dari rak.
+- [ ] Hover menampilkan informasi singkat dan preview visual halaman tujuan.
+- [ ] Klik pertama pada buku di mode rak membuka buku dan menampilkan detail lebih lengkap.
+- [ ] Pengunjung dapat masuk ke halaman tujuan melalui aksi yang jelas.
+- [ ] Hamburger mengaktifkan mode semua buku berjajar.
+- [ ] Hover pada mode berjajar juga menampilkan preview.
+- [ ] Pengunjung dapat kembali dari mode berjajar ke mode rak.
+- [ ] Zoom in, zoom out, dan reset berfungsi.
+- [ ] Semua buku memiliki route yang benar.
+- [ ] Interaksi dapat digunakan pada desktop, tablet, dan mobile.
+- [ ] Tidak ada tombol atau buku yang terlihat interaktif tetapi tidak berfungsi.
+- [ ] Animasi halus dan tidak mengganggu performa.
+- [ ] Tersedia fallback untuk reduced motion dan perangkat tanpa dukungan 3D.
+- [ ] Tidak ada aset atau identitas eksklusif dari website referensi yang disalin.
+
+## 18. Instruksi akhir untuk coding agent
+
+Jangan hanya membuat mockup visual. Implementasikan scene perpustakaan dan seluruh interaksi buku sebagai bagian nyata dari website.
+
+Kerjakan secara bertahap:
+1. Bangun environment perpustakaan dan rak.
+2. Tambahkan buku-buku menu dengan data dan route yang benar.
+3. Implementasikan hover: buku maju + preview.
+4. Implementasikan klik: buku terbuka + detail panel + navigasi.
+5. Implementasikan hamburger: semua buku berjajar + preview.
+6. Implementasikan zoom in, zoom out, dan reset.
+7. Tambahkan animasi dan transisi.
+8. Optimalkan responsivitas dan performa.
+9. Jalankan project dan uji seluruh alur interaksi.
+10. Bandingkan hasil dengan screenshot referensi, lalu perbaiki komposisi, skala, pencahayaan, dan gerakan.
+
+**Prioritas tertinggi:** pengalaman menjelajahi buku harus terasa intuitif dan memuaskan. Pengunjung harus langsung memahami bahwa buku-buku di rak adalah menu yang bisa dijelajahi, di-preview, dibuka, dan dipilih untuk masuk ke fitur Probability 3D.
