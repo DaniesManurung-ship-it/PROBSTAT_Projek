@@ -13,6 +13,7 @@ function successfulInterpretation() {
     trialCount: null,
     eventType: 'even',
     target: null,
+    successProbability: null,
     coinSide: 'unknown',
     cardEvent: 'unknown',
     ballCounts: null,
@@ -136,6 +137,71 @@ test('returns diagnostic status and forwards correction context to the interpret
   assert.equal(body.requestStatus, 'completed');
   assert.equal(receivedContext.correction, 'Maksudnya jumlah mata kedua dadu.');
   assert.equal(receivedContext.previousInterpretation.status, 'success');
+});
+
+test('repairs a clearly stated two-ball same-color event instead of asking for it again', async (t) => {
+  const interpretation = {
+    ...successfulInterpretation(),
+    status: 'clarification',
+    category: 'balls',
+    diceCount: null,
+    sidesPerDie: null,
+    eventType: 'color_draw',
+    ballCounts: { merah: 4, biru: 5, kuning: 0 },
+    ballTarget: 'merah',
+    drawCount: 2,
+    replacement: 'without',
+    missingInformation: ['kejadian dua bola dengan warna yang dicari'],
+    clarification: 'Apa kejadian warna bola yang ditanyakan?',
+    interpretation: 'Diambil dua bola dari kantong.'
+  };
+  const baseUrl = await startServer(t, { interpret: async () => interpretation });
+  const response = await fetch(`${baseUrl}/api/interpret`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      question: 'Kantong berisi 4 bola merah dan 5 bola biru. Diambil 2 bola sekaligus. Peluang terambilnya kedua bola berwarna merah?'
+    })
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(body.interpretation.status, 'success');
+  assert.equal(body.interpretation.eventType, 'same_color_draw');
+  assert.deepEqual(body.interpretation.missingInformation, []);
+  assert.equal(body.interpretation.clarification, '');
+});
+
+test('keeps a green marble target when it maps to the unused yellow slot', async (t) => {
+  const interpretation = {
+    ...successfulInterpretation(),
+    status: 'clarification',
+    category: 'balls',
+    diceCount: null,
+    sidesPerDie: null,
+    eventType: 'color_draw',
+    ballCounts: { merah: 3, biru: 5, kuning: 4 },
+    ballTarget: 'kuning',
+    drawCount: 2,
+    replacement: 'without',
+    missingInformation: ['kejadian dua bola dengan warna yang dicari'],
+    clarification: 'Apa warna bola yang ditanyakan?',
+    interpretation: 'Kedua kelereng hijau diambil sekaligus.'
+  };
+  const baseUrl = await startServer(t, { interpret: async () => interpretation });
+  const response = await fetch(`${baseUrl}/api/interpret`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      question: 'Diambil 2 kelereng sekaligus. Berapa peluang kedua kelereng berwarna hijau?'
+    })
+  });
+  const body = await response.json();
+
+  assert.equal(response.status, 200);
+  assert.equal(body.interpretation.status, 'success');
+  assert.equal(body.interpretation.eventType, 'same_color_draw');
+  assert.equal(body.interpretation.ballTarget, 'kuning');
 });
 
 test('returns valid sanitized JSON when interpretation fails', async (t) => {

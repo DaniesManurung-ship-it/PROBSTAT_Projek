@@ -21,6 +21,22 @@ test('calculates the confirmed two-dice sum of 12 deterministically', () => {
   assert.equal(result.percentage, 100 / 36);
 });
 
+test('calculates the sum of three dice with the complete 216-outcome sample space', () => {
+  const result = solveDiceInterpretation({
+    category: 'dice',
+    diceCount: 3,
+    sidesPerDie: 6,
+    eventType: 'sum_equals',
+    target: 7
+  });
+
+  assert.equal(result.diceCount, 3);
+  assert.equal(result.total, 216);
+  assert.equal(result.favorable, 15);
+  assert.equal(result.fraction, '5/72');
+  assert.equal(result.sample.length, 216);
+});
+
 test('returns zero probability for a clear but impossible sum', () => {
   const result = solveDiceInterpretation(twoDice('sum_equals', 13));
 
@@ -56,4 +72,18 @@ test('solves a single-die face event and declines unsupported data', () => {
   assert.equal(result.total, 6);
   assert.equal(result.favorable, 1);
   assert.equal(solveDiceInterpretation({ ...twoDice('unknown'), category: 'coin' }), null);
+});
+
+test('calculates the probability that a die face is a factor of six', () => {
+  const result = solveDiceInterpretation({
+    category: 'dice',
+    diceCount: 1,
+    sidesPerDie: 6,
+    eventType: 'factor_of',
+    target: 6
+  });
+
+  assert.equal(result.favorable, 4);
+  assert.equal(result.total, 6);
+  assert.equal(result.fraction, '2/3');
 });

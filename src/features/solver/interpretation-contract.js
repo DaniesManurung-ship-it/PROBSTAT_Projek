@@ -5,6 +5,7 @@ const categories = new Set([
   'balls',
   'counting',
   'conditional',
+  'binomial',
   'out_of_scope'
 ]);
 
@@ -13,6 +14,7 @@ const statuses = new Set([
   'needs_confirmation',
   'clarification',
   'uncertain',
+  'ai_solved',
   'unsupported'
 ]);
 
@@ -20,6 +22,7 @@ const eventTypes = new Set([
   'even',
   'odd',
   'face_equals',
+  'factor_of',
   'sum_equals',
   'product_equals',
   'same_faces',
@@ -27,6 +30,7 @@ const eventTypes = new Set([
   'at_most_one_face_equals',
   'coin_side',
   'card_event',
+  'binomial_exact',
   'color_draw',
   'same_color_draw',
   'counting',
@@ -43,6 +47,7 @@ const fields = [
   'trialCount',
   'eventType',
   'target',
+  'successProbability',
   'coinSide',
   'cardEvent',
   'ballCounts',
@@ -57,6 +62,7 @@ const fields = [
   'physicsCount',
   'bothCount',
   'conditionalEvent',
+  'solution',
   'missingInformation',
   'clarification',
   'interpretation'
@@ -68,9 +74,25 @@ const isCount = (value) => Number.isSafeInteger(value) && value >= 0;
 function hasExpectedShape(value) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
   const keys = Object.keys(value);
+  const requiredFields = fields.filter((field) => field !== 'solution');
 
-  return keys.length === fields.length &&
-    fields.every((field) => Object.hasOwn(value, field));
+  return keys.every((key) => fields.includes(key)) &&
+    requiredFields.every((field) => Object.hasOwn(value, field));
+}
+
+function isValidSolution(solution) {
+  if (solution === null) return true;
+  if (!solution || typeof solution !== 'object' || Array.isArray(solution)) return false;
+  const keys = Object.keys(solution);
+  return keys.length === 3 &&
+    ['formula', 'answer', 'steps'].every((key) => Object.hasOwn(solution, key)) &&
+    typeof solution.formula === 'string' &&
+    solution.formula.trim().length > 0 &&
+    typeof solution.answer === 'string' &&
+    solution.answer.trim().length > 0 &&
+    Array.isArray(solution.steps) &&
+    solution.steps.length > 0 &&
+    solution.steps.every((step) => typeof step === 'string' && step.trim().length > 0);
 }
 
 function checkProbabilityData(data) {
@@ -80,26 +102,32 @@ function checkProbabilityData(data) {
   };
 
   if (data.category === 'dice') {
-    if (![1, 2].includes(data.diceCount)) addMissing('jumlah dadu (1 atau 2)');
+    if (![1, 2, 3].includes(data.diceCount)) addMissing('jumlah dadu (satu sampai tiga)');
     if (data.sidesPerDie === null) addMissing('jumlah sisi setiap dadu');
 
-    if (data.diceCount === 1 && !['even', 'odd', 'face_equals'].includes(data.eventType)) {
+    if (data.diceCount === 1 && !['even', 'odd', 'face_equals', 'factor_of'].includes(data.eventType)) {
       addMissing('kejadian yang ditanyakan pada satu dadu');
     }
 
-    if (data.diceCount === 2 && ![
+    if (data.diceCount >= 2 && ![
       'sum_equals',
       'product_equals',
       'same_faces',
       'at_least_one_face_equals',
       'at_most_one_face_equals'
     ].includes(data.eventType)) {
-      addMissing('hubungan atau kejadian yang ditanyakan pada dua dadu');
+      addMissing('hubungan atau kejadian yang ditanyakan pada dua atau tiga dadu');
     }
 
-    if (['face_equals', 'at_least_one_face_equals', 'at_most_one_face_equals'].includes(data.eventType) &&
+    if (['face_equals', 'factor_of', 'at_least_one_face_equals', 'at_most_one_face_equals'].includes(data.eventType) &&
       !Number.isInteger(data.target)) {
-      addMissing('angka dadu yang ditanyakan');
+      addMissing(data.eventType === 'factor_of'
+        ? 'bilangan yang dicari faktor-faktornya'
+        : 'angka dadu yang ditanyakan');
+    }
+
+    if (data.eventType === 'factor_of' && Number.isInteger(data.target) && data.target < 1) {
+      addMissing('bilangan positif yang dicari faktor-faktornya');
     }
 
     if (data.eventType === 'sum_equals' && !Number.isInteger(data.target)) {
@@ -120,8 +148,22 @@ function checkProbabilityData(data) {
 
   if (data.category === 'cards') {
     if (data.eventType !== 'card_event') addMissing('kejadian kartu');
-    if (!['red', 'black', 'spade', 'ace', 'face'].includes(data.cardEvent)) {
+    if (!['red', 'black', 'spade', 'ace', 'face', 'red_ace'].includes(data.cardEvent)) {
       addMissing('jenis kartu yang didukung (merah, hitam, sekop, As, atau bergambar)');
+    }
+  }
+
+  if (data.category === 'binomial') {
+    if (data.eventType !== 'binomial_exact') addMissing('kejadian sukses tepat pada distribusi binomial');
+    if (!Number.isInteger(data.n) || data.n < 1 || data.n > 1000) {
+      addMissing('jumlah percobaan binomial (1 sampai 1000)');
+    }
+    if (!Number.isInteger(data.target) || data.target < 0 || data.target > data.n) {
+      addMissing('jumlah sukses yang ditanyakan (0 sampai n)');
+    }
+    if (!Number.isFinite(data.successProbability) ||
+      data.successProbability < 0 || data.successProbability > 1) {
+      addMissing('peluang sukses pada setiap percobaan (0 sampai 1)');
     }
   }
 
@@ -196,7 +238,13 @@ function checkProbabilityData(data) {
 }
 
 export function validateInterpretation(value) {
-  if (!hasExpectedShape(value) ||
+  if (!hasExpectedShape(value)) {
+    return { valid: false, error: 'Respons interpretasi AI tidak sesuai format yang diharapkan.' };
+  }
+
+  value = { ...value, solution: value.solution ?? null };
+
+  if (
     !statuses.has(value.status) ||
     !categories.has(value.category) ||
     !Number.isFinite(value.confidence) ||
@@ -208,11 +256,15 @@ export function validateInterpretation(value) {
     typeof value.clarification !== 'string' ||
     typeof value.interpretation !== 'string' ||
     !['angka', 'gambar', 'unknown'].includes(value.coinSide) ||
-    !['red', 'black', 'spade', 'ace', 'face', 'unknown'].includes(value.cardEvent) ||
+    !['red', 'black', 'spade', 'ace', 'face', 'red_ace', 'unknown'].includes(value.cardEvent) ||
     !['merah', 'biru', 'kuning', 'unknown'].includes(value.ballTarget) ||
     !['with', 'without', 'unspecified', 'not_applicable'].includes(value.replacement) ||
     !['permutation', 'combination', 'not_applicable'].includes(value.countingType) ||
     !['math_given_physics', 'physics_given_math', 'unknown'].includes(value.conditionalEvent) ||
+    !(value.successProbability === null ||
+      (Number.isFinite(value.successProbability) &&
+        value.successProbability >= 0 && value.successProbability <= 1)) ||
+    !isValidSolution(value.solution) ||
     !['null', 'object'].includes(value.ballCounts === null ? 'null' :
       typeof value.ballCounts === 'object' && !Array.isArray(value.ballCounts) ? 'object' : 'invalid') ||
     !['diceCount', 'sidesPerDie', 'target', 'drawCount', 'n', 'r', 'population',
@@ -235,12 +287,19 @@ export function validateInterpretation(value) {
     return { valid: false, error: 'Jumlah percobaan harus berupa bilangan bulat positif.' };
   }
 
+  if (value.status === 'ai_solved') {
+    if (!value.solution) {
+      return { valid: false, error: 'Jawaban AI belum menyertakan rumus dan langkah penyelesaian.' };
+    }
+    return { valid: true, data: { ...value, missingInformation: [] } };
+  }
+
   if (value.category === 'out_of_scope' || value.status === 'unsupported') {
     return { valid: true, data: { ...value, status: 'unsupported' } };
   }
 
   if (value.category === 'dice' &&
-    ((value.diceCount !== null && value.diceCount > 2) ||
+    ((value.diceCount !== null && value.diceCount > 3) ||
       (value.sidesPerDie !== null && value.sidesPerDie !== 6) ||
       (value.trialCount !== null && value.trialCount > 1))) {
     return {
@@ -285,17 +344,21 @@ export function toCanonicalProblem(data) {
         ? 'genap'
         : data.eventType === 'odd'
           ? 'ganjil'
+          : data.eventType === 'factor_of'
+            ? `faktor dari ${data.target}`
           : data.target;
       return `Sebuah dadu dilempar. Berapa peluang muncul angka ${event}?`;
     }
+    const dice = data.diceCount === 2 ? 'kedua dadu' : 'ketiga dadu';
+    const diceCount = data.diceCount === 2 ? 'Dua' : 'Tiga';
     const event = {
-      sum_equals: `jumlah mata kedua dadu sama dengan ${data.target}`,
-      product_equals: `hasil kali mata kedua dadu sama dengan ${data.target}`,
-      same_faces: 'kedua dadu menunjukkan angka yang sama',
-      at_least_one_face_equals: `minimal satu dadu menunjukkan angka ${data.target}`,
-      at_most_one_face_equals: `maksimal satu dadu menunjukkan angka ${data.target}`
+      sum_equals: `jumlah mata ${dice} sama dengan ${data.target}`,
+      product_equals: `hasil kali mata ${dice} sama dengan ${data.target}`,
+      same_faces: `semua dadu menunjukkan angka yang sama`,
+      at_least_one_face_equals: `minimal satu dari ${data.diceCount} dadu menunjukkan angka ${data.target}`,
+      at_most_one_face_equals: `maksimal satu dari ${data.diceCount} dadu menunjukkan angka ${data.target}`
     }[data.eventType];
-    return `Dua buah dadu dilempar bersamaan. Berapa peluang ${event}?`;
+    return `${diceCount} buah dadu dilempar bersamaan. Berapa peluang ${event}?`;
   }
 
   if (data.category === 'coin') {
@@ -308,9 +371,14 @@ export function toCanonicalProblem(data) {
       black: 'hitam',
       spade: 'sekop',
       ace: 'As',
+      red_ace: 'As merah',
       face: 'bergambar'
     }[data.cardEvent];
     return `Dari 52 kartu remi, berapa peluang mengambil kartu ${event}?`;
+  }
+
+  if (data.category === 'binomial') {
+    return `Distribusi binomial dengan n=${data.n}, p=${data.successProbability}. Berapa peluang tepat ${data.target} sukses?`;
   }
 
   if (data.category === 'balls') {

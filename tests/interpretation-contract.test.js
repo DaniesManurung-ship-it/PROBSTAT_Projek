@@ -15,6 +15,7 @@ function interpretation(overrides = {}) {
     trialCount: null,
     eventType: 'even',
     target: null,
+    successProbability: null,
     coinSide: 'unknown',
     cardEvent: 'unknown',
     ballCounts: null,
@@ -175,7 +176,53 @@ test('keeps distinct two-dice event semantics in the canonical problem', () => {
   assert.match(toCanonicalProblem(product.data), /hasil kali/);
   assert.match(toCanonicalProblem(sum.data), /jumlah mata/);
   assert.match(toCanonicalProblem(same.data), /angka yang sama/);
-  assert.match(toCanonicalProblem(atLeastOne.data), /minimal satu dadu/);
+  assert.match(toCanonicalProblem(atLeastOne.data), /minimal satu dari 2 dadu/);
+});
+
+test('preserves three-dice counts and translates a sum event for the local engine', () => {
+  const result = validateInterpretation(interpretation({
+    diceCount: 3,
+    eventType: 'sum_equals',
+    target: 7,
+    interpretation: 'Tiga dadu dilempar bersamaan dan jumlah mata dadu adalah 7.'
+  }));
+
+  assert.equal(result.valid, true);
+  assert.equal(result.data.status, 'success');
+  assert.match(toCanonicalProblem(result.data), /Tiga buah dadu/);
+  assert.match(toCanonicalProblem(result.data), /jumlah mata ketiga dadu sama dengan 7/);
+});
+
+test('maps a die face that is a factor of the target number', () => {
+  const result = validateInterpretation(interpretation({
+    eventType: 'factor_of',
+    target: 6,
+    interpretation: 'Mata dadu yang merupakan faktor positif dari 6.'
+  }));
+  const invalid = validateInterpretation(interpretation({
+    eventType: 'factor_of',
+    target: 0
+  }));
+
+  assert.equal(result.data.status, 'success');
+  assert.match(toCanonicalProblem(result.data), /faktor dari 6/);
+  assert.equal(invalid.data.status, 'clarification');
+});
+
+test('accepts a Gemini-computed solution for a probability question outside local support', () => {
+  const result = validateInterpretation(interpretation({
+    status: 'ai_solved',
+    category: 'out_of_scope',
+    eventType: 'unknown',
+    solution: {
+      formula: 'P(A) = |A| / |S|',
+      answer: '1/2',
+      steps: ['Ruang sampel berisi dua hasil yang sama mungkin.', 'Satu hasil memenuhi kejadian.']
+    }
+  }));
+
+  assert.equal(result.valid, true);
+  assert.equal(result.data.status, 'ai_solved');
 });
 
 test('marks unsupported die characteristics and repeated trials without guessing', () => {
@@ -188,11 +235,18 @@ test('marks unsupported die characteristics and repeated trials without guessing
   const repeated = validateInterpretation(interpretation({
     trialCount: 5
   }));
+  const tooManyDice = validateInterpretation(interpretation({
+    diceCount: 4,
+    eventType: 'sum_equals',
+    target: 7
+  }));
 
   assert.equal(nonstandard.valid, true);
   assert.equal(nonstandard.data.status, 'unsupported');
   assert.equal(repeated.valid, true);
   assert.equal(repeated.data.status, 'unsupported');
+  assert.equal(tooManyDice.valid, true);
+  assert.equal(tooManyDice.data.status, 'unsupported');
   assert.equal(toCanonicalProblem(repeated.data), null);
 });
 
@@ -251,6 +305,41 @@ test('validates coin, card, balls, and conditional probability intents', () => {
     assert.equal(result.valid, true);
     assert.equal(result.data.status, 'success');
   }
+});
+
+test('preserves the intersection for a red ace and validates exact binomial parameters', () => {
+  const redAce = validateInterpretation(interpretation({
+    category: 'cards',
+    diceCount: null,
+    sidesPerDie: null,
+    eventType: 'card_event',
+    cardEvent: 'red_ace'
+  }));
+  const binomial = validateInterpretation(interpretation({
+    category: 'binomial',
+    diceCount: null,
+    sidesPerDie: null,
+    eventType: 'binomial_exact',
+    n: 5,
+    target: 3,
+    successProbability: 0.6
+  }));
+  const invalidBinomial = validateInterpretation(interpretation({
+    category: 'binomial',
+    diceCount: null,
+    sidesPerDie: null,
+    eventType: 'binomial_exact',
+    n: 5,
+    target: 6,
+    successProbability: 0.6
+  }));
+
+  assert.equal(redAce.data.status, 'success');
+  assert.match(toCanonicalProblem(redAce.data), /kartu As merah/);
+  assert.equal(binomial.data.status, 'success');
+  assert.equal(binomial.data.successProbability, 0.6);
+  assert.equal(invalidBinomial.data.status, 'clarification');
+  assert.ok(invalidBinomial.data.missingInformation.length > 0);
 });
 
 test('clarifies missing math data and marks outside-scope questions explicitly', () => {

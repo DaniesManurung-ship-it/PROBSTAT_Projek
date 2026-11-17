@@ -5,7 +5,8 @@ function gcd(a, b) {
   return a || 1;
 }
 
-function isFavorable(data, first, second) {
+function isFavorable(data, values) {
+  const first = values[0];
   switch (data.eventType) {
     case 'even':
       return first % 2 === 0;
@@ -13,74 +14,87 @@ function isFavorable(data, first, second) {
       return first % 2 !== 0;
     case 'face_equals':
       return first === data.target;
+    case 'factor_of':
+      return data.target > 0 && data.target % first === 0;
     case 'sum_equals':
-      return first + second === data.target;
+      return values.reduce((sum, value) => sum + value, 0) === data.target;
     case 'product_equals':
-      return first * second === data.target;
+      return values.reduce((product, value) => product * value, 1) === data.target;
     case 'same_faces':
-      return first === second;
+      return values.every((value) => value === first);
     case 'at_least_one_face_equals':
-      return first === data.target || second === data.target;
+      return values.some((value) => value === data.target);
     case 'at_most_one_face_equals':
-      return Number(first === data.target) + Number(second === data.target) <= 1;
+      return values.filter((value) => value === data.target).length <= 1;
     default:
       return false;
   }
 }
 
 export function solveDiceInterpretation(data) {
-  if (data.category !== 'dice' || ![1, 2].includes(data.diceCount)) return null;
+  if (data.category !== 'dice' || ![1, 2, 3].includes(data.diceCount)) return null;
 
   const sides = data.sidesPerDie;
   if (!Number.isSafeInteger(sides) || sides < 1) return null;
 
   const outcomes = [];
-  for (let first = 1; first <= sides; first++) {
-    const lastSecond = data.diceCount === 2 ? sides : 1;
-    for (let second = 1; second <= lastSecond; second++) {
+  function collectOutcomes(values) {
+    if (values.length === data.diceCount) {
       outcomes.push(data.diceCount === 1
-        ? { value: first, favorable: isFavorable(data, first, second) }
+        ? { value: values[0], favorable: isFavorable(data, values) }
         : {
-          first,
-          second,
-          sum: first + second,
-          favorable: isFavorable(data, first, second)
+          first: values[0],
+          second: values[1],
+          values,
+          sum: values.reduce((sum, value) => sum + value, 0),
+          favorable: isFavorable(data, values)
         });
+      return;
+    }
+
+    for (let value = 1; value <= sides; value += 1) {
+      collectOutcomes([...values, value]);
     }
   }
+
+  collectOutcomes([]);
 
   const favorable = outcomes.filter((outcome) => outcome.favorable).length;
   const total = outcomes.length;
   const divisor = gcd(favorable, total);
   const fraction = `${favorable / divisor}/${total / divisor}`;
+  const dicePhrase = data.diceCount === 2 ? 'kedua dadu' : 'ketiga dadu';
+  const diceCountPhrase = ['satu', 'dua', 'tiga'][data.diceCount - 1];
   const eventDescription = {
     even: 'mata dadu bernilai genap',
     odd: 'mata dadu bernilai ganjil',
     face_equals: `satu dadu menunjukkan angka ${data.target}`,
-    sum_equals: `jumlah mata kedua dadu sama dengan ${data.target}`,
-    product_equals: `hasil kali mata kedua dadu sama dengan ${data.target}`,
-    same_faces: 'kedua dadu menunjukkan angka yang sama',
-    at_least_one_face_equals: `minimal satu dadu menunjukkan angka ${data.target}`,
-    at_most_one_face_equals: `maksimal satu dadu menunjukkan angka ${data.target}`
+    factor_of: `mata dadu merupakan faktor dari ${data.target}`,
+    sum_equals: `jumlah mata ${dicePhrase} sama dengan ${data.target}`,
+    product_equals: `hasil kali mata ${dicePhrase} sama dengan ${data.target}`,
+    same_faces: 'semua dadu menunjukkan angka yang sama',
+    at_least_one_face_equals: `minimal satu dari ${data.diceCount} dadu menunjukkan angka ${data.target}`,
+    at_most_one_face_equals: `maksimal satu dari ${data.diceCount} dadu menunjukkan angka ${data.target}`
   }[data.eventType];
 
   if (!eventDescription) return null;
 
   return {
-    title: data.diceCount === 1 ? 'Peluang satu buah dadu' : 'Peluang dua buah dadu',
+    title: `Peluang ${diceCountPhrase} buah dadu`,
     model: data.diceCount === 1 ? 'dice-single' : 'dice',
+    diceCount: data.diceCount,
     favorable,
     total,
     sample: outcomes,
     fraction,
     percentage: favorable / total * 100,
     steps: [
-      `Setiap dadu memiliki ${sides} sisi${data.diceCount === 2 ? `, sehingga ruang sampel berjumlah ${sides} × ${sides} = ${total} hasil` : `, sehingga ruang sampel berjumlah ${total} hasil`}.`,
+      `Setiap dadu memiliki ${sides} sisi, sehingga ruang sampel berjumlah ${Array(data.diceCount).fill(sides).join(' × ')} = ${total} hasil.`,
       `Kejadian yang dicari adalah ${eventDescription}.`,
       `Terdapat ${favorable} hasil yang memenuhi kejadian tersebut.`,
       `Peluang = ${favorable}/${total} = ${fraction}.`
     ],
-    description: `Visualisasi ${data.diceCount === 1 ? 'dadu' : 'dua dadu'} dan hasil yang memenuhi kejadian ${eventDescription}.`,
+    description: `Visualisasi ${diceCountPhrase} buah dadu dan hasil yang memenuhi kejadian ${eventDescription}.`,
     summary: `Dari ${total} kemungkinan hasil, ${favorable} memenuhi kejadian ${eventDescription}.`
   };
 }

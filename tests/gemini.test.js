@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createGeminiInterpreter, responseSchema } from '../server/gemini.js';
+import { toCanonicalProblem } from '../src/features/solver/interpretation-contract.js';
 
 function validDiceResponse() {
   return {
@@ -12,6 +13,7 @@ function validDiceResponse() {
     trialCount: null,
     eventType: 'even',
     target: null,
+    successProbability: null,
     coinSide: 'unknown',
     cardEvent: 'unknown',
     ballCounts: null,
@@ -291,6 +293,163 @@ test('sends Indonesian paraphrases to the semantic interpreter without local key
     assert.equal(result.status, 'needs_confirmation');
   }
   assert.deepEqual(mock.calls.map((call) => JSON.parse(call.input).question), questions);
+});
+
+test('interprets a complete simultaneous ball draw without requesting redundant details', async () => {
+  const proposed = {
+    ...validDiceResponse(),
+    status: 'success',
+    category: 'balls',
+    diceCount: null,
+    sidesPerDie: null,
+    eventType: 'same_color_draw',
+    ballCounts: { merah: 4, biru: 5, kuning: 0 },
+    ballTarget: 'merah',
+    drawCount: 2,
+    replacement: 'without',
+    interpretation: 'Dua bola merah diambil sekaligus dari 4 bola merah dan 5 bola biru.'
+  };
+  const mock = mockClient(proposed);
+  const interpret = createGeminiInterpreter({ client: mock.client, model: 'mock-model' });
+  const question =
+    'Sebuah kantong berisi 4 bola merah dan 5 bola biru. Diambil 2 bola sekaligus secara acak. Peluang terambilnya kedua bola berwarna merah adalah';
+  const result = await interpret(question);
+
+  assert.equal(result.status, 'success');
+  assert.deepEqual(result.ballCounts, { merah: 4, biru: 5, kuning: 0 });
+  assert.equal(result.replacement, 'without');
+  assert.match(toCanonicalProblem(result), /dua bola merah tanpa pengembalian/);
+  assert.match(mock.calls[0].system_instruction, /warna yang tidak disebut sebagai 0/);
+  assert.match(mock.calls[0].system_instruction, /"sekaligus".*tanpa pengembalian/);
+});
+
+test('translates a three-dice sum into the local solver schema', async () => {
+  const proposed = {
+    ...validDiceResponse(),
+    diceCount: 3,
+    eventType: 'sum_equals',
+    target: 7,
+    interpretation: 'Tiga dadu dilempar bersamaan dan jumlah mata dadu adalah 7.'
+  };
+  const mock = mockClient(proposed);
+  const interpret = createGeminiInterpreter({ client: mock.client, model: 'mock-model' });
+  const result = await interpret('tiga dadu dilempar bersamaan, brp peluang dapat 7');
+
+  assert.equal(result.status, 'success');
+  assert.equal(result.diceCount, 3);
+  assert.equal(result.eventType, 'sum_equals');
+  assert.equal(result.target, 7);
+  assert.match(mock.calls[0].system_instruction, /tiga dadu dilempar bersamaan, brp peluang dapat 7/);
+});
+
+test('translates exact binomial parameters for local calculation', async () => {
+  const proposed = {
+    ...validDiceResponse(),
+    status: 'success',
+    category: 'binomial',
+    diceCount: null,
+    sidesPerDie: null,
+    eventType: 'binomial_exact',
+    target: 3,
+    successProbability: 0.6,
+    n: 5,
+    interpretation: 'Tepat 3 sukses dari 5 percobaan dengan p=3/5.'
+  };
+  const mock = mockClient(proposed);
+  const result = await createGeminiInterpreter({
+    client: mock.client,
+    model: 'mock-model'
+  })('Peluang sukses 3 dari 5 percobaan jika p=3/5?');
+
+  assert.equal(result.category, 'binomial');
+  assert.equal(result.target, 3);
+  assert.equal(result.successProbability, 0.6);
+  assert.equal(responseSchema.properties.successProbability.type, 'number');
+  assert.match(mock.calls[0].system_instruction, /P\(X=k\)=C\(n,k\)p\^k/);
+});
+
+test('translates a factor-of-six event instead of asking for a die face', async () => {
+  const proposed = {
+    ...validDiceResponse(),
+    eventType: 'factor_of',
+    target: 6,
+    interpretation: 'Mata dadu yang merupakan faktor positif dari 6.'
+  };
+  const mock = mockClient(proposed);
+  const interpret = createGeminiInterpreter({
+    client: mock.client,
+    model: 'mock-model'
+  });
+  const questions = [
+    'Peluang muncul mata dadu yang merupakan faktor dari 6?',
+    'Peluang mata dadu yang merupakan bilangan faktor dari 6?',
+    'Peluang dadu menunjukkan faktor-faktor 6?',
+    'Peluang mata dadu menjadi pembagi 6?',
+    'Peluang muncul angka yang membagi 6 tanpa sisa?'
+  ];
+
+  for (const question of questions) {
+    const result = await interpret(question);
+    assert.equal(result.status, 'success');
+    assert.equal(result.eventType, 'factor_of');
+    assert.equal(result.target, 6);
+  }
+  assert.equal(mock.calls.length, questions.length);
+  assert.match(mock.calls[0].system_instruction, /bilangan faktor dari X/);
+});
+
+test('allows Gemini to solve supported probability questions not modeled locally', async () => {
+  const proposed = {
+    ...validDiceResponse(),
+    status: 'ai_solved',
+    category: 'out_of_scope',
+    eventType: 'unknown',
+    solution: {
+      formula: 'P(A) = |A| / |S|',
+      answer: '1/2',
+      steps: ['Ruang sampel berisi dua hasil yang sama mungkin.', 'Satu hasil memenuhi kejadian.']
+    },
+    interpretation: 'Peluang kejadian A adalah setengah.'
+  };
+  const mock = mockClient(proposed);
+  const result = await createGeminiInterpreter({
+    client: mock.client,
+    model: 'mock-model'
+  })('Soal probabilitas lain yang belum didukung mesin lokal.');
+
+  assert.equal(result.status, 'ai_solved');
+  assert.equal(result.solution.answer, '1/2');
+  assert.match(mock.calls[0].system_instruction, /jangan menolaknya/);
+});
+
+test('solves a complete marble problem with a color outside the local schema', async () => {
+  const proposed = {
+    ...validDiceResponse(),
+    status: 'ai_solved',
+    category: 'out_of_scope',
+    eventType: 'unknown',
+    ballCounts: null,
+    ballTarget: 'unknown',
+    solution: {
+      formula: 'P(merah) = jumlah kelereng merah / jumlah seluruh kelereng',
+      answer: '3/12 = 1/4 = 25%',
+      steps: [
+        'Jumlah seluruh kelereng adalah 5 + 3 + 4 = 12.',
+        'Ada 3 kelereng merah, jadi peluang mengambil kelereng merah adalah 3/12 = 1/4 = 25%.'
+      ]
+    },
+    interpretation: 'Mengambil satu kelereng secara acak dari 5 biru, 3 merah, dan 4 hijau.'
+  };
+  const mock = mockClient(proposed);
+  const result = await createGeminiInterpreter({
+    client: mock.client,
+    model: 'mock-model'
+  })('Ada 5 kelereng biru, 3 merah, dan 4 hijau. Berapa peluang mengambil kelereng merah?');
+
+  assert.equal(result.status, 'ai_solved');
+  assert.equal(result.solution.answer, '3/12 = 1/4 = 25%');
+  assert.match(mock.calls[0].system_instruction, /hijau boleh dipetakan ke slot warna lokal yang belum dipakai/);
+  assert.match(mock.calls[0].system_instruction, /objek\/kejadian tidak dapat direpresentasikan/);
 });
 
 test('accepts text output blocks and rejects an empty interaction response', async () => {

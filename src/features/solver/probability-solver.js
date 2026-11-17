@@ -8,6 +8,7 @@ import {
   validateInterpretation
 } from './interpretation-contract.js';
 import { solveDiceInterpretation } from './dice-interpretation-engine.js';
+import { solveBinomialInterpretation } from './binomial-interpretation-engine.js';
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -31,6 +32,7 @@ const ui = {
   steps: $('solver-steps'),
   summary: $('solver-summary'),
   scene: $('solver-scene'),
+  guidedLearning: $('guided-learning'),
   visualDescription: $('solver-visual-description'),
   sample: $('solver-sample-space'),
   interpretationCard: $('solver-interpretation-card'),
@@ -208,6 +210,31 @@ function solveTwoDice(text) {
    2. SINGLE DIE PROBLEM
 ========================================== */
 
+function extractSingleDieTarget(text) {
+  const explicitPatterns = [
+    /(?:angka|mata|nilai|hasil|jumlah|nomor|bilangan)\s*(?:dadu)?\s*(?:adalah\s*)?(?:=)?\s*(\d+)/,
+    /(?:mendapat(?:kan)?|muncul(?:nya)?|keluar|dapat|terambil|terjadi|menerima|menghasilkan)\s+(?:sebanyak\s+)?(\d+)/,
+    /(?:peluang|kemungkinan|kesempatan)\s*(?:dari|pada|untuk)?\s*(?:muncul(?:nya)?\s+)?(?:angka\s+)?(\d+)/
+  ];
+
+  for (const pattern of explicitPatterns) {
+    const match = text.match(pattern);
+    if (match) {
+      return Number(match[1]);
+    }
+  }
+
+  const numberMatches = [...text.matchAll(/\d+/g)].map((match) => Number(match[0]));
+  if (!numberMatches.length) return null;
+
+  const singleDieCount = /\b(?:satu|sebuah|1)\s+dadu\b/.test(text);
+  const candidate = singleDieCount
+    ? numberMatches.find((value) => value !== 1)
+    : numberMatches[0];
+
+  return candidate ?? null;
+}
+
 function solveSingleDie(text) {
   let favorableValues = [];
 
@@ -216,15 +243,33 @@ function solveSingleDie(text) {
   } else if (/\bganjil\b/.test(text)) {
     favorableValues = [1, 3, 5];
   } else {
-    const match =
-      text.match(/(?:angka|mata)(?:\s+dadu)?\s*(?:adalah\s*)?(?:=)?\s*(\d+)/) ||
-      text.match(/muncul(?:nya)?\s*(?:angka\s*)?(\d+)/);
+    const value = extractSingleDieTarget(text);
 
-    if (!match) return null;
+    if (value === null) return null;
 
-    const value = Number(match[1]);
+    if (value < 1 || value > 6) {
+      const outcomes = [1, 2, 3, 4, 5, 6].map((option) => ({
+        value: option,
+        favorable: false
+      }));
 
-    if (value < 1 || value > 6) return null;
+      return createResult({
+        title: 'Peluang satu buah dadu',
+        model: 'dice-single',
+        favorable: 0,
+        total: 6,
+        sample: outcomes,
+        steps: [
+          'Sebuah dadu hanya memiliki enam kemungkinan hasil, yaitu 1 sampai 6.',
+          `Angka ${value} tidak pernah muncul pada dadu bersisi enam.`,
+          'Karena tidak ada sisi dengan nilai tersebut, peluangnya adalah 0/6.'
+        ],
+        description:
+          'Dadu 3D dan enam kemungkinan sisi. Tidak ada sisi yang bernilai dalam kejadian yang diminta, sehingga hasilnya nol.',
+        summary:
+          `Nilai ${value} tidak mungkin muncul pada dadu bersisi enam, sehingga peluangnya 0%.`
+      });
+    }
 
     favorableValues = [value];
   }
@@ -305,7 +350,12 @@ function solveCard(text) {
   let label = '';
   let favorable = 0;
 
-  if (/\bmerah\b/.test(text)) {
+  const redAce = /\b(?:as|ace)\b.*\bmerah\b|\bmerah\b.*\b(?:as|ace)\b/.test(text);
+
+  if (redAce) {
+    label = 'kartu As merah';
+    favorable = 2;
+  } else if (/\bmerah\b/.test(text)) {
     label = 'kartu merah';
     favorable = 26;
   } else if (/\bhitam\b/.test(text)) {
@@ -346,6 +396,7 @@ function solveCard(text) {
       if (label === 'kartu hitam') matched = !suit.red;
       if (label === 'kartu sekop') matched = suit.name === 'Sekop';
       if (label === 'kartu As') matched = rank === 'A';
+      if (label === 'kartu As merah') matched = rank === 'A' && suit.red;
       if (label === 'kartu bergambar') {
         matched = ['J', 'Q', 'K'].includes(rank);
       }
@@ -680,18 +731,18 @@ function clearVisualization() {
   visualizationGroup = null;
 }
 
-function addDice() {
+function addDice(problem = {}) {
   const group = new THREE.Group();
+  const count = problem.diceCount || 2;
+  const spacing = count === 2 ? 1.2 : 1;
 
-  const first = makeDie();
-  first.position.x = -0.6;
-  first.rotation.set(0.4, 0.5, 0.2);
-
-  const second = makeDie();
-  second.position.x = 0.6;
-  second.rotation.set(0.7, 0.2, 0.5);
-
-  group.add(first, second);
+  for (let index = 0; index < count; index += 1) {
+    const die = makeDie();
+    die.position.x = (index - (count - 1) / 2) * spacing;
+    die.rotation.set(0.4 + index * 0.2, 0.5 - index * 0.15, 0.2 + index * 0.1);
+    if (count === 3) die.scale.setScalar(0.85);
+    group.add(die);
+  }
 
   return group;
 }
@@ -1420,19 +1471,22 @@ function renderSamples(problem) {
       `solver-sample-item${item.favorable ? ' favorable' : ''}`;
 
     if (problem.model === 'dice') {
-      chip.textContent =
-        `${item.first}+${item.second}`;
+      const values = item.values || [item.first, item.second];
+      chip.textContent = values.join('+');
 
       const eventType = problem.interpretation?.eventType || 'sum_equals';
       const target = problem.interpretation?.target;
+      const matches = values.filter((value) => value === target).length;
       const detail = {
         sum_equals: `jumlah ${item.sum}`,
-        product_equals: `hasil kali ${item.first * item.second}`,
-        same_faces: item.first === item.second ? 'kedua dadu sama' : 'kedua dadu berbeda',
-        at_least_one_face_equals: `${Number(item.first === target) + Number(item.second === target)} dadu menunjukkan ${target}`,
-        at_most_one_face_equals: `${Number(item.first === target) + Number(item.second === target)} dadu menunjukkan ${target}`
+        product_equals: `hasil kali ${values.reduce((product, value) => product * value, 1)}`,
+        same_faces: values.every((value) => value === values[0])
+          ? 'semua dadu sama'
+          : 'mata dadu berbeda',
+        at_least_one_face_equals: `${matches} dadu menunjukkan ${target}`,
+        at_most_one_face_equals: `${matches} dadu menunjukkan ${target}`
       }[eventType] || `jumlah ${item.sum}`;
-      chip.title = `Dadu ${item.first} dan ${item.second}; ${detail}`;
+      chip.title = `Dadu ${values.join(', ')}; ${detail}`;
     } else {
       chip.textContent = item.value;
     }
@@ -1447,8 +1501,15 @@ function renderSamples(problem) {
 
 function showSolution(problem) {
   ui.output.hidden = false;
+  const hasGuidedVisualization = problem.model !== 'binomial';
+  ui.scene.hidden = !hasGuidedVisualization;
+  if (ui.guidedLearning) ui.guidedLearning.hidden = !hasGuidedVisualization;
 
-if (problem.kind === 'counting') {
+if (problem.kind === 'binomial') {
+  ui.answer.textContent = problem.fraction;
+  ui.percentage.textContent = `${problem.percentage.toFixed(2)}%`;
+  ui.fraction.textContent = problem.formula;
+} else if (problem.kind === 'counting') {
 
   ui.answer.textContent =
     problem.answerValue;
@@ -1489,11 +1550,13 @@ if (problem.kind === 'counting') {
   showVisualization(problem);
 
   // Kirim hasil analisis ke Step-by-Step Learning Engine
-window.dispatchEvent(
-  new CustomEvent('probability:solution-ready', {
-    detail: problem
-  })
-);
+if (hasGuidedVisualization) {
+  window.dispatchEvent(
+    new CustomEvent('probability:solution-ready', {
+      detail: problem
+    })
+  );
+}
 
   ui.output.scrollIntoView({
     behavior: 'smooth',
@@ -1686,11 +1749,14 @@ function solveConfirmedInterpretation(interpretation, source, confirmedByUser = 
 
   const validatedInterpretation = confirmed.data;
   pendingInterpretation = validatedInterpretation;
+  const binomialResult = validatedInterpretation.category === 'binomial'
+    ? solveBinomialInterpretation(validatedInterpretation)
+    : null;
   const diceResult = solveDiceInterpretation(validatedInterpretation);
-  const canonicalProblem = diceResult
+  const canonicalProblem = binomialResult || diceResult
     ? null
     : toCanonicalProblem(validatedInterpretation);
-  const result = diceResult || (canonicalProblem
+  const result = binomialResult || diceResult || (canonicalProblem
     ? analyzeProblem(canonicalProblem)
     : null);
 
@@ -1703,11 +1769,35 @@ function solveConfirmedInterpretation(interpretation, source, confirmedByUser = 
   }
 
   result.interpretation = validatedInterpretation;
+  if (validatedInterpretation.category === 'balls') {
+    result.summary = validatedInterpretation.interpretation;
+  }
   ui.interpretationCard.hidden = true;
   ui.status.classList.remove('error');
   ui.status.textContent = `Interpretasi ${source === 'local' ? 'lokal' : 'AI'} dikonfirmasi. Jawaban dihitung oleh mesin matematika lokal.`;
   setDiagnostics(source, 'completed', 'success');
   showSolution(result);
+}
+
+function showAiSolution(interpretation) {
+  const { solution } = interpretation;
+  ui.output.hidden = false;
+  ui.scene.hidden = true;
+  if (ui.guidedLearning) ui.guidedLearning.hidden = true;
+  ui.answer.textContent = solution.answer;
+  ui.percentage.textContent = 'Dihitung oleh Gemini';
+  ui.fraction.textContent = solution.formula;
+  ui.steps.replaceChildren();
+  solution.steps.forEach((step) => {
+    const item = document.createElement('li');
+    item.textContent = step;
+    ui.steps.appendChild(item);
+  });
+  ui.summary.textContent = interpretation.interpretation;
+  ui.sample.replaceChildren();
+  ui.visualDescription.textContent =
+    'Perhitungan ini dibuat oleh Gemini karena belum didukung mesin lokal; periksa kembali langkahnya.';
+  ui.output.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function processInterpretation(interpretation, diagnostics, question) {
@@ -1717,6 +1807,15 @@ function processInterpretation(interpretation, diagnostics, question) {
     interpretation.status
   );
   ui.status.classList.remove('error');
+
+  if (interpretation.status === 'ai_solved') {
+    hideInterpretationCard();
+    showAiSolution(interpretation);
+    ui.status.textContent =
+      'Soal diselesaikan oleh Gemini karena belum tersedia di mesin lokal. Periksa kembali hasilnya.';
+    setDiagnostics(diagnostics.interpretationSource, diagnostics.requestStatus, 'ai_solved');
+    return;
+  }
 
   if (interpretation.status === 'unsupported') {
     hideInterpretationCard();
@@ -1750,20 +1849,10 @@ async function runAnalysis() {
   pendingInterpretation = null;
   pendingQuestion = '';
 
-  const problem = analyzeProblem(rawText);
-
   if (!rawText.trim()) {
     ui.output.hidden = true;
-    ui.status.textContent = problem.error;
+    ui.status.textContent = 'Masukkan soal terlebih dahulu.';
     ui.status.classList.add('error');
-    return;
-  }
-
-  if (!problem.error) {
-    ui.status.textContent =
-      'Soal dikenali oleh parser lokal. Jawaban dihitung oleh mesin matematika.';
-    setDiagnostics('local', 'completed', 'success');
-    showSolution(problem);
     return;
   }
 
@@ -1781,7 +1870,7 @@ async function runAnalysis() {
     if (requestId !== activeAnalysis) return;
     ui.output.hidden = true;
     ui.status.textContent =
-      `Parser lokal belum dapat menyelesaikan soal. ${error.message}`;
+      `Analisis AI belum berhasil. ${error.message}`;
     ui.status.classList.add('error');
     setDiagnostics('gemini', error.requestStatus || 'error', 'uncertain');
   } finally {
@@ -1892,3 +1981,5 @@ window.addEventListener(
   },
   { once: true }
 );
+
+export { analyzeProblem, runAnalysis, solveSingleDie, solveTwoDice };

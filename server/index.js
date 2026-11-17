@@ -45,6 +45,41 @@ async function readJsonBody(request) {
   }
 }
 
+function normalizeExplicitSameColorDraw(interpretation, question) {
+  if (
+    interpretation?.category !== 'balls' ||
+    interpretation.drawCount !== 2 ||
+    !['color_draw', 'unknown'].includes(interpretation.eventType) ||
+    !['merah', 'biru', 'kuning'].includes(interpretation.ballTarget)
+  ) {
+    return interpretation;
+  }
+
+  const colorTerms = interpretation.ballTarget === 'kuning'
+    ? ['kuning', 'hijau']
+    : [interpretation.ballTarget];
+  const colorPattern = colorTerms.join('|');
+  const sameColorEvent = new RegExp(
+    `\\b(?:(?:kedua|dua)\\s+(?:bola|kelereng)\\s+(?:tersebut\\s+)?(?:berwarna\\s+)?(?:${colorPattern})|(?:keduanya|dua-duanya)\\s+(?:berwarna\\s+)?(?:${colorPattern}))\\b`,
+    'i'
+  );
+  if (!sameColorEvent.test(question)) return interpretation;
+
+  const missingInformation = (interpretation.missingInformation || [])
+    .filter((item) => !/kejadian dua bola dengan warna yang dicari/i.test(item));
+  const onlyMissingEvent = missingInformation.length === 0;
+
+  return {
+    ...interpretation,
+    status: interpretation.status === 'clarification' && onlyMissingEvent
+      ? 'success'
+      : interpretation.status,
+    eventType: 'same_color_draw',
+    missingInformation,
+    clarification: onlyMissingEvent ? '' : interpretation.clarification
+  };
+}
+
 export function createApiServer({
   interpret,
   host = HOST,
@@ -138,7 +173,9 @@ export function createApiServer({
         previousInterpretation,
         correction: correction.trim()
       });
-      const validation = validateInterpretation(rawInterpretation);
+      const validation = validateInterpretation(
+        normalizeExplicitSameColorDraw(rawInterpretation, question)
+      );
       if (!validation.valid) {
         const error = new Error(validation.error);
         error.statusCode = 502;
