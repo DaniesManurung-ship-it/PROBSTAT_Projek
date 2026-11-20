@@ -303,7 +303,7 @@ test('interprets a complete simultaneous ball draw without requesting redundant 
     diceCount: null,
     sidesPerDie: null,
     eventType: 'same_color_draw',
-    ballCounts: { merah: 4, biru: 5, kuning: 0 },
+    ballCounts: { merah: 4, biru: 5, kuning: 0, putih: 0 },
     ballTarget: 'merah',
     drawCount: 2,
     replacement: 'without',
@@ -316,7 +316,7 @@ test('interprets a complete simultaneous ball draw without requesting redundant 
   const result = await interpret(question);
 
   assert.equal(result.status, 'success');
-  assert.deepEqual(result.ballCounts, { merah: 4, biru: 5, kuning: 0 });
+  assert.deepEqual(result.ballCounts, { merah: 4, biru: 5, kuning: 0, putih: 0 });
   assert.equal(result.replacement, 'without');
   assert.match(toCanonicalProblem(result), /dua bola merah tanpa pengembalian/);
   assert.match(mock.calls[0].system_instruction, /warna yang tidak disebut sebagai 0/);
@@ -405,9 +405,21 @@ test('allows Gemini to solve supported probability questions not modeled locally
     category: 'out_of_scope',
     eventType: 'unknown',
     solution: {
+      known: ['Ruang sampel berisi dua hasil yang sama mungkin.'],
+      asked: 'Peluang satu dari dua hasil.',
+      analysis: 'Peluang adalah jumlah hasil yang memenuhi dibagi seluruh hasil.',
       formula: 'P(A) = |A| / |S|',
       answer: '1/2',
-      steps: ['Ruang sampel berisi dua hasil yang sama mungkin.', 'Satu hasil memenuhi kejadian.']
+      steps: ['Ada 2 hasil yang sama mungkin.', 'Satu hasil memenuhi kejadian, sehingga peluangnya 1/2.'],
+      conclusion: 'Peluang kejadian tersebut adalah 1/2 atau 50%.',
+      visualization: {
+        title: 'Dua hasil yang sama mungkin',
+        caption: 'Satu dari dua hasil ditandai sebagai kejadian yang dicari.',
+        items: [
+          { shape: 'token', label: 'Memenuhi', color: 'green', count: 1, favorable: true },
+          { shape: 'token', label: 'Lainnya', color: 'blue', count: 1, favorable: false }
+        ]
+      }
     },
     interpretation: 'Peluang kejadian A adalah setengah.'
   };
@@ -431,12 +443,25 @@ test('solves a complete marble problem with a color outside the local schema', a
     ballCounts: null,
     ballTarget: 'unknown',
     solution: {
+      known: ['5 kelereng biru', '3 kelereng merah', '4 kelereng hijau'],
+      asked: 'Peluang mengambil satu kelereng merah.',
+      analysis: 'Jumlah kelereng merah dibagi jumlah seluruh kelereng.',
       formula: 'P(merah) = jumlah kelereng merah / jumlah seluruh kelereng',
       answer: '3/12 = 1/4 = 25%',
       steps: [
         'Jumlah seluruh kelereng adalah 5 + 3 + 4 = 12.',
         'Ada 3 kelereng merah, jadi peluang mengambil kelereng merah adalah 3/12 = 1/4 = 25%.'
-      ]
+      ],
+      conclusion: 'Peluang mengambil kelereng merah adalah 1/4 atau 25%.',
+      visualization: {
+        title: 'Komposisi kelereng',
+        caption: 'Kelereng merah adalah kejadian yang dicari.',
+        items: [
+          { shape: 'sphere', label: 'Merah', color: 'red', count: 3, favorable: true },
+          { shape: 'sphere', label: 'Biru', color: 'blue', count: 5, favorable: false },
+          { shape: 'sphere', label: 'Hijau', color: 'green', count: 4, favorable: false }
+        ]
+      }
     },
     interpretation: 'Mengambil satu kelereng secara acak dari 5 biru, 3 merah, dan 4 hijau.'
   };

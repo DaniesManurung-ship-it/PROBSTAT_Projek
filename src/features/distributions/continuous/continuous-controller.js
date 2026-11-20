@@ -1,20 +1,26 @@
 import {
   calculateBinomialNormal,
+  calculateExponential,
   calculateNormal,
   calculateSampleMean,
+  calculateStudentT,
   calculateUniform,
-  normalPdf
+  exponentialPdf,
+  normalPdf,
+  studentTPdf
 } from './continuous-math.js';
 
 const root = document.querySelector('#continuous-content');
 const tabsHost = document.querySelector('#continuous-tabs');
+const advancedTabsHost = document.querySelector('#continuous-advanced-tabs');
 
 const MATERIALS = [
-  { id: 'concepts', label: 'Konsep Dasar', title: 'Konsep Dasar Distribusi Kontinu' },
-  { id: 'uniform', label: 'Uniform', title: 'Seragam Kontinu (Uniform)' },
-  { id: 'normal', label: 'Normal', title: 'Distribusi Normal' },
-  { id: 'sample', label: 'Rata-Rata Sampel', title: 'Distribusi Rata-Rata Sampel (X̄)' },
-  { id: 'binomial-normal', label: 'Binomial → Normal', title: 'Pendekatan Binomial dengan Normal' }
+  { id: 'normal', label: 'Normal (Gaussian)', subtitle: 'Kurva lonceng simetris (μ, σ)', icon: '🔔', title: 'Distribusi Normal' },
+  { id: 'exponential', label: 'Eksponensial', subtitle: 'Waktu tunggu & daya tahan (λ)', icon: '⏱️', title: 'Distribusi Eksponensial' },
+  { id: 'uniform', label: 'Uniform Kontinu', subtitle: 'Kerapatan konstan pada interval [a, b]', icon: '📏', title: 'Seragam Kontinu (Uniform)' },
+  { id: 'student-t', label: 'Student-t', subtitle: 'Sampel kecil dengan derajat bebas (df)', icon: '🧪', title: 'Distribusi Student-t' },
+  { id: 'sample', label: 'Rata-Rata Sampel', title: 'Distribusi Rata-Rata Sampel (X̄)', advanced: true },
+  { id: 'binomial-normal', label: 'Binomial → Normal', title: 'Pendekatan Binomial dengan Normal', advanced: true }
 ];
 
 const PRESETS = {
@@ -30,6 +36,7 @@ const PRESETS = {
     { label: 'Latihan komprehensif: P(7 ≤ X ≤ 12), Uniform(5, 15)', values: { a: 5, b: 15, eventType: 'between', c: 7, d: 12 } }
   ],
   normal: [
+    { label: 'Contoh: P(0 ≤ X ≤ 1,96), μ=0, σ=1', values: { mode: 'probability', mu: 0, sigma: 1, eventType: 'between', c: 0, d: 1.96 } },
     { label: 'Modul: P(X > 85), μ=70, σ=10', values: { mode: 'probability', mu: 70, sigma: 10, eventType: 'greaterThan', c: 85 } },
     { label: 'Modul: P(480 ≤ X ≤ 530), μ=500, σ=20', values: { mode: 'probability', mu: 500, sigma: 20, eventType: 'between', c: 480, d: 530 } },
     { label: 'Modul: P(19,5 ≤ X ≤ 20,8), μ=20, σ=0,5', values: { mode: 'probability', mu: 20, sigma: 0.5, eventType: 'between', c: 19.5, d: 20.8 } },
@@ -54,10 +61,32 @@ const PRESETS = {
     { label: 'Latihan: P(15 ≤ X ≤ 25), n=400, p=0,05', values: { n: 400, p: 0.05, eventType: 'integerBetween', a: 15, b: 25, continuityCorrection: true } },
     { label: 'Latihan: P(X < 45), n=250, p=0,20', values: { n: 250, p: 0.2, eventType: 'strictLessThan', k: 45, continuityCorrection: true } },
     { label: 'Komprehensif: P(X ≥ 30), n=300, p=0,08', values: { n: 300, p: 0.08, eventType: 'atLeast', k: 30, continuityCorrection: true } }
+  ],
+  exponential: [
+    { label: 'Contoh: P(X ≤ 3), λ=0,5', values: { lambda: 0.5, eventType: 'lessThan', c: 3 } },
+    { label: 'Waktu tunggu: P(0 ≤ X ≤ 2), λ=1,5', values: { lambda: 1.5, eventType: 'between', c: 0, d: 2 } },
+    { label: 'Ekor kanan: P(X ≥ 2), λ=0,5', values: { lambda: 0.5, eventType: 'greaterThan', c: 2 } }
+  ],
+  'student-t': [
+    { label: 'Contoh: P(−1,5 ≤ t ≤ 1,5), df=5', values: { df: 5, eventType: 'between', c: -1.5, d: 1.5 } },
+    { label: 'Ekor kiri: P(t ≤ 1,645), df=10', values: { df: 10, eventType: 'lessThan', c: 1.645 } },
+    { label: 'Ekor kanan: P(t ≥ 2), df=8', values: { df: 8, eventType: 'greaterThan', c: 2 } }
   ]
 };
 
 const FIELD_CONFIG = {
+  exponential: [
+    ['lambda', 'Laju kedatangan (λ)', '1.5', 'Laju rata-rata kejadian per satuan waktu; harus lebih dari 0.'],
+    ['eventType', 'Jenis kejadian', 'between', '', [['lessThan', 'Ekor kiri: X ≤ c'], ['greaterThan', 'Ekor kanan: X ≥ c'], ['between', 'Antara c dan d'], ['exact', 'Tepat pada satu titik']]],
+    ['c', 'Batas bawah / batas c', '0', 'Batas yang ditanyakan; distribusi bernilai nol untuk x < 0.'],
+    ['d', 'Batas atas (d)', '2', 'Batas akhir untuk kejadian antara.']
+  ],
+  'student-t': [
+    ['df', 'Derajat bebas (df)', '5', 'Bilangan bulat minimal 1.'],
+    ['eventType', 'Jenis kejadian', 'between', '', [['lessThan', 'Ekor kiri: t ≤ c'], ['greaterThan', 'Ekor kanan: t ≥ c'], ['between', 'Antara c dan d'], ['exact', 'Tepat pada satu titik']]],
+    ['c', 'Batas bawah / batas c', '-1.5', 'Nilai t yang ditanyakan.'],
+    ['d', 'Batas atas (d)', '1.5', 'Batas akhir untuk kejadian antara.']
+  ],
   uniform: [
     ['a', 'Batas bawah (a)', '10', 'Nilai minimum interval Uniform.'],
     ['b', 'Batas atas (b)', '20', 'Harus lebih besar dari a.'],
@@ -98,19 +127,24 @@ const FIELD_CONFIG = {
 };
 
 const SYMBOLS = {
+  exponential: [['λ', 'Laju rata-rata kejadian per satuan waktu.', 'λ=0,5 berarti rata-rata dua satuan waktu antar-kejadian.'], ['f(x)', 'Kerapatan peluang untuk waktu tunggu x ≥ 0.', 'f(x)=λe^(−λx).'], ['F(x)', 'Peluang bahwa waktu tunggu tidak melebihi x.', 'F(x)=1−e^(−λx).'], ['E(X)', 'Waktu tunggu rata-rata, yaitu 1/λ.', 'Jika λ=0,5 maka E(X)=2.']],
+  'student-t': [['df (ν)', 'Derajat bebas yang menentukan ketebalan ekor.', 'df=5 menghasilkan ekor lebih tebal dari Normal.'], ['f(t)', 'Kerapatan Student-t simetris di sekitar 0.', 'PDF ditentukan oleh derajat bebas ν.'], ['F(t)', 'Peluang kumulatif sampai nilai t.', 'CDF dihitung dari beta tak lengkap teratur.'], ['Var(t)', 'Varians hanya terdefinisi untuk df > 2.', 'Var(t)=df/(df−2) jika df>2.']],
   uniform: [['a, b', 'Batas terkecil dan terbesar yang mungkin.', 'Untuk Uniform(10, 20), panjang totalnya 10.'], ['f(x)', 'PDF atau tinggi kepadatan peluang.', 'Pada Uniform(10, 20), f(x)=1/10.'], ['F(x)', 'CDF: peluang sampai dengan x.', 'F(15)=0,50 pada Uniform(10, 20).'], ['E(X)', 'Mean atau titik tengah interval.', 'E(X)=(a+b)/2.'], ['Var(X)', 'Varians yang mengukur sebaran.', 'Var(X)=(b−a)²/12.']],
   normal: [['μ', 'Mean; pusat kurva Normal.', 'μ=70 adalah nilai pusat.'], ['σ', 'Simpangan baku; lebar sebaran.', 'σ=10 berarti satu unit Z setara 10 satuan X.'], ['Z', 'Skor baku: jarak dari μ dalam satuan σ.', 'Z=1 berarti satu σ di atas mean.'], ['Φ(z)', 'CDF Normal baku, luas di kiri z.', 'Φ(1,5)≈0,9332.']],
   sample: [['X̄', 'Rata-rata sampel yang peluangnya dihitung.', 'Rata-rata panjang 16 baut.'], ['n', 'Jumlah pengamatan dalam satu sampel.', 'n=16.'], ['SE', 'Standard error σ/√n; sebaran rata-rata.', 'σ=2 dan n=16 memberi SE=0,5.'], ['Z', 'Skor baku rata-rata sampel; pembaginya SE.', 'Z=(X̄−μ)/SE.']],
   'binomial-normal': [['n', 'Jumlah percobaan Binomial.', 'n=200 transaksi.'], ['p', 'Peluang sukses per percobaan.', 'p=0,10.'], ['μ=np', 'Mean dari Binomial dan Normal pendekatan.', '200×0,10=20.'], ['σ=√np(1−p)', 'Simpangan baku pendekatan Normal.', 'Untuk n=200,p=0,10, σ=√18.'], ['±0,5', 'Koreksi kontinuitas untuk batas bilangan bulat.', 'P(X≥25) menjadi P(Y>24,5).']]
 };
 
-let activeId = 'concepts';
+let activeId = 'normal';
 
-if (!root || !tabsHost) {
+if (!root || !tabsHost || !advancedTabsHost) {
   console.error('Fitur Distribusi Peluang Kontinu tidak dapat dimulai: elemen halaman tidak ditemukan.');
 } else {
   renderPage();
 }
+document.querySelectorAll('[data-continuous-preset]').forEach((button) => {
+  button.addEventListener('click', () => applyGlobalPreset(button.dataset.continuousPreset));
+});
 
 function esc(value) {
   return String(value).replaceAll('&', '&amp;').replaceAll('"', '&quot;').replaceAll('<', '&lt;');
@@ -122,28 +156,59 @@ function formatNumber(value, digits = 4) {
 
 function renderPage() {
   tabsHost.replaceChildren();
+  advancedTabsHost.replaceChildren();
   for (const material of MATERIALS) {
-    const button = document.createElement('button');
-    button.className = 'distribution-tab';
-    button.type = 'button';
-    button.id = `continuous-tab-${material.id}`;
-    button.setAttribute('role', 'tab');
-    button.setAttribute('aria-selected', String(activeId === material.id));
-    button.setAttribute('aria-controls', 'continuous-content');
-    button.textContent = material.label;
-    button.addEventListener('click', () => {
-      activeId = material.id;
-      renderPage();
-    });
-    tabsHost.appendChild(button);
+    const button = createDistributionTab(material);
+    (material.advanced ? advancedTabsHost : tabsHost).appendChild(button);
   }
   root.setAttribute('role', 'tabpanel');
   root.setAttribute('aria-labelledby', `continuous-tab-${activeId}`);
-  if (activeId === 'concepts') {
-    renderConcepts();
-    return;
-  }
   renderCalculator();
+}
+
+function applyGlobalPreset(key) {
+  const examples = {
+    iq: {
+      id: 'normal',
+      values: { mode: 'probability', mu: 100, sigma: 15, eventType: 'between', c: 85, d: 115 }
+    },
+    antrean: {
+      id: 'exponential',
+      values: { lambda: 0.5, eventType: 'lessThan', c: 3 }
+    },
+    generator: {
+      id: 'uniform',
+      values: { a: 0, b: 1, eventType: 'between', c: 0.25, d: 0.75 }
+    }
+  };
+  const example = examples[key];
+  if (!example) throw new RangeError(`Contoh distribusi kontinu "${key}" tidak tersedia.`);
+  activeId = example.id;
+  renderPage();
+  for (const [fieldName, value] of Object.entries(example.values)) {
+    const field = root.querySelector(`[data-field="${fieldName}"]`);
+    if (field) field.value = String(value);
+  }
+  updateVisibility();
+  calculate();
+}
+
+function createDistributionTab(material) {
+  const button = document.createElement('button');
+  button.className = `distribution-tab${material.advanced ? ' advanced-distribution-tab' : ''}`;
+  button.type = 'button';
+  button.id = `continuous-tab-${material.id}`;
+  button.setAttribute('role', 'tab');
+  button.setAttribute('aria-selected', String(activeId === material.id));
+  button.setAttribute('aria-controls', 'continuous-content');
+  button.innerHTML = material.icon
+    ? `<span class="continuous-tab-icon" aria-hidden="true">${material.icon}</span><span class="continuous-tab-copy"><strong>${material.label}</strong><small>${material.subtitle}</small></span>`
+    : material.label;
+  button.addEventListener('click', () => {
+    activeId = material.id;
+    renderPage();
+  });
+  return button;
 }
 
 function renderConcepts() {
@@ -194,32 +259,45 @@ function createConceptSvg() {
 }
 
 function renderCalculator() {
-  const title = MATERIALS.find((item) => item.id === activeId).title;
+  const material = MATERIALS.find((item) => item.id === activeId);
+  const title = material.title;
   const presets = PRESETS[activeId];
   const fields = FIELD_CONFIG[activeId];
   root.innerHTML = `
-    <article class="continuous-intro">
-      <span class="section-kicker">MATERI DISTRIBUSI PELUANG KONTINU</span>
-      <h3>${title}</h3>
-      <p>${getIntroduction(activeId)}</p>
-      <div class="continuous-info-grid">${SYMBOLS[activeId].map(([symbol, meaning, example]) => `
-        <article><code>${symbol}</code><p>${meaning}</p><small>Contoh: ${example}</small></article>`).join('')}</div>
-      <details class="continuous-conditions"><summary>Syarat penggunaan</summary><ul>${getConditions(activeId).map((text) => `<li>${text}</li>`).join('')}</ul></details>
-      <div class="continuous-formula">${getFormula(activeId)}</div>
-      ${flowPanel()}
-    </article>
-    <form class="continuous-calculator" novalidate>
-      <div class="continuous-calculator-heading"><div><span class="section-kicker">KALKULATOR INTERAKTIF</span><h4>Isi nilai, lalu hitung peluang</h4></div>
-        <label class="continuous-preset">Contoh dari Modul
-          <select data-preset>${presets.map((preset, index) => `<option value="${index}">${esc(preset.label)}</option>`).join('')}</select>
-        </label>
-      </div>
-      <div class="continuous-fields">${fields.map((field) => fieldMarkup(field)).join('')}</div>
-      ${activeId === 'binomial-normal' ? '<div class="continuous-condition-check" data-condition-check></div>' : ''}
-      <p class="continuous-form-error" data-error role="alert" aria-live="assertive"></p>
-      <div class="continuous-actions"><button class="distribution-button primary" type="submit">Hitung Peluang</button><button class="distribution-button secondary" type="button" data-reset>Reset ke contoh</button></div>
-    </form>
-    <div data-result class="continuous-result" hidden></div>`;
+    <div class="continuous-workspace-layout">
+      <form class="continuous-calculator" novalidate>
+        <div class="continuous-panel-heading">
+          <div><span class="section-kicker">PARAMETER INPUT</span><h3>${title}</h3></div>
+          <span class="continuous-model-badge">${material.label}</span>
+        </div>
+        <div class="continuous-formula-card">
+          <span>RUMUS FUNGSI KERAPATAN PROBABILITAS (PDF)</span>
+          <strong>${esc(getFormula(activeId))}</strong>
+          <p>${esc(getIntroduction(activeId))}</p>
+        </div>
+        <div class="continuous-calculator-heading">
+          <span class="section-kicker">ATUR PARAMETER DAN KEJADIAN</span>
+          <label class="continuous-preset">Contoh perhitungan
+            <select data-preset>${presets.map((preset, index) => `<option value="${index}">${esc(preset.label)}</option>`).join('')}</select>
+          </label>
+        </div>
+        <div class="continuous-fields">${fields.map((field) => fieldMarkup(field)).join('')}</div>
+        ${activeId === 'binomial-normal' ? '<div class="continuous-condition-check" data-condition-check></div>' : ''}
+        <details class="continuous-learning-details">
+          <summary>Syarat dan panduan penggunaan</summary>
+          <p>${esc(getIntroduction(activeId))}</p>
+          <ul>${getConditions(activeId).map((text) => `<li>${esc(text)}</li>`).join('')}</ul>
+          <div class="continuous-info-grid">${SYMBOLS[activeId].map(([symbol, meaning, example]) => `
+            <article><code>${esc(symbol)}</code><p>${esc(meaning)}</p><small>Contoh: ${esc(example)}</small></article>`).join('')}</div>
+          ${flowPanel()}
+        </details>
+        <p class="continuous-form-error" data-error role="alert" aria-live="assertive"></p>
+        <div class="continuous-actions"><button class="distribution-button primary" type="submit">⚡ Hitung Probabilitas Luas</button><button class="distribution-button secondary" type="button" data-reset>Reset</button></div>
+      </form>
+      <section class="continuous-output-panel" aria-label="Hasil dan visualisasi">
+        <div data-result class="continuous-result" hidden></div>
+      </section>
+    </div>`;
 
   const form = root.querySelector('form');
   const applyPreset = (index) => {
@@ -260,10 +338,12 @@ function renderCalculator() {
   root.querySelector('[data-reset]').addEventListener('click', () => {
     root.querySelector('[data-preset]').value = '0';
     applyPreset(0);
-    root.querySelector('[data-error]').textContent = '';
+    calculate();
   });
   updateVisibility();
   updateConditionCheck();
+  applyPreset(0);
+  calculate();
 }
 
 function fieldMarkup([key, label, value, helper, options]) {
@@ -285,6 +365,9 @@ function updateVisibility() {
   if (activeId === 'uniform') {
     set('c', eventType !== 'between');
     set('d', eventType === 'between');
+  } else if (activeId === 'exponential' || activeId === 'student-t') {
+    set('c', true);
+    set('d', eventType === 'between');
   } else if (activeId === 'normal') {
     const quantile = mode === 'quantile';
     set('eventType', !quantile); set('c', !quantile); set('d', !quantile && eventType === 'between');
@@ -303,7 +386,7 @@ function updateVisibility() {
 function readValues() {
   const values = {};
   root.querySelectorAll('[data-field]').forEach((field) => {
-    if (field.closest('[hidden]')) return;
+    if (field.closest('[data-field-wrap][hidden]')) return;
     if (field.type === 'checkbox') {
       values[field.dataset.field] = field.checked;
       return;
@@ -336,6 +419,8 @@ function calculate() {
     let result;
     if (activeId === 'uniform') result = calculateUniform(values);
     else if (activeId === 'normal') result = calculateNormal(values);
+    else if (activeId === 'exponential') result = calculateExponential(values);
+    else if (activeId === 'student-t') result = calculateStudentT(values);
     else if (activeId === 'sample') result = calculateSampleMean(values);
     else result = calculateBinomialNormal(values);
     renderResult(result);
@@ -377,6 +462,8 @@ function findErrorField(message) {
   const text = message.toLowerCase();
   const matchingLabel = FIELD_CONFIG[activeId].find(([, label]) => text.includes(label.toLowerCase()));
   if (matchingLabel) return matchingLabel[0];
+  if (activeId === 'exponential' && text.includes('laju')) return 'lambda';
+  if (activeId === 'student-t' && text.includes('derajat bebas')) return 'df';
   if (text.includes('simpangan baku')) return 'sigma';
   if (text.includes('peluang sukses') || text.includes('peluang p')) return 'p';
   if (text.includes('ukuran sampel') || text.includes('jumlah percobaan')) return 'n';
@@ -394,17 +481,38 @@ function findErrorField(message) {
 function renderResult(result) {
   const host = root.querySelector('[data-result]');
   host.hidden = false;
-  host.innerHTML = `<div class="continuous-result-header"><span class="section-kicker">HASIL PERHITUNGAN</span><span class="distribution-result-badge">${result.distribution}</span></div>
-    <p class="continuous-result-event">${esc(result.event)}</p>
-    <div class="continuous-result-primary"><span>Peluang desimal</span><strong>${result.probability > 0 && result.probability < 0.00005 ? '&lt; 0,0001' : formatNumber(result.probability, 4)}</strong>
-      <span>Persentase</span><b>${formatNumber(result.percentage, 2)}%</b></div>
-    <div class="continuous-intermediate">${Object.entries(result.intermediate).filter(([, value]) => Number.isFinite(value))
-      .map(([key, value]) => `<span><b>${esc(key)}</b> ${formatNumber(value, 4)}</span>`).join('')}
-      ${result.mean !== undefined ? `<span><b>E(X)</b> ${formatNumber(result.mean)}</span><span><b>Var(X)</b> ${formatNumber(result.variance)}</span><span><b>σ</b> ${formatNumber(result.standardDeviation)}</span>` : ''}</div>
+  const mean = Object.hasOwn(result, 'mean')
+    ? result.mean
+    : result.parameters.mu ?? result.intermediate.mu ?? null;
+  const standardDeviation = Object.hasOwn(result, 'standardDeviation')
+    ? result.standardDeviation
+    : result.intermediate.standardDeviation ?? result.intermediate.sigma ??
+      (Number.isFinite(result.parameters.sigma)
+        ? result.parameters.n
+          ? result.parameters.sigma / Math.sqrt(result.parameters.n)
+          : result.parameters.sigma
+        : null);
+  const variance = Object.hasOwn(result, 'variance')
+    ? result.variance
+    : result.intermediate.variance ?? (Number.isFinite(standardDeviation) ? standardDeviation ** 2 : null);
+  const stat = (value) => value === null || value === undefined || Number.isNaN(value)
+    ? '—'
+    : value === Infinity ? '∞' : formatNumber(value, 2);
+  const visibleSteps = result.steps.length <= 4
+    ? result.steps
+    : [...result.steps.slice(0, 3), result.steps[result.steps.length - 1]];
+  host.innerHTML = `<div class="continuous-result-header"><span class="section-kicker">HASIL PERHITUNGAN</span><span class="distribution-result-badge">✓ Terverifikasi Kalkulus</span></div>
+    <div class="continuous-result-stats">
+      <div class="continuous-result-primary"><span>Peluang luas daerah P(A)</span><strong>${formatNumber(result.percentage, 2)}%</strong><small>Nilai eksak: ${formatNumber(result.probability, 5)}</small><b>${esc(result.event)}</b></div>
+      <div class="continuous-stat-card"><span>Ekspektasi E(X)</span><strong>${stat(mean)}</strong><small>Pusat sebaran kurva</small></div>
+      <div class="continuous-stat-card"><span>Varians / deviasi</span><strong>${stat(variance)}</strong><small>Deviasi: σ = ${stat(standardDeviation)}</small></div>
+    </div>
     ${result.warnings.map((warning) => `<p class="continuous-warning">${esc(warning)}</p>`).join('')}
     ${result.continuityNote ? `<p class="continuous-note"><b>Mengapa koreksi kontinuitas?</b> ${esc(result.continuityNote)}</p>` : ''}
-    <section class="continuous-steps"><h4>Pembahasan langkah demi langkah</h4><ol>${result.steps.map((step) => `<li><b>${esc(step.title)}</b><p>${esc(step.explanation)}</p></li>`).join('')}</ol></section>
-    ${renderChart(result.chart)}`;
+    ${renderChart(result.chart)}
+    <section class="continuous-steps"><h4>Langkah Penyelesaian Matematis</h4><ol>${visibleSteps.map((step) => `<li><b>${esc(step.title)}</b><p>${esc(step.explanation)}</p></li>`).join('')}</ol>
+      ${result.steps.length > 4 ? `<details class="continuous-full-steps"><summary>Lihat seluruh langkah</summary><ol>${result.steps.map((step) => `<li><b>${esc(step.title)}</b><p>${esc(step.explanation)}</p></li>`).join('')}</ol></details>` : ''}
+    </section>`;
 }
 
 function renderChart(chart) {
@@ -413,21 +521,36 @@ function renderChart(chart) {
   const pad = { left: 52, right: 24, top: 28, bottom: 42 };
   const plotWidth = width - pad.left - pad.right;
   const plotHeight = height - pad.top - pad.bottom;
-  const defaultLow = chart.type === 'uniform' ? chart.a - (chart.b - chart.a) * 0.18 : chart.mu - chart.sigma * 4;
-  const defaultHigh = chart.type === 'uniform' ? chart.b + (chart.b - chart.a) * 0.18 : chart.mu + chart.sigma * 4;
-  const lo = chart.type === 'uniform' || !Number.isFinite(chart.lower)
-    ? defaultLow : Math.min(defaultLow, chart.lower - chart.sigma * 0.25);
-  const hi = chart.type === 'uniform' || !Number.isFinite(chart.upper)
-    ? defaultHigh : Math.max(defaultHigh, chart.upper + chart.sigma * 0.25);
+  const isUniform = chart.type === 'uniform';
+  const isExponential = chart.type === 'exponential';
+  const isStudentT = chart.type === 'student_t';
+  const center = isExponential ? chart.mean : chart.mu;
+  const defaultLow = isUniform
+    ? chart.a - (chart.b - chart.a) * 0.18
+    : isExponential ? 0 : isStudentT ? -4.5 : chart.mu - chart.sigma * 4;
+  const defaultHigh = isUniform
+    ? chart.b + (chart.b - chart.a) * 0.18
+    : isExponential ? Math.max(5 / chart.lambda, 6) : isStudentT ? 4.5 : chart.mu + chart.sigma * 4;
+  const extension = isStudentT ? 0.5 : isExponential ? 0 : chart.sigma * 0.25;
+  const lo = isUniform || isExponential || !Number.isFinite(chart.lower)
+    ? defaultLow : Math.min(defaultLow, chart.lower - extension);
+  const finiteUpper = Number.isFinite(chart.upper) ? chart.upper : chart.lower;
+  const hi = isUniform || !Number.isFinite(finiteUpper)
+    ? defaultHigh : Math.max(defaultHigh, finiteUpper + extension);
   const x = (value) => pad.left + ((value - lo) / (hi - lo)) * plotWidth;
-  const pdf = chart.type === 'uniform'
+  const pdf = isUniform
     ? (value) => value >= chart.a && value <= chart.b ? 1 / (chart.b - chart.a) : 0
-    : (value) => normalPdf(value, chart.mu, chart.sigma);
-  const maxY = Math.max(pdf(chart.mu), chart.type === 'uniform' ? 1 / (chart.b - chart.a) : 0) * 1.22;
+    : isExponential ? (value) => exponentialPdf(value, chart.lambda)
+      : isStudentT ? (value) => studentTPdf(value, chart.df)
+        : (value) => normalPdf(value, chart.mu, chart.sigma);
+  const peakX = isExponential ? 0 : isUniform ? chart.a : isStudentT ? 0 : chart.mu;
+  const maxY = Math.max(pdf(peakX), isUniform ? 1 / (chart.b - chart.a) : 0) * 1.22;
   const y = (value) => pad.top + plotHeight - (value / maxY) * plotHeight;
   const samples = Array.from({ length: 181 }, (_, index) => lo + ((hi - lo) * index) / 180);
   const curvePath = samples.map((value, index) => `${index ? 'L' : 'M'}${x(value).toFixed(2)},${y(pdf(value)).toFixed(2)}`).join(' ');
-  let svg = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Kurva kepadatan ${chart.type === 'uniform' ? 'Uniform' : 'Normal'} dengan area peluang diarsir">
+  const distributionName = chart.type === 'uniform' ? 'Uniform'
+    : isExponential ? 'Eksponensial' : isStudentT ? 'Student-t' : 'Normal';
+  let svg = `<svg viewBox="0 0 ${width} ${height}" role="img" aria-label="Kurva kepadatan ${distributionName} dengan area peluang diarsir">
     <path d="M${pad.left},${pad.top + plotHeight} H${width - pad.right}" stroke="currentColor" opacity=".45"/>
     <path d="M${pad.left},${pad.top} V${pad.top + plotHeight}" stroke="currentColor" opacity=".25"/>`;
   if (chart.type === 'binomial-normal') {
@@ -454,12 +577,20 @@ function renderChart(chart) {
     svg += `<path d="${broad}" fill="none" stroke="#e4b85e" stroke-width="2" stroke-dasharray="6 5"/>`;
   }
   svg += `<path d="${curvePath}" fill="none" stroke="#64b7ff" stroke-width="3"/>`;
-  const markers = new Set([chart.mu, chart.type === 'uniform' ? chart.a : chart.mu - chart.sigma, chart.type === 'uniform' ? chart.b : chart.mu + chart.sigma]);
+  const markers = new Set();
+  if (Number.isFinite(center)) markers.add(center);
+  if (isUniform) {
+    markers.add(chart.a);
+    markers.add(chart.b);
+  } else if (!isExponential && !isStudentT) {
+    markers.add(chart.mu - chart.sigma);
+    markers.add(chart.mu + chart.sigma);
+  }
   if (Number.isFinite(chart.lower)) markers.add(chart.lower);
   if (Number.isFinite(chart.upper)) markers.add(chart.upper);
   for (const marker of markers) {
     if (marker < lo || marker > hi) continue;
-    const label = marker === chart.mu ? (chart.type === 'uniform' ? 'E(X)' : 'μ') : formatNumber(marker, 2);
+    const label = marker === center ? (isUniform || isExponential ? 'E(X)' : 'μ') : formatNumber(marker, 2);
     svg += `<path d="M${x(marker).toFixed(2)},${pad.top + plotHeight} V${pad.top + plotHeight - 8}" stroke="currentColor" opacity=".5"/>
       <text x="${x(marker).toFixed(2)}" y="${height - 13}" text-anchor="middle" fill="currentColor" font-size="10">${label}</text>`;
   }
@@ -497,6 +628,8 @@ function getIntroduction(id) {
   return ({
     uniform: 'Jika X ~ Uniform(a,b), setiap nilai di dalam interval memiliki kepadatan yang sama. Peluang adalah bagian panjang interval yang ditanyakan dibanding panjang total.',
     normal: 'Distribusi Normal memiliki kurva lonceng yang simetris. μ menentukan pusat dan σ menentukan lebar sebaran. Aplikasi menghitung Φ secara lokal tanpa tabel manual.',
+    exponential: 'Distribusi Eksponensial memodelkan waktu antar-kejadian saat laju rata-rata tetap. λ menentukan seberapa cepat kejadian berlangsung dan sifat memoryless menjadi ciri khasnya.',
+    'student-t': 'Distribusi Student-t memiliki ekor lebih tebal daripada Normal dan digunakan untuk inferensi mean ketika simpangan baku populasi tidak diketahui.',
     sample: 'Distribusi ini menghitung rata-rata sampel X̄, bukan satu pengamatan. Sebarannya lebih sempit karena simpangan baku rata-ratanya adalah SE = σ/√n.',
     'binomial-normal': 'Binomial adalah distribusi diskrit. Untuk n cukup besar, peluang Binomial dapat dihampiri oleh kurva Normal dengan parameter μ=np dan σ=√np(1−p).'
   })[id];
@@ -506,6 +639,8 @@ function getConditions(id) {
   return ({
     uniform: ['X kontinu berada di interval [a,b] dengan a < b.', 'Kepadatan dianggap sama di seluruh interval dan tidak ada nilai di luarnya.'],
     normal: ['Variabel kontinu berbentuk lonceng simetris atau soal menyatakan asumsi Normal.', 'Mean μ dan simpangan baku σ diketahui; σ harus lebih besar dari 0.'],
+    exponential: ['Variabel menyatakan waktu tunggu atau durasi nonnegatif.', 'Laju kejadian λ tetap dan waktu antar-kejadian mengikuti asumsi Eksponensial.'],
+    'student-t': ['Pengamatan independen dan berasal dari populasi Normal untuk inferensi t eksak.', 'Derajat bebas df adalah bilangan bulat minimal 1; varians hanya ada jika df > 2.'],
     sample: ['Populasi normal atau ukuran sampel cukup besar sebagai pendekatan Teorema Limit Pusat.', 'Sampel acak, pengamatan independen, dan n bilangan bulat minimal 1.'],
     'binomial-normal': ['Asalnya Binomial: n percobaan independen dengan dua hasil dan p tetap.', 'Syarat praktis pendekatan: np ≥ 5 dan n(1−p) ≥ 5. Jika tidak terpenuhi, hasil tetap dihitung tetapi kurang dapat diandalkan.']
   })[id];
@@ -515,6 +650,8 @@ function getFormula(id) {
   return ({
     uniform: 'f(x)=1/(b−a)  ·  F(x)=(x−a)/(b−a)  ·  P(c≤X≤d)=(d−c)/(b−a)  ·  E(X)=(a+b)/2  ·  Var(X)=(b−a)²/12',
     normal: 'f(x)=1/(σ√(2π)) exp(−(x−μ)²/(2σ²))  ·  Z=(X−μ)/σ  ·  P(c≤X≤d)=Φ(z₂)−Φ(z₁)',
+    exponential: 'f(x)=λe^(−λx), x≥0  ·  F(x)=1−e^(−λx)  ·  E(X)=1/λ  ·  Var(X)=1/λ²',
+    'student-t': 'f(t)=Γ((ν+1)/2)/(√(νπ)Γ(ν/2)) · (1+t²/ν)^(-(ν+1)/2), ν=df',
     sample: 'X̄ ~ N(μ, σ²/n)  ·  SE=σ/√n  ·  Z=(X̄−μ)/SE',
     'binomial-normal': 'X~Bin(n,p) ≈ Y~N(μ=np, σ²=np(1−p))  ·  terapkan koreksi kontinuitas ±0,5'
   })[id];
@@ -525,11 +662,13 @@ function flowPanel() {
     <summary>Alur Penyelesaian Soal — buka panduan</summary>
     <ol>
       <li>Kenali jenis variabel: kontinu atau diskrit.</li>
-      <li>Pilih distribusi sesuai asumsi: Uniform, Normal, atau Binomial.</li>
-      <li>Tulis parameter (a,b), (μ,σ), atau (n,p).</li>
+      <li>Pilih distribusi sesuai asumsi: Uniform, Normal, Eksponensial, atau Student-t.</li>
+      <li>Tulis parameter sesuai model, seperti (a,b), (μ,σ), λ, atau df.</li>
       <li>Ubah pertanyaan menjadi kejadian peluang.</li>
       <li>Uniform: hitung rasio panjang interval.</li>
       <li>Normal: standardisasi ke Z lalu gunakan CDF Φ.</li>
+      <li>Eksponensial: gunakan fungsi laju λ dan sifat memoryless.</li>
+      <li>Student-t: hitung CDF berdasarkan derajat bebas df.</li>
       <li>Rata-rata sampel: gunakan SE = σ/√n.</li>
       <li>Binomial: jika layak, gunakan Normal dengan μ=np dan σ=√np(1−p).</li>
       <li>Binomial–Normal: pertimbangkan koreksi kontinuitas.</li>

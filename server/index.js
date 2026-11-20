@@ -50,7 +50,7 @@ function normalizeExplicitSameColorDraw(interpretation, question) {
     interpretation?.category !== 'balls' ||
     interpretation.drawCount !== 2 ||
     !['color_draw', 'unknown'].includes(interpretation.eventType) ||
-    !['merah', 'biru', 'kuning'].includes(interpretation.ballTarget)
+    !['merah', 'biru', 'kuning', 'putih'].includes(interpretation.ballTarget)
   ) {
     return interpretation;
   }

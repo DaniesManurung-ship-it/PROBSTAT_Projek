@@ -54,7 +54,7 @@ test('requests clarification when a ball draw omits replacement information', ()
     eventType: 'same_color_draw',
     diceCount: null,
     sidesPerDie: null,
-    ballCounts: { merah: 5, biru: 4, kuning: 0 },
+    ballCounts: { merah: 5, biru: 4, kuning: 0, putih: 0 },
     ballTarget: 'merah',
     drawCount: 2,
     replacement: 'unspecified'
@@ -72,7 +72,7 @@ test('keeps an impossible target-color draw calculable as zero probability', () 
     eventType: 'same_color_draw',
     diceCount: null,
     sidesPerDie: null,
-    ballCounts: { merah: 1, biru: 4, kuning: 0 },
+    ballCounts: { merah: 1, biru: 4, kuning: 0, putih: 0 },
     ballTarget: 'merah',
     drawCount: 2,
     replacement: 'without'
@@ -81,6 +81,24 @@ test('keeps an impossible target-color draw calculable as zero probability', () 
   assert.equal(result.valid, true);
   assert.equal(result.data.status, 'success');
   assert.match(toCanonicalProblem(result.data), /tanpa pengembalian/);
+});
+
+test('preserves white-ball counts and target color in the canonical problem', () => {
+  const result = validateInterpretation(interpretation({
+    category: 'balls',
+    eventType: 'color_draw',
+    diceCount: null,
+    sidesPerDie: null,
+    ballCounts: { merah: 2, biru: 1, kuning: 0, putih: 3 },
+    ballTarget: 'putih',
+    drawCount: 1,
+    replacement: 'not_applicable'
+  }));
+
+  assert.equal(result.valid, true);
+  assert.equal(result.data.status, 'success');
+  assert.match(toCanonicalProblem(result.data), /3 bola putih/);
+  assert.match(toCanonicalProblem(result.data), /bola putih\?/);
 });
 
 test('does not pass contradictory conditional counts to the engine', () => {
@@ -215,9 +233,21 @@ test('accepts a Gemini-computed solution for a probability question outside loca
     category: 'out_of_scope',
     eventType: 'unknown',
     solution: {
+      known: ['Ruang sampel berisi dua hasil yang sama mungkin.'],
+      asked: 'Peluang satu dari dua hasil.',
+      analysis: 'Peluang adalah jumlah hasil yang memenuhi dibagi seluruh hasil.',
       formula: 'P(A) = |A| / |S|',
       answer: '1/2',
-      steps: ['Ruang sampel berisi dua hasil yang sama mungkin.', 'Satu hasil memenuhi kejadian.']
+      steps: ['Ada 2 hasil yang sama mungkin.', 'Satu hasil memenuhi kejadian, sehingga peluangnya 1/2.'],
+      conclusion: 'Peluang kejadian tersebut adalah 1/2 atau 50%.',
+      visualization: {
+        title: 'Dua hasil yang sama mungkin',
+        caption: 'Satu dari dua hasil ditandai sebagai kejadian yang dicari.',
+        items: [
+          { shape: 'token', label: 'Memenuhi', color: 'green', count: 1, favorable: true },
+          { shape: 'token', label: 'Lainnya', color: 'blue', count: 1, favorable: false }
+        ]
+      }
     }
   }));
 
@@ -283,7 +313,7 @@ test('validates coin, card, balls, and conditional probability intents', () => {
       diceCount: null,
       sidesPerDie: null,
       eventType: 'color_draw',
-      ballCounts: { merah: 5, biru: 3, kuning: 0 },
+      ballCounts: { merah: 5, biru: 3, kuning: 0, putih: 0 },
       ballTarget: 'merah',
       drawCount: 1
     }),

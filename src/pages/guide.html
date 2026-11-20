@@ -1,0 +1,162 @@
+<section class="guide-page" id="guide" aria-labelledby="guide-title">
+  <div class="guide-context">
+    <div class="guide-context-left">
+      <span class="guide-module-badge"><b>✦</b> MODUL PANDUAN</span>
+      <span class="guide-version">/ DOKUMENTASI INTERAKTIF v2.4</span>
+    </div>
+    <div class="guide-shortcuts" aria-label="Pintasan panduan">
+      <span>Pintasan:</span>
+      <a href="#guide">4 Langkah</a>
+      <a href="#controls-guide">Kontrol 3D</a>
+      <a href="#how-it-works">Mulai Praktik</a>
+    </div>
+  </div>
+
+  <section class="guide-main-heading" aria-labelledby="guide-title">
+    <div>
+      <span class="guide-kicker"><b>⚡</b> PANDUAN PENGGUNA</span>
+      <h1 id="guide-title">Cara menggunakan <span>Probability 3D</span></h1>
+      <p>Ikuti alur sederhana ini saat belajar melalui laboratorium simulasi visual, ruang sampel matematis, dan pembuktian empiris.</p>
+    </div>
+    <aside class="guide-step-counter" aria-label="Estimasi tiga menit">
+      <strong>4</strong>
+      <div>
+        <b>Tahap Alur</b>
+        <span>Estimasi: 3 Menit</span>
+      </div>
+    </aside>
+  </section>
+
+  <div class="guide-grid">
+    <article class="guide-card guide-card--navigation">
+      <div class="guide-card-top">
+        <span class="guide-card-number">01</span>
+        <span class="guide-card-tag">Navigasi</span>
+      </div>
+      <h3>Buka eksperimen</h3>
+      <p>Pilih materi dari navigasi atas. Semua lab dadu, koin, kartu, dan bola sudah bisa dicoba secara mandiri.</p>
+      <div class="guide-card-preview">
+        <small>Pratinjau Modul:</small>
+        <div class="guide-module-list">
+          <span class="guide-module-dice">🎲 Dadu</span>
+          <span class="guide-module-coins">🪙 Koin</span>
+          <span class="guide-module-cards">🃏 Kartu</span>
+          <span class="guide-module-balls">⚪ Bola</span>
+        </div>
+      </div>
+    </article>
+
+    <article class="guide-card guide-card--3d">
+      <div class="guide-card-top">
+        <span class="guide-card-number">02</span>
+        <span class="guide-card-tag">Interaksi 3D</span>
+      </div>
+      <h3>Amati visual 3D</h3>
+      <p>Putar sudut pandang dengan mouse dan tekan tombol lempar/ambil untuk menjalankan simulasi fisika acak secara real-time.</p>
+      <div class="guide-card-preview guide-dice-preview">
+        <button type="button" id="guide-spin-dice" class="guide-mini-button">↻ Putar Dadu</button>
+        <span id="guide-demo-dice" aria-live="polite">🎲</span>
+        <small>Klik tombol untuk simulasi putar</small>
+      </div>
+    </article>
+
+    <article class="guide-card guide-card--sample">
+      <div class="guide-card-top">
+        <span class="guide-card-number">03</span>
+        <span class="guide-card-tag">Matriks n(S)</span>
+      </div>
+      <h3>Jelajahi ruang sampel</h3>
+      <p>Pilih kotak kombinasi untuk melihat angka pada kedua dadu secara langsung dan hitung ruang sampel n(S)=36.</p>
+      <div class="guide-card-preview guide-matrix-preview">
+        <div class="guide-matrix-label"><small>SampeL (6×6)</small><b>n(S) = 36</b></div>
+        <div id="guide-mini-matrix" class="guide-mini-matrix" aria-label="Contoh matriks ruang sampel">
+          <i></i><i></i><i class="is-active"></i><i></i><i></i><i class="is-active"></i>
+          <i></i><i class="is-active"></i><i></i><i></i><i class="is-active"></i><i></i>
+        </div>
+      </div>
+    </article>
+
+    <article class="guide-card guide-card--formula">
+      <div class="guide-card-top">
+        <span class="guide-card-number">04</span>
+        <span class="guide-card-tag">Solusi &amp; Rumus</span>
+      </div>
+      <h3>Ikuti pembahasan</h3>
+      <p>Gunakan tombol langkah berikutnya untuk menghubungkan visualisasi grafis dengan rumus peluang teoritis.</p>
+      <div class="guide-card-preview guide-formula-preview">
+        <small>Rumus Peluang Klasik:</small>
+        <strong>P(A) = n(A) / n(S)</strong>
+        <div><span>Langkah:</span><i></i><i></i><i></i><i class="is-muted"></i></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="guide-controls" id="controls-guide" aria-label="Panduan kontrol 3D">
+  <div class="guide-controls-heading">
+    <div>
+      <span>TIPS NAVIGASI 3D ENGINE</span>
+      <h2>Kontrol &amp; Interaksi Laboratorium</h2>
+    </div>
+    <p>Manipulasi ruang simulasi 3-Dimensi dengan kombinasi tetikus (mouse), layar sentuh, dan tombol pintasan keyboard.</p>
+  </div>
+  <div class="guide-control-grid">
+    <article>
+      <div class="guide-control-icon guide-control-icon--blue">☝</div>
+      <h3>Klik Kiri &amp; Seret (Orbit)</h3>
+      <p>Tahan klik kiri mouse lalu geser ke segala arah untuk memutar sudut kamera 360 derajat di sekitar meja dadu atau wadah bola.</p>
+      <footer><span>Sentuh: 1 Jari</span><b>360° Rotasi</b></footer>
+    </article>
+    <article>
+      <div class="guide-control-icon guide-control-icon--yellow">⌕</div>
+      <h3>Gulir Roda Mouse (Zoom)</h3>
+      <p>Putar roda mouse ke depan untuk memperbesar titik jatuhnya dadu, atau ke belakang untuk melihat keseluruhan ruang sampel.</p>
+      <footer><span>Sentuh: Cubit 2 Jari</span><b>Perbesar / Perkecil</b></footer>
+    </article>
+    <article>
+      <div class="guide-control-icon guide-control-icon--green">✥</div>
+      <h3>Klik Kanan &amp; Geser (Pan)</h3>
+      <p>Tahan klik kanan atau tombol Shift + klik kiri untuk menggeser posisi panggung simulasi secara horizontal maupun vertikal.</p>
+      <footer><span>Sentuh: 2 Jari Geser</span><b>Pindah Posisi</b></footer>
+    </article>
+  </div>
+</section>
+
+<section class="learning-note guide-learning-banner" id="how-it-works" aria-label="Metodologi pembelajaran">
+  <div class="guide-learning-doodle" aria-hidden="true"></div>
+  <div class="guide-learning-content">
+    <span class="guide-methodology"><i>✳</i> METODOLOGI BELAJAR SIKLUS 3 LANGKAH</span>
+    <h2>Belajar dengan melihat, mencoba, dan memahami.</h2>
+    <p>Visualisasi ini adalah prototipe awal. Coba lempar dadu secara langsung, pilih pasangan koordinat pada ruang sampel, lalu ikuti pembuktian hukum bilangan besar (<u>Law of Large Numbers</u>).</p>
+    <div class="guide-actions">
+      <a class="guide-action guide-action--blue" href="#lab">Jelajahi Lab Dadu <b>→</b></a>
+      <a class="guide-action guide-action--pink" href="#coin-lab">Coba Eksperimen Koin <b>🪙</b></a>
+      <a class="guide-action guide-action--outline" href="#quiz-system">Mulai Kuis &amp; Evaluasi <b>▣</b></a>
+    </div>
+  </div>
+</section>
+
+<section class="guide-faq" aria-label="Pertanyaan sering ditanyakan">
+  <header>
+    <span>BANTUAN &amp; TROUBLESHOOTING</span>
+    <h2>Pertanyaan Sering Ditanyakan (FAQ)</h2>
+  </header>
+  <div class="guide-faq-grid">
+    <article>
+      <h3><b class="faq-blue">Q:</b> Mengapa hasil eksperimen berbeda dengan peluang teoritis?</h3>
+      <p>Pada jumlah lemparan sedikit, fluktuasi acak sangat tinggi. Tekan tombol “Lempar 100x” beberapa kali untuk melihat proporsi empiris mendekati peluang teoritis.</p>
+    </article>
+    <article>
+      <h3><b class="faq-pink">Q:</b> Apakah dadu di lab benar-benar adil (fair dice)?</h3>
+      <p>Ya! Generator acak menggunakan algoritma <code>Math.random()</code> berbasis pseudo-random number generator dengan bobot identik 1/6 untuk setiap sisi dadu.</p>
+    </article>
+    <article>
+      <h3><b class="faq-yellow">Q:</b> Bagaimana cara memilih target kejadian tertentu?</h3>
+      <p>Gunakan menu filter di panel laboratorium. Matriks ruang sampel akan otomatis menyoroti titik kejadian n(A) yang valid dengan warna hijau mint.</p>
+    </article>
+    <article>
+      <h3><b class="faq-green">Q:</b> Apakah web ini mendukung perangkat ponsel (smartphone)?</h3>
+      <p>Tentu. Tata letak, tombol, kartu instruksi, dan matriks telah dioptimasi secara responsif untuk layar ponsel sentuh dan gerakan cubit atau geser.</p>
+    </article>
+  </div>
+</section>

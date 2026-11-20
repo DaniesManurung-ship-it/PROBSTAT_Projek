@@ -159,7 +159,6 @@ function startCoinLab() {
   let flip = null;
   let frame = 0;
   let history = [];
-  let liveUI = null;
   let simulationRunning = false;
 
   function coinCount() { return Number(ui.coinCount.value); }
@@ -199,53 +198,6 @@ function startCoinLab() {
       ui.target.appendChild(option);
     }
     ui.target.value = String(Math.min(previousValue, count));
-  }
-
-  function buildLivePanel() {
-    const panel = document.createElement('div');
-    panel.className = 'live-prob-panel';
-    panel.id = 'coin-live-panel';
-    panel.innerHTML = `
-      <div class="live-prob-header">
-        <div class="live-prob-header-left">
-          <span class="live-prob-kicker">HASIL DAN PELUANG</span>
-          <p class="live-prob-title">Bagaimana hasil percobaan mendekati teori?</p>
-        </div>
-        <span class="live-prob-badge">OTOMATIS</span>
-      </div>
-      <div class="live-prob-body">
-        <div class="live-prob-current">
-          <div class="live-prob-box highlight">
-            <span class="live-prob-box-label">PELUANG TEORITIS</span>
-            <span class="live-prob-box-value" id="lpcoin-theory">0%</span>
-            <span class="live-prob-box-sub" id="lpcoin-theory-sub"></span>
-          </div>
-          <div class="live-prob-box success-box">
-            <span class="live-prob-box-label">FREKUENSI HASIL</span>
-            <span class="live-prob-box-value" id="lpcoin-frequency">0%</span>
-            <span class="live-prob-box-sub" id="lpcoin-frequency-sub">0 kejadian dari 0 lemparan</span>
-          </div>
-        </div>
-        <div class="live-prob-formula">
-          <span class="live-prob-formula-label">FREKUENSI RELATIF</span>
-          <span class="live-prob-formula-expr" id="lpcoin-formula"></span>
-          <span class="live-prob-formula-result" id="lpcoin-result"></span>
-        </div>
-        <div class="live-prob-history">
-          <div class="live-prob-history-title">RIWAYAT PELEMPARAN</div>
-          <div class="live-prob-log" id="lpcoin-log"></div>
-        </div>
-      </div>`;
-    document.querySelector('.coin-summary-card').appendChild(panel);
-    return {
-      theory: panel.querySelector('#lpcoin-theory'),
-      theorySub: panel.querySelector('#lpcoin-theory-sub'),
-      frequency: panel.querySelector('#lpcoin-frequency'),
-      frequencySub: panel.querySelector('#lpcoin-frequency-sub'),
-      formula: panel.querySelector('#lpcoin-formula'),
-      result: panel.querySelector('#lpcoin-result'),
-      log: panel.querySelector('#lpcoin-log')
-    };
   }
 
   function updateExplanation(probability) {
@@ -321,47 +273,6 @@ function startCoinLab() {
       ? `Dari ${total} pelemparan, kejadian “tepat ${targetHeads()} ANGKA” terjadi ${hits} kali. Frekuensi percobaannya ${pct}, sedangkan peluang teori ${formatPercent(probability.probability)}. Perbedaan ini wajar pada percobaan acak, terutama jika jumlah lemparan masih sedikit.`
       : 'Belum ada percobaan. Tekan “Lempar koin” untuk membandingkan hasil nyata dengan peluang teori.';
     updateExplanation(probability);
-    if (liveUI) updateLivePanel(probability);
-  }
-
-  function updateLivePanel(probability = eventProbability()) {
-    const frequency = total ? hits / total : 0;
-    liveUI.theory.textContent = formatPercent(probability.probability);
-    liveUI.theorySub.textContent =
-      `${probability.favorableCount} dari ${probability.totalOutcomes} kemungkinan`;
-    liveUI.frequency.textContent = formatPercent(frequency);
-    liveUI.frequencySub.textContent = `${hits} kejadian dari ${total} lemparan`;
-    liveUI.formula.textContent = `Frekuensi = ${hits} / ${total}`;
-    liveUI.result.textContent = total
-      ? `= ${simplifyFraction(hits, total)} ≈ ${formatPercent(frequency)}`
-      : '= belum ada data percobaan';
-
-    liveUI.log.replaceChildren();
-    if (!history.length) {
-      const empty = document.createElement('div');
-      empty.className = 'live-prob-empty';
-      empty.textContent = 'Riwayat hasil akan muncul setelah koin dilempar.';
-      liveUI.log.appendChild(empty);
-      return;
-    }
-    history.slice().reverse().forEach((entry) => {
-      const row = document.createElement('div');
-      row.className = `live-prob-log-entry${entry.hit ? ' is-hit' : ''}`;
-      const number = document.createElement('span');
-      number.className = 'log-num';
-      number.textContent = String(entry.number);
-      const result = document.createElement('span');
-      result.className = `log-result${entry.hit ? ' hit' : ''}`;
-      result.textContent = entry.results.join(' + ');
-      const fraction = document.createElement('span');
-      fraction.className = 'log-formula';
-      fraction.textContent = `${entry.hitsAfter}/${entry.number}`;
-      const rate = document.createElement('span');
-      rate.className = `log-pct${entry.hit ? ' hit' : ''}`;
-      rate.textContent = formatPercent(entry.hitsAfter / entry.number);
-      row.append(number, result, fraction, rate);
-      liveUI.log.appendChild(row);
-    });
   }
 
   function finish(results) {
@@ -377,8 +288,7 @@ function startCoinLab() {
       number: total,
       results,
       heads: results.filter((side) => side === 'ANGKA').length,
-      hit,
-      hitsAfter: hits
+      hit
     });
     updateStats();
   }
@@ -416,8 +326,7 @@ function startCoinLab() {
         number: history.length + 1,
         results: outcome.result,
         heads: outcome.heads,
-        hit: outcome.hit,
-        hitsAfter: updatedHits
+        hit: outcome.hit
       });
     }
     total += result.trialCount;
@@ -526,7 +435,6 @@ function startCoinLab() {
   const disposeRendererResize = observeRendererSize(ui.host, renderer, camera);
   updateTargetOptions();
   layoutCoins();
-  liveUI = buildLivePanel();
   updateStats();
   render();
 

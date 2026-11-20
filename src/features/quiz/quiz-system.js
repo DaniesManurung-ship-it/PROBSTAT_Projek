@@ -587,49 +587,46 @@ if (Object.values(ui).every(Boolean)) {
       <div class="quiz-feedback-card ${isCorrect ? 'correct' : 'incorrect'}">
 
         <div class="quiz-feedback-header">
-
-          <strong>
-            ${isCorrect ? '✓' : '✕'}
-            ${title}
-          </strong>
-
+          <span class="quiz-feedback-status" aria-hidden="true">${isCorrect ? '✓' : '!'}</span>
+          <div>
+            <span class="quiz-feedback-kicker">${isCorrect ? 'JAWABAN BENAR' : 'PERLU DITINJAU'}</span>
+            <strong>${title}</strong>
+          </div>
         </div>
 
         <div class="quiz-feedback-answer">
-
-          <span>Jawaban kamu</span>
-
-          <p>
-            ${escapeHTML(
-              getSelectedDisplay(question, answer)
-            )}
-          </p>
-
-          <span>Jawaban yang benar</span>
-
-          <p class="quiz-correct-answer">
-            ${escapeHTML(getCorrectDisplay(question))}
-          </p>
-
+          <div>
+            <span>Jawaban kamu</span>
+            <p class="${isCorrect ? 'quiz-correct-answer' : 'incorrect-text'}">
+              ${escapeHTML(getSelectedDisplay(question, answer))}
+            </p>
+          </div>
+          <div>
+            <span>Jawaban yang benar</span>
+            <p class="quiz-correct-answer">
+              ${escapeHTML(getCorrectDisplay(question))}
+            </p>
+          </div>
         </div>
 
         <div class="quiz-explanation-content">
-
-          <h4>Mengapa jawaban tersebut benar?</h4>
-
-          <ol>
+          <div class="quiz-explanation-heading">
+            <span aria-hidden="true">◎</span>
+            <h4>Mengapa jawaban tersebut benar?</h4>
+          </div>
+          <ol class="quiz-explanation-steps">
             ${question.steps.map(step => `
               <li>${escapeHTML(step)}</li>
             `).join('')}
           </ol>
-
         </div>
 
         <div class="quiz-explanation-summary">
-          <strong>Kesimpulan</strong>
-
-          <p>${escapeHTML(question.answerDisplay)}</p>
-
+          <span aria-hidden="true">✓</span>
+          <div>
+            <strong>Kesimpulan</strong>
+            <p>${escapeHTML(question.answerDisplay)}</p>
+          </div>
         </div>
 
         ${solverButton}
@@ -809,8 +806,14 @@ if (Object.values(ui).every(Boolean)) {
     if (validationMessage) {
       ui.feedback.hidden = false;
       ui.feedback.innerHTML = `
-        <div class="quiz-feedback-card incorrect">
-          ${escapeHTML(validationMessage)}
+        <div class="quiz-feedback-card incorrect quiz-feedback-validation">
+          <div class="quiz-feedback-header">
+            <span class="quiz-feedback-status" aria-hidden="true">!</span>
+            <div>
+              <span class="quiz-feedback-kicker">PERLU MELENGKAPI JAWABAN</span>
+              <strong>${escapeHTML(validationMessage)}</strong>
+            </div>
+          </div>
         </div>
       `;
       return;
@@ -1005,6 +1008,7 @@ if (Object.values(ui).every(Boolean)) {
     ui.setup.hidden = true;
     ui.results.hidden = true;
     ui.session.hidden = false;
+    ui.setup.closest('.quiz-system-section')?.setAttribute('data-state', 'session');
 
     ui.session.dataset.mode = mode;
 
@@ -1153,6 +1157,7 @@ if (Object.values(ui).every(Boolean)) {
     ui.setup.hidden = true;
     ui.session.hidden = true;
     ui.results.hidden = false;
+    ui.results.closest('.quiz-system-section')?.setAttribute('data-state', 'results');
 
     const history = readStorage(STORAGE.history);
 
@@ -1382,6 +1387,7 @@ if (Object.values(ui).every(Boolean)) {
       ui.setup.hidden = false;
       ui.feedback.innerHTML = '';
       ui.feedback.hidden = true;
+      ui.feedback.closest('.quiz-system-section')?.setAttribute('data-state', 'setup');
 
       session = null;
     });
@@ -1507,4 +1513,5 @@ if (Object.values(ui).every(Boolean)) {
   ui.results.hidden = true;
 
   ui.setup.hidden = false;
+  ui.setup.closest('.quiz-system-section')?.setAttribute('data-state', 'setup');
 }

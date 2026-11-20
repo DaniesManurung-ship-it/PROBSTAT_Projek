@@ -1,0 +1,815 @@
+<style>
+#page-home {
+  --home-ink: #111827;
+  --home-text: #1e293b;
+  --home-muted: #64748b;
+  --home-line: #e2e8f0;
+  --home-surface: #fff;
+  --home-soft: #f8fafc;
+  --home-blue: #0099ff;
+  --home-pink: #e60067;
+  --home-yellow: #f9a826;
+  --home-green: #10b981;
+}
+
+html[data-theme="dark"] #page-home {
+  --home-ink: #020617;
+  --home-text: #e2e8f0;
+  --home-muted: #94a3b8;
+  --home-line: #263650;
+  --home-surface: #131d31;
+  --home-soft: #0f182a;
+  --home-blue: #38bdf8;
+  --home-pink: #fb4b9b;
+  --home-yellow: #fbbf24;
+  --home-green: #34d399;
+}
+
+html[data-active-page="home"] #app > .topbar:not(.is-collapsed) {
+  position: sticky;
+  top: 10px;
+  width: min(calc(100% - 32px), 1540px);
+  height: auto;
+  min-height: 58px;
+  margin: 10px auto 0;
+  padding: 7px clamp(12px, 2vw, 26px);
+  border: 1px solid rgba(255, 255, 255, .9);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .9);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, .08), 0 2px 6px rgba(15, 23, 42, .04);
+  backdrop-filter: blur(18px);
+}
+
+html[data-theme="dark"][data-active-page="home"] #app > .topbar:not(.is-collapsed) {
+  border-color: rgba(71, 85, 105, .75);
+  background: rgba(15, 23, 42, .9);
+  box-shadow: 0 8px 26px rgba(2, 6, 23, .42);
+}
+
+html[data-active-page="home"] #app > .topbar .topbar-content {
+  width: 100%;
+  min-width: 0;
+  gap: clamp(8px, 1vw, 16px);
+}
+
+html[data-active-page="home"] #app > .topbar .brand {
+  flex: 0 0 auto;
+  gap: 7px;
+}
+
+html[data-active-page="home"] #app > .topbar .brand-mark {
+  width: 27px;
+  height: 31px;
+  background: transparent;
+  box-shadow: none;
+}
+
+html[data-active-page="home"] #app > .topbar .brand-name {
+  font-size: 8px;
+  letter-spacing: .08em;
+  line-height: 1.15;
+}
+
+html[data-active-page="home"] #app > .topbar .top-nav {
+  flex: 1 1 auto;
+  min-width: 0;
+  height: auto;
+  justify-content: center;
+  gap: 2px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+html[data-active-page="home"] #app > .topbar .top-nav::-webkit-scrollbar { display: none; }
+
+html[data-active-page="home"] #app > .topbar .top-nav a {
+  flex: 0 0 auto;
+  height: 32px;
+  padding: 0 clamp(6px, .7vw, 11px);
+  border-radius: 999px;
+  font-size: clamp(8px, .75vw, 10px);
+  white-space: nowrap;
+}
+
+html[data-active-page="home"] #app > .topbar .top-nav a.active {
+  color: #047857;
+  background: #dff7e9;
+}
+
+html[data-theme="dark"][data-active-page="home"] #app > .topbar .top-nav a.active {
+  color: #a7f3d0;
+  background: rgba(6, 95, 70, .5);
+}
+
+#page-home > section { margin-bottom: clamp(48px, 7vw, 84px); }
+
+#page-home .home-hero {
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 570px;
+  padding: 62px 18px 48px;
+  text-align: center;
+}
+
+#page-home .home-hero::before,
+#page-home .home-hero::after {
+  position: absolute;
+  z-index: -1;
+  content: '';
+  pointer-events: none;
+}
+
+#page-home .home-hero::before {
+  top: 32px;
+  left: calc((100% - 100vw) / 2 - 30px);
+  width: clamp(110px, 15vw, 205px);
+  height: clamp(170px, 25vw, 310px);
+  border: 2px solid var(--home-ink);
+  border-radius: 0 0 100px 0;
+  background: var(--home-pink);
+  transform: rotate(2deg);
+}
+
+#page-home .home-hero::after {
+  top: 78px;
+  right: calc((100% - 100vw) / 2 - 36px);
+  width: clamp(110px, 14vw, 190px);
+  height: clamp(190px, 27vw, 330px);
+  border: 2px solid var(--home-ink);
+  border-radius: 120px 0 0 120px;
+  background: var(--home-yellow);
+  transform: rotate(-3deg);
+}
+
+#page-home .home-doodle {
+  position: absolute;
+  color: var(--home-pink);
+  font-size: 24px;
+  font-weight: 900;
+  pointer-events: none;
+}
+
+#page-home .home-doodle--left { top: 36%; left: 10%; color: var(--home-yellow); transform: rotate(-12deg); }
+#page-home .home-doodle--right { top: 53%; right: 12%; color: var(--home-green); transform: rotate(12deg); }
+#page-home .home-doodle--spark { top: 63%; left: 19%; color: var(--home-blue); font-size: 18px; }
+
+#page-home .home-eyebrow,
+#page-home .home-section-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--home-blue);
+  font: 800 10px/1.4 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+#page-home .home-eyebrow { margin-bottom: 14px; }
+
+#page-home .home-eyebrow::before {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: currentColor;
+  content: '';
+}
+
+#page-home .home-title {
+  max-width: 1050px;
+  margin: 0;
+  color: var(--home-blue);
+  font: 900 clamp(2.5rem, 7.3vw, 6.35rem)/.91 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -.065em;
+  text-transform: uppercase;
+  -webkit-text-stroke: 1.6px var(--home-ink);
+  paint-order: stroke fill;
+  text-shadow: 4px 4px 0 var(--home-ink);
+}
+
+#page-home .home-title span { display: block; }
+#page-home .home-title .home-title-pink { color: #ff2e8c; }
+
+html[data-theme="dark"] #page-home .home-title {
+  -webkit-text-stroke-color: #020617;
+  text-shadow: 4px 4px 0 #020617, 0 0 28px rgba(0, 153, 255, .22);
+}
+
+html[data-theme="dark"] #page-home .home-title .home-title-pink { color: #fb4b9b; }
+
+#page-home .home-hero-copy {
+  max-width: 660px;
+  margin: 22px 0 0;
+  color: var(--home-text);
+  font-size: clamp(12px, 1.2vw, 15px);
+  font-weight: 600;
+  line-height: 1.7;
+}
+
+#page-home .home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+#page-home .home-hero-actions { margin-top: 21px; }
+
+#page-home .home-button {
+  min-height: 43px;
+  padding: 0 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  border: 2px solid var(--home-ink);
+  border-radius: 13px;
+  box-shadow: 3px 3px 0 var(--home-ink);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
+}
+
+#page-home .home-button:hover { transform: translate(-2px, -2px); box-shadow: 5px 5px 0 var(--home-ink); filter: brightness(1.04); }
+#page-home .home-button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--home-ink); }
+#page-home .home-button--blue { background: var(--home-blue); }
+#page-home .home-button--pink { background: var(--home-pink); }
+#page-home .home-button--yellow { color: #111827; background: var(--home-yellow); }
+#page-home .home-button--outline { color: var(--home-text); background: var(--home-surface); }
+
+#page-home .home-quick-card,
+#page-home .home-card {
+  border: 2px solid var(--home-ink);
+  border-radius: 19px;
+  background: var(--home-surface);
+  box-shadow: 4px 4px 0 var(--home-ink);
+}
+
+#page-home .home-quick-card {
+  width: min(100%, 560px);
+  margin-top: 28px;
+  padding: 14px 16px 13px;
+  text-align: left;
+}
+
+#page-home .home-window-bar,
+#page-home .home-lab-heading,
+#page-home .home-panel-heading,
+#page-home .home-section-heading,
+#page-home .home-footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#page-home .home-window-bar {
+  padding-bottom: 9px;
+  border-bottom: 2px solid var(--home-line);
+  color: var(--home-muted);
+  font: 700 9px 'DM Mono', 'Courier New', monospace;
+}
+
+#page-home .home-window-dots { display: flex; gap: 5px; }
+#page-home .home-window-dots i { width: 8px; height: 8px; border: 1px solid var(--home-ink); border-radius: 50%; }
+#page-home .home-window-dots i:nth-child(1) { background: var(--home-pink); }
+#page-home .home-window-dots i:nth-child(2) { background: var(--home-yellow); }
+#page-home .home-window-dots i:nth-child(3) { background: var(--home-green); }
+
+#page-home .home-ready {
+  padding: 3px 9px;
+  border: 1px solid var(--home-ink);
+  border-radius: 99px;
+  background: var(--home-green);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 900;
+}
+
+#page-home .home-quick-roll {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 15px 0;
+}
+
+#page-home .home-die {
+  width: 53px;
+  height: 53px;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--home-ink);
+  border-radius: 13px;
+  background: var(--home-surface);
+  box-shadow: 3px 3px 0 var(--home-ink);
+  font-size: 27px;
+  font-weight: 900;
+}
+
+#page-home .home-die--pink { color: var(--home-pink); }
+#page-home .home-die--blue { color: var(--home-blue); }
+#page-home .home-quick-total { color: var(--home-text); font-size: 22px; font-weight: 900; }
+#page-home .home-quick-probability { padding: 5px 10px; border: 1px solid var(--home-line); border-radius: 99px; background: var(--home-soft); color: var(--home-muted); font-size: 9px; font-weight: 800; }
+#page-home .home-quick-card .home-button { width: 100%; min-height: 35px; border-radius: 9px; font-size: 8px; }
+
+#page-home .home-section { scroll-margin-top: 100px; }
+
+#page-home .home-section-heading {
+  align-items: end;
+  margin-bottom: 17px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--home-ink);
+}
+
+#page-home .home-section-heading h2 {
+  margin: 4px 0 3px;
+  color: var(--home-text);
+  font: 800 clamp(20px, 2.4vw, 28px)/1.2 'Plus Jakarta Sans', sans-serif;
+  letter-spacing: -.04em;
+}
+
+#page-home .home-section-heading p {
+  max-width: 670px;
+  margin: 4px 0 0;
+  color: var(--home-muted);
+  font-size: 10px;
+  line-height: 1.6;
+}
+
+#page-home .home-section-kicker { color: var(--home-pink); font-size: 8px; }
+#page-home .home-section-link { color: var(--home-blue); font-size: 9px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
+#page-home .home-section-link:hover { text-decoration: underline; }
+
+#page-home .home-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+#page-home .home-stat-card {
+  min-width: 0;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 39px minmax(0, 1fr);
+  gap: 9px 11px;
+  align-items: center;
+}
+
+#page-home .home-stat-icon {
+  width: 39px;
+  height: 39px;
+  display: grid;
+  place-items: center;
+  grid-row: span 2;
+  border: 2px solid var(--home-ink);
+  border-radius: 12px;
+  background: #e0f2fe;
+  font-size: 19px;
+}
+
+#page-home .home-stat-card:nth-child(2) .home-stat-icon { background: #fce7f3; }
+#page-home .home-stat-card:nth-child(3) .home-stat-icon { background: #fef3c7; }
+#page-home .home-stat-number { color: var(--home-text); font-size: 22px; font-weight: 900; line-height: 1; }
+#page-home .home-stat-label { display: block; margin-top: 3px; color: var(--home-blue); font-size: 8px; font-weight: 900; text-transform: uppercase; }
+#page-home .home-stat-card:nth-child(2) .home-stat-label { color: var(--home-pink); }
+#page-home .home-stat-card:nth-child(3) .home-stat-label { color: #a16207; }
+#page-home .home-stat-detail { grid-column: 1 / -1; padding-top: 8px; border-top: 1px solid var(--home-line); color: var(--home-muted); font-size: 8px; }
+
+#page-home .home-dashboard-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(300px, .9fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+
+#page-home .home-feature-card,
+#page-home .home-steps-card { min-width: 0; padding: clamp(16px, 2vw, 25px); }
+
+#page-home .home-feature-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: linear-gradient(135deg, var(--home-surface), #eff8ff);
+}
+
+html[data-theme="dark"] #page-home .home-feature-card { background: linear-gradient(135deg, #131d31, #0f1a2e); }
+
+#page-home .home-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 9px;
+  border: 2px solid var(--home-ink);
+  border-radius: 999px;
+  background: var(--home-blue);
+  color: #fff;
+  font-size: 8px;
+  font-weight: 900;
+  letter-spacing: .08em;
+}
+
+#page-home .home-feature-card h3,
+#page-home .home-steps-card h3 {
+  margin: 12px 0 6px;
+  color: var(--home-text);
+  font-size: clamp(16px, 1.8vw, 21px);
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+#page-home .home-feature-card p { margin: 0; color: var(--home-muted); font-size: 10px; line-height: 1.7; }
+#page-home .home-feature-metrics { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 17px 0; }
+#page-home .home-feature-metric { padding: 9px 6px; border: 2px solid var(--home-ink); border-radius: 11px; background: var(--home-surface); text-align: center; box-shadow: 2px 2px 0 var(--home-ink); }
+#page-home .home-feature-metric span { display: block; color: var(--home-muted); font-size: 7px; font-weight: 900; letter-spacing: .06em; text-transform: uppercase; }
+#page-home .home-feature-metric strong { display: block; margin-top: 3px; color: var(--home-blue); font-size: 14px; font-weight: 900; }
+#page-home .home-feature-metric:nth-child(2) strong { color: var(--home-pink); }
+#page-home .home-feature-metric:nth-child(3) strong { color: var(--home-green); }
+
+#page-home .home-steps-card { background: var(--home-surface); }
+#page-home .home-steps-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 2px solid var(--home-line); }
+#page-home .home-steps-heading h3 { margin: 3px 0 0; font-size: 13px; }
+#page-home .home-progress { flex: 0 0 auto; padding: 4px 8px; border: 1px solid var(--home-ink); border-radius: 99px; background: #dcfce7; color: #047857; font-size: 8px; font-weight: 900; }
+#page-home .home-steps-list { display: grid; gap: 7px; margin: 12px 0 0; padding: 0; list-style: none; }
+#page-home .home-steps-list li { display: flex; align-items: flex-start; gap: 9px; padding: 8px; border: 1px solid var(--home-line); border-radius: 11px; background: var(--home-soft); }
+#page-home .home-step-number { flex: 0 0 24px; width: 24px; height: 24px; display: grid; place-items: center; border: 2px solid var(--home-ink); border-radius: 50%; background: var(--home-blue); color: #fff; font-size: 8px; font-weight: 900; }
+#page-home .home-steps-list li:nth-child(2) .home-step-number { background: var(--home-pink); }
+#page-home .home-steps-list li:nth-child(3) .home-step-number { background: var(--home-yellow); color: var(--home-ink); }
+#page-home .home-steps-list li:nth-child(4) .home-step-number { background: var(--home-green); }
+#page-home .home-steps-list b { display: block; color: var(--home-text); font-size: 9px; }
+#page-home .home-steps-list small { display: block; margin-top: 2px; color: var(--home-muted); font-size: 8px; line-height: 1.5; }
+
+#page-home .home-lab-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, .86fr) minmax(0, 1.35fr);
+  gap: 15px;
+}
+
+#page-home .home-lab-panel,
+#page-home .home-matrix-panel { min-width: 0; padding: clamp(12px, 1.5vw, 18px); }
+
+#page-home .home-panel-heading {
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--home-line);
+  color: var(--home-muted);
+  font: 800 8px 'DM Mono', 'Courier New', monospace;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+#page-home .home-target-label { display: flex; align-items: center; gap: 6px; color: var(--home-muted); font-size: 8px; font-weight: 800; }
+#page-home .home-target-label select { min-height: 28px; padding: 0 7px; border: 1px solid var(--home-ink); border-radius: 8px; background: var(--home-surface); color: var(--home-text); font: inherit; }
+#page-home .home-dice-display { display: flex; align-items: center; justify-content: center; gap: clamp(8px, 1.5vw, 18px); padding: 20px 4px 13px; }
+#page-home .home-large-die { width: clamp(48px, 6vw, 72px); height: clamp(48px, 6vw, 72px); display: grid; place-items: center; border: 2px solid var(--home-ink); border-radius: 17px; background: var(--home-surface); box-shadow: 3px 3px 0 var(--home-ink); color: var(--home-pink); font-size: clamp(26px, 4vw, 42px); font-weight: 900; }
+#page-home .home-large-die--blue { color: var(--home-blue); }
+#page-home .home-dice-operator { color: var(--home-text); font-size: 19px; font-weight: 900; }
+#page-home .home-sum-block { display: grid; justify-items: center; gap: 1px; }
+#page-home .home-sum-block small { color: var(--home-muted); font-size: 7px; font-weight: 900; letter-spacing: .1em; }
+#page-home .home-sum-value { color: var(--home-text); font-size: 24px; font-weight: 900; }
+#page-home .home-target-status { margin: 0 auto 12px; width: fit-content; padding: 4px 9px; border: 1px solid var(--home-line); border-radius: 99px; background: var(--home-soft); color: var(--home-muted); font-size: 8px; font-weight: 900; }
+#page-home .home-target-status.is-hit { border-color: #6ee7b7; background: #d1fae5; color: #047857; }
+#page-home .home-lab-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+#page-home .home-lab-actions .home-button { min-height: 35px; padding: 0 9px; border-radius: 9px; font-size: 8px; }
+#page-home .home-reset { display: block; margin: 10px auto 13px; padding: 3px 7px; border: 0; background: transparent; color: var(--home-muted); font-size: 8px; font-weight: 800; text-decoration: underline; }
+#page-home .home-result-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+#page-home .home-result-stat { padding: 8px; border: 1px solid var(--home-line); border-radius: 9px; background: var(--home-soft); }
+#page-home .home-result-stat span { display: block; color: var(--home-muted); font-size: 7px; font-weight: 900; text-transform: uppercase; }
+#page-home .home-result-stat strong { display: block; margin-top: 3px; color: var(--home-blue); font: 800 10px 'DM Mono', 'Courier New', monospace; }
+#page-home .home-result-stat:nth-child(2) strong { color: var(--home-pink); }
+#page-home .home-bar-track { height: 5px; margin-top: 6px; overflow: hidden; border-radius: 99px; background: var(--home-line); }
+#page-home .home-bar-track i { display: block; width: 0; height: 100%; border-radius: inherit; background: var(--home-pink); transition: width .2s ease; }
+#page-home #home-theory-bar { background: var(--home-blue); }
+
+#page-home .home-matrix-description { margin: 8px 0 10px; color: var(--home-muted); font-size: 8px; line-height: 1.5; }
+#page-home .home-sample-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
+#page-home .home-sample-cell { min-width: 0; min-height: 43px; padding: 4px 2px; display: grid; place-content: center; gap: 2px; border: 1px solid var(--home-line); border-radius: 8px; background: var(--home-soft); color: var(--home-text); font: 800 8px 'DM Mono', 'Courier New', monospace; transition: transform .14s ease, background .14s ease; }
+#page-home .home-sample-cell small { color: var(--home-muted); font: 700 7px 'Plus Jakarta Sans', sans-serif; }
+#page-home .home-sample-cell:hover { transform: translateY(-1px); border-color: var(--home-blue); }
+#page-home .home-sample-cell.is-favorable { border-color: #34d399; background: #ecfdf5; color: #047857; }
+#page-home .home-sample-cell.is-rolled { outline: 2px solid var(--home-pink); outline-offset: 1px; }
+html[data-theme="dark"] #page-home .home-sample-cell.is-favorable { border-color: #059669; background: #064e3b; color: #a7f3d0; }
+#page-home .home-matrix-legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 9px; color: var(--home-muted); font-size: 8px; }
+#page-home .home-matrix-legend span { display: inline-flex; align-items: center; gap: 5px; }
+#page-home .home-legend-dot { width: 7px; height: 7px; border-radius: 2px; background: var(--home-line); }
+#page-home .home-legend-dot.is-favorable { background: var(--home-green); }
+#page-home .home-legend-dot.is-selected { background: var(--home-pink); }
+
+#page-home .home-material-grid,
+#page-home .home-guide-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+
+#page-home .home-material-card {
+  min-width: 0;
+  min-height: 205px;
+  padding: 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  border-top: 7px solid var(--home-blue);
+  color: var(--home-text);
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+
+#page-home .home-material-card:nth-child(2) { border-top-color: var(--home-yellow); }
+#page-home .home-material-card:nth-child(3) { border-top-color: var(--home-pink); }
+#page-home .home-material-card:nth-child(4) { border-top-color: #8b5cf6; }
+#page-home .home-material-card:hover { transform: translateY(-3px); box-shadow: 6px 6px 0 var(--home-ink); }
+#page-home .home-material-icon { width: 42px; height: 42px; display: grid; place-items: center; margin-bottom: 10px; border: 2px solid var(--home-ink); border-radius: 12px; background: #e0f2fe; font-size: 21px; }
+#page-home .home-material-card:nth-child(2) .home-material-icon { background: #fef3c7; }
+#page-home .home-material-card:nth-child(3) .home-material-icon { background: #fce7f3; }
+#page-home .home-material-card:nth-child(4) .home-material-icon { background: #ede9fe; }
+#page-home .home-material-status { margin-bottom: 5px; color: var(--home-green); font-size: 7px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+#page-home .home-material-card h3 { margin: 0 0 6px; color: var(--home-text); font-size: 12px; font-weight: 900; line-height: 1.35; }
+#page-home .home-material-card p { margin: 0; color: var(--home-muted); font-size: 8px; line-height: 1.6; }
+#page-home .home-material-link { margin-top: auto; padding-top: 12px; color: var(--home-blue); font-size: 8px; font-weight: 900; text-transform: uppercase; }
+
+#page-home .home-guide-card { min-width: 0; padding: 15px; }
+#page-home .home-guide-number { width: 31px; height: 31px; display: grid; place-items: center; border: 2px solid var(--home-ink); border-radius: 50%; background: #e0f2fe; color: var(--home-blue); font: 900 9px 'DM Mono', monospace; box-shadow: 2px 2px 0 var(--home-ink); }
+#page-home .home-guide-card:nth-child(2) .home-guide-number { background: #fce7f3; color: var(--home-pink); }
+#page-home .home-guide-card:nth-child(3) .home-guide-number { background: #fef3c7; color: #a16207; }
+#page-home .home-guide-card:nth-child(4) .home-guide-number { background: #dcfce7; color: #047857; }
+#page-home .home-guide-card h3 { margin: 12px 0 5px; color: var(--home-text); font-size: 10px; font-weight: 900; line-height: 1.4; }
+#page-home .home-guide-card p { margin: 0; color: var(--home-muted); font-size: 8px; line-height: 1.6; }
+
+#page-home .site-footer {
+  margin-top: 10px;
+  padding: 20px 0 8px;
+  border-top: 2px solid var(--home-line);
+  color: var(--home-muted);
+}
+
+#page-home .home-footer-brand { display: flex; align-items: center; gap: 10px; }
+#page-home .home-footer-dots { display: grid; grid-template-columns: repeat(3, 5px); gap: 3px; }
+#page-home .home-footer-dots i { width: 5px; height: 5px; border-radius: 50%; background: var(--home-blue); }
+#page-home .home-footer-dots i:nth-child(2), #page-home .home-footer-dots i:nth-child(4) { background: var(--home-pink); }
+#page-home .home-footer-dots i:nth-child(3) { background: var(--home-yellow); }
+#page-home .home-footer-dots i:nth-child(6) { background: var(--home-green); }
+#page-home .home-footer-brand b { color: var(--home-text); font-size: 8px; }
+#page-home .home-footer-brand span { font-size: 8px; }
+#page-home .home-footer-nav { display: flex; flex-wrap: wrap; gap: 13px; }
+#page-home .home-footer-nav a { color: var(--home-text); font-size: 7px; font-weight: 900; text-transform: uppercase; }
+#page-home .home-footer-nav a:last-child { color: var(--home-pink); }
+
+@media (max-width: 1120px) {
+  #page-home .home-title { font-size: clamp(2.6rem, 8vw, 5.3rem); }
+  #page-home .home-material-grid,
+  #page-home .home-guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+@media (max-width: 780px) {
+  html[data-active-page="home"] #app > .topbar:not(.is-collapsed) { width: calc(100% - 20px); min-height: 72px; padding: 7px 10px 0; border-radius: 20px; }
+  html[data-active-page="home"] #app > .topbar .topbar-content { flex-wrap: wrap; gap: 3px 8px; }
+  html[data-active-page="home"] #app > .topbar .top-nav { display: flex; order: 3; flex: 1 0 100%; justify-content: flex-start; height: 34px; margin: 0; }
+  html[data-active-page="home"] #app > .topbar .top-nav a { height: 29px; padding: 0 9px; font-size: 9px; }
+  #page-home .home-hero { min-height: 0; padding-top: 52px; }
+  #page-home .home-hero::before { left: -50px; }
+  #page-home .home-hero::after { right: -54px; }
+  #page-home .home-title { font-size: clamp(2.35rem, 9.5vw, 4.4rem); }
+  #page-home .home-stats-grid { gap: 8px; }
+  #page-home .home-stat-card { padding: 10px; grid-template-columns: 32px minmax(0, 1fr); gap: 7px; }
+  #page-home .home-stat-icon { width: 32px; height: 32px; font-size: 16px; }
+  #page-home .home-stat-number { font-size: 18px; }
+  #page-home .home-dashboard-grid,
+  #page-home .home-lab-grid { grid-template-columns: 1fr; }
+  #page-home .home-section-heading { align-items: flex-start; }
+}
+
+@media (max-width: 520px) {
+  #page-home .home-hero { padding: 42px 2px 35px; }
+  #page-home .home-hero::before { top: 22px; left: -54px; width: 88px; height: 150px; }
+  #page-home .home-hero::after { top: 84px; right: -58px; width: 85px; height: 155px; }
+  #page-home .home-title { font-size: clamp(2rem, 10.2vw, 3.2rem); -webkit-text-stroke-width: 1.2px; text-shadow: 3px 3px 0 var(--home-ink); }
+  #page-home .home-title-pink { letter-spacing: -.07em; }
+  #page-home .home-hero-copy { max-width: 350px; font-size: 11px; }
+  #page-home .home-actions { gap: 8px; }
+  #page-home .home-button { min-height: 39px; padding: 0 12px; font-size: 8px; }
+  #page-home .home-quick-card { margin-top: 22px; padding: 11px; }
+  #page-home .home-stats-grid { grid-template-columns: 1fr; }
+  #page-home .home-stat-card { grid-template-columns: 38px minmax(0, 1fr); }
+  #page-home .home-stat-icon { width: 38px; height: 38px; }
+  #page-home .home-feature-metrics { gap: 5px; }
+  #page-home .home-feature-metric { padding: 8px 3px; }
+  #page-home .home-feature-metric strong { font-size: 11px; }
+  #page-home .home-section-heading { display: block; }
+  #page-home .home-section-heading > .home-section-link { display: inline-block; margin-top: 9px; }
+  #page-home .home-material-grid,
+  #page-home .home-guide-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  #page-home .home-material-card,
+  #page-home .home-guide-card { padding: 11px; }
+  #page-home .home-material-card { min-height: 194px; }
+  #page-home .home-lab-actions { grid-template-columns: 1fr; }
+  #page-home .home-sample-grid { gap: 3px; }
+  #page-home .home-sample-cell { min-height: 37px; font-size: 7px; }
+  #page-home .home-footer-content { align-items: flex-start; flex-direction: column; }
+}
+</style>
+
+<section class="home-hero" id="home" aria-labelledby="home-title">
+  <span class="home-doodle home-doodle--left" aria-hidden="true">✦</span>
+  <span class="home-doodle home-doodle--right" aria-hidden="true">✿</span>
+  <span class="home-doodle home-doodle--spark" aria-hidden="true">✧</span>
+
+  <p class="home-eyebrow">Laboratorium Probabilitas Interaktif</p>
+  <h1 class="home-title" id="home-title">
+    <span>Jangan Hanya</span>
+    <span>Hitung Peluang.</span>
+    <span class="home-title-pink">Lihat Bagaimana</span>
+    <span class="home-title-pink">Bekerja!</span>
+  </h1>
+  <p class="home-hero-copy">
+    Jelajahi konsep probabilitas melalui eksperimen langsung, pemetaan 36 ruang sampel interaktif,
+    dan simulasi pelemparan dadu real-time.
+  </p>
+  <div class="home-actions home-hero-actions">
+    <a class="home-button home-button--blue" href="#page-dice"><span aria-hidden="true">⚄</span> Simulasi Dua Dadu</a>
+    <a class="home-button home-button--pink" href="#home-materials"><span aria-hidden="true">▤</span> Jelajahi Materi</a>
+  </div>
+
+  <div class="home-quick-card" aria-label="Simulasi cepat dua dadu">
+    <div class="home-window-bar">
+      <span class="home-window-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      <span>uji_cepat.exe</span>
+      <span class="home-ready">SIAP UJI</span>
+    </div>
+    <div class="home-quick-roll">
+      <output class="home-die home-die--pink" data-home-die-a>3</output>
+      <span class="home-quick-total" aria-hidden="true">+</span>
+      <output class="home-die home-die--blue" data-home-die-b>4</output>
+      <span class="home-quick-total" aria-hidden="true">=</span>
+      <output class="home-quick-total" data-home-sum>7</output>
+      <span class="home-quick-probability" data-home-probability>P(A) = 6/36 (16,67%)</span>
+    </div>
+    <button class="home-button home-button--yellow" type="button" data-home-roll data-home-scroll-lab>
+      <span aria-hidden="true">▶</span> Lempar Sekarang &amp; Lihat Matriks
+    </button>
+  </div>
+</section>
+
+<section class="home-section" id="dashboard" aria-labelledby="dashboard-title">
+  <div class="home-section-heading">
+    <div>
+      <span class="home-section-kicker">Pusat Aktivitas</span>
+      <h2 id="dashboard-title">Dashboard Pembelajaran</h2>
+      <p>Pantau status modul eksperimen, ringkasan capaian materi, dan akses cepat ke laboratorium.</p>
+    </div>
+    <a class="home-section-link" href="#page-dice">Buka Laboratorium Interaktif <span aria-hidden="true">→</span></a>
+  </div>
+
+  <div class="home-stats-grid">
+    <article class="home-card home-stat-card">
+      <span class="home-stat-icon" aria-hidden="true">🎲</span>
+      <div><strong class="home-stat-number">01</strong><span class="home-stat-label">Eksperimen Aktif</span></div>
+      <small class="home-stat-detail">Laboratorium simulasi dua dadu</small>
+    </article>
+    <article class="home-card home-stat-card">
+      <span class="home-stat-icon" aria-hidden="true">🎯</span>
+      <div><strong class="home-stat-number">04</strong><span class="home-stat-label">Objek Belajar</span></div>
+      <small class="home-stat-detail">Dadu, koin, kartu, dan bola warna</small>
+    </article>
+    <article class="home-card home-stat-card">
+      <span class="home-stat-icon" aria-hidden="true">⭐</span>
+      <div><strong class="home-stat-number">01</strong><span class="home-stat-label">Studi Kasus Lengkap</span></div>
+      <small class="home-stat-detail">Peluang jumlah dua dadu = 7</small>
+    </article>
+  </div>
+
+  <div class="home-dashboard-grid">
+    <article class="home-card home-feature-card">
+      <div>
+        <span class="home-pill">✦ Modul Utama</span>
+        <h3>Eksperimen Interaktif Peluang Dua Buah Dadu</h3>
+        <p>Simulasikan pelemparan dua dadu, amati pemetaan ruang sampel 36 hasil, dan pelajari mengapa jumlah 7 memiliki peluang teoritis terbesar.</p>
+        <div class="home-feature-metrics">
+          <div class="home-feature-metric"><span>Ruang Sampel</span><strong>36 Hasil</strong></div>
+          <div class="home-feature-metric"><span>Target Favorit</span><strong>Jumlah = 7</strong></div>
+          <div class="home-feature-metric"><span>Teoretik</span><strong>16,67%</strong></div>
+        </div>
+      </div>
+      <div class="home-actions">
+        <a class="home-button home-button--blue" href="#page-dice">Buka Laboratorium <span aria-hidden="true">→</span></a>
+        <a class="home-button home-button--outline" href="#page-learning">Pelajari Teori</a>
+      </div>
+    </article>
+
+    <article class="home-card home-steps-card">
+      <div class="home-steps-heading">
+        <div><span class="home-section-kicker">Alur Belajar</span><h3>Empat Langkah Memahami Peluang</h3></div>
+        <span class="home-progress">75% Siap</span>
+      </div>
+      <ol class="home-steps-list">
+        <li><span class="home-step-number">01</span><span><b>Kenali ruang sampel S</b><small>Daftar seluruh 36 kombinasi yang mungkin.</small></span></li>
+        <li><span class="home-step-number">02</span><span><b>Tentukan titik kejadian A</b><small>Pilih hasil yang sesuai dengan pertanyaan.</small></span></li>
+        <li><span class="home-step-number">03</span><span><b>Hitung peluang teoritis</b><small>Bandingkan n(A) dengan n(S).</small></span></li>
+        <li><span class="home-step-number">04</span><span><b>Uji eksperimen dan bandingkan</b><small>Amati frekuensi relatif saat percobaan diulang.</small></span></li>
+      </ol>
+    </article>
+  </div>
+</section>
+
+<section class="home-section" id="home-lab" aria-labelledby="home-lab-title">
+  <div class="home-section-heading">
+    <div>
+      <span class="home-section-kicker">Laboratorium Simulasi</span>
+      <h2 id="home-lab-title">Simulasi Dua Dadu &amp; Matriks Ruang Sampel</h2>
+      <p>Lempar dadu, pilih target kejadian, dan lihat pasangan hasil yang memenuhi peluang jumlah 7.</p>
+    </div>
+    <a class="home-section-link" href="#page-dice">Buka simulasi lengkap <span aria-hidden="true">→</span></a>
+  </div>
+
+  <div class="home-lab-grid">
+    <article class="home-card home-lab-panel">
+      <div class="home-panel-heading"><span>Area Lemparan</span><span id="home-roll-count">Total Lemparan: 0</span></div>
+      <label class="home-target-label" for="home-target-filter">Target kejadian
+        <select id="home-target-filter">
+          <option value="sum7">Jumlah = 7</option>
+          <option value="even">Jumlah genap</option>
+          <option value="odd">Jumlah ganjil</option>
+          <option value="same">Angka dadu sama</option>
+          <option value="ten-plus">Jumlah ≥ 10</option>
+        </select>
+      </label>
+
+      <div class="home-dice-display" aria-live="polite">
+        <output class="home-large-die" data-home-die-a>3</output>
+        <span class="home-dice-operator">+</span>
+        <output class="home-large-die home-large-die--blue" data-home-die-b>4</output>
+        <span class="home-dice-operator">=</span>
+        <div class="home-sum-block"><small>JUMLAH</small><output class="home-sum-value" data-home-sum>7</output></div>
+      </div>
+      <div class="home-target-status is-hit" id="home-target-status" role="status">COCOK DENGAN TARGET</div>
+
+      <div class="home-lab-actions">
+        <button class="home-button home-button--blue" type="button" data-home-roll>Lempar Dadu</button>
+        <button class="home-button home-button--pink" type="button" data-home-batch>Simulasi 100×</button>
+      </div>
+      <button class="home-reset" type="button" data-home-reset>Reset data percobaan</button>
+
+      <div class="home-result-stats">
+        <div class="home-result-stat"><span>Peluang Teoritis</span><strong id="home-theory-ratio">6 / 36 (16,67%)</strong><div class="home-bar-track"><i id="home-theory-bar"></i></div></div>
+        <div class="home-result-stat"><span>Frekuensi Relatif Riil</span><strong id="home-empirical-ratio">0 / 0 (0%)</strong><div class="home-bar-track"><i id="home-empirical-bar"></i></div></div>
+      </div>
+    </article>
+
+    <article class="home-card home-matrix-panel">
+      <div class="home-panel-heading"><span>Peta 36 Titik Ruang Sampel S</span><span id="home-matrix-target">6 hasil cocok</span></div>
+      <p class="home-matrix-description">Setiap tombol mewakili pasangan nilai dua dadu. Pilih sel untuk melihat hasilnya.</p>
+      <div class="home-sample-grid" id="home-sample-grid" role="grid" aria-label="Matriks 36 kemungkinan hasil dua dadu"></div>
+      <div class="home-matrix-legend">
+        <span><i class="home-legend-dot is-favorable"></i> Memenuhi target</span>
+        <span><i class="home-legend-dot is-selected"></i> Hasil terakhir</span>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section class="home-section" id="home-materials" aria-labelledby="home-materials-title">
+  <div class="home-section-heading">
+    <div>
+      <span class="home-section-kicker">Kurikulum Lengkap</span>
+      <h2 id="home-materials-title">Modul &amp; Materi Pembelajaran</h2>
+      <p>Jelajahi berbagai objek eksperimen untuk memahami peluang dari berbagai sudut.</p>
+    </div>
+    <a class="home-section-link" href="#page-learning">Lihat semua materi <span aria-hidden="true">→</span></a>
+  </div>
+
+  <div class="home-material-grid">
+    <a class="home-card home-material-card" href="#page-dice">
+      <span class="home-material-status">Modul interaktif</span><span class="home-material-icon" aria-hidden="true">🎲</span>
+      <h3>Peluang Dua Dadu</h3><p>36 ruang sampel, jumlah mata dadu, dan simulasi pelemparan.</p><span class="home-material-link">Pelajari →</span>
+    </a>
+    <a class="home-card home-material-card" href="#page-coin">
+      <span class="home-material-status">Modul interaktif</span><span class="home-material-icon" aria-hidden="true">🪙</span>
+      <h3>Peluang Koin Logam</h3><p>Eksperimen Angka dan Gambar serta peluang beberapa lemparan.</p><span class="home-material-link">Pelajari →</span>
+    </a>
+    <a class="home-card home-material-card" href="#page-cards">
+      <span class="home-material-status">Modul interaktif</span><span class="home-material-icon" aria-hidden="true">🃏</span>
+      <h3>Kartu Bridge (52 Lembar)</h3><p>Kenali peluang kartu, warna, jenis, dan kejadian gabungan.</p><span class="home-material-link">Pelajari →</span>
+    </a>
+    <a class="home-card home-material-card" href="#page-balls">
+      <span class="home-material-status">Modul interaktif</span><span class="home-material-icon" aria-hidden="true">🎱</span>
+      <h3>Pengambilan Bola Warna</h3><p>Pelajari peluang pengambilan dengan dan tanpa pengembalian.</p><span class="home-material-link">Pelajari →</span>
+    </a>
+  </div>
+</section>
+
+<section class="home-section" id="home-guide" aria-labelledby="home-guide-title">
+  <div class="home-section-heading">
+    <div>
+      <span class="home-section-kicker">Metodologi</span>
+      <h2 id="home-guide-title">Panduan &amp; Tips Menyelesaikan Soal Peluang</h2>
+      <p>Ikuti langkah ringkas ini untuk menyelesaikan soal dengan runtut dan teliti.</p>
+    </div>
+    <a class="home-section-link" href="#page-guide">Buka panduan lengkap <span aria-hidden="true">→</span></a>
+  </div>
+
+  <div class="home-guide-grid">
+    <article class="home-card home-guide-card"><span class="home-guide-number">01</span><h3>Tentukan ruang sampel S</h3><p>Daftar seluruh hasil yang mungkin terjadi tanpa ada yang terlewat.</p></article>
+    <article class="home-card home-guide-card"><span class="home-guide-number">02</span><h3>Daftar titik kejadian A</h3><p>Pilih hasil yang memenuhi syarat pada pertanyaan.</p></article>
+    <article class="home-card home-guide-card"><span class="home-guide-number">03</span><h3>Bandingkan rasio n(A)/n(S)</h3><p>Bagi jumlah kejadian dengan jumlah seluruh kemungkinan.</p></article>
+    <article class="home-card home-guide-card"><span class="home-guide-number">04</span><h3>Validasi batas nilai peluang</h3><p>Pastikan peluang berada di antara 0 dan 1.</p></article>
+  </div>
+</section>

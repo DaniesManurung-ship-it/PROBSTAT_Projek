@@ -1,0 +1,339 @@
+<section class="solver-section" id="ai-solver">
+
+  <div class="solver-heading">
+    <span class="section-kicker">09 / INTELLIGENT PROBABILITY ENGINE</span>
+    <h2>Biarkan sistem membantu memahami soalmu</h2>
+    <p>
+      Masukkan soal peluang. Sistem akan menganalisis,
+      menghitung, dan menyusun visualisasi 2D yang sesuai.
+    </p>
+  </div>
+
+  <div class="solver-input-card">
+
+    <div class="solver-input-heading">
+      <div>
+        <span class="section-kicker">QUESTION INPUT</span>
+        <h3>Masukkan soal probabilitas</h3>
+      </div>
+      <span class="solver-badge">Hybrid AI Solver</span>
+    </div>
+
+    <textarea
+      id="solver-question"
+      rows="4"
+      maxlength="2000"
+      placeholder="Contoh: Dua buah dadu dilempar bersamaan. Berapa peluang mendapatkan jumlah mata dadu 7?"
+      aria-label="Masukkan soal probabilitas"></textarea>
+
+    <div class="solver-examples">
+
+      <span>Contoh soal:</span>
+
+      <button type="button" data-solver-example="Dua buah dadu dilempar bersamaan. Berapa peluang mendapatkan jumlah mata dadu 7?">
+        Dua dadu
+      </button>
+
+      <button type="button" data-solver-example="Sebuah koin dilempar. Berapa peluang muncul sisi angka?">
+        Koin
+      </button>
+
+      <button type="button" data-solver-example="Dari 52 kartu remi, berapa peluang mengambil kartu As?">
+        Kartu
+      </button>
+
+      <button type="button" data-solver-example="Dalam sebuah kotak terdapat 5 bola merah, 3 bola biru, dan 2 bola kuning. Berapa peluang mengambil bola merah?">
+        Bola
+      </button>
+
+      
+<button
+  type="button"
+  data-solver-example="Permutasi: berapa banyak susunan 3 orang dari 8 orang?">
+  Permutasi
+</button>
+
+<button
+  type="button"
+  data-solver-example="Kombinasi: berapa banyak cara memilih 3 orang dari 8 orang?">
+  Kombinasi
+</button>
+
+<button
+  type="button"
+  data-solver-example="Dalam kelas terdapat 40 siswa. Sebanyak 20 siswa menyukai matematika, 15 siswa menyukai fisika, dan 10 siswa menyukai keduanya. Berapa peluang siswa menyukai matematika jika diketahui menyukai fisika?">
+  Peluang bersyarat
+</button>
+
+
+    </div>
+
+    <button
+      type="button"
+      class="solver-submit"
+      id="solver-submit">
+      ✦ Analisis dan Selesaikan Soal
+    </button>
+
+    <p id="solver-status" class="solver-status" aria-live="polite">
+      Soal akan dianalisis AI, lalu dihitung oleh mesin matematika lokal.
+    </p>
+
+    <section id="solver-interpretation-card" class="solver-interpretation-card" hidden aria-live="polite">
+      <div>
+        <span class="section-kicker">KONFIRMASI INTERPRETASI</span>
+        <p id="solver-interpretation-text"></p>
+        <p id="solver-clarification" class="solver-clarification"></p>
+      </div>
+      <div class="solver-interpretation-actions">
+        <button type="button" class="solver-interpretation-button primary" id="solver-confirm-interpretation" hidden>Ya, benar — hitung</button>
+        <button type="button" class="solver-interpretation-button" id="solver-change-interpretation" hidden>Ubah maksud</button>
+      </div>
+      <div id="solver-correction" class="solver-correction" hidden>
+        <label for="solver-correction-input">Koreksi atau jawaban klarifikasi</label>
+        <textarea id="solver-correction-input" rows="2" maxlength="2000"></textarea>
+        <button type="button" class="solver-interpretation-button primary" id="solver-correction-submit">Kirim koreksi</button>
+      </div>
+    </section>
+
+  </div>
+
+
+  <!-- HASIL ANALISIS -->
+
+  <div id="solver-output" class="solver-output" hidden>
+
+    <div class="solver-result-heading">
+      <div>
+        <span class="section-kicker">ANALYSIS RESULT</span>
+        <h3>Hasil penyelesaian</h3>
+      </div>
+
+      <span class="solver-badge solver-success">
+        Soal berhasil dianalisis
+      </span>
+    </div>
+
+    
+<!-- ======================================
+     TAHAP 8: STEP BY STEP LEARNING ENGINE
+====================================== -->
+
+<section class="guided-learning" id="guided-learning">
+
+  <div class="guided-heading">
+    <span class="section-kicker">SLIDE PEMBAHASAN INTERAKTIF</span>
+    <h3>Pahami isi soal dan perhitungannya</h3>
+    <p>
+    Geser langkah demi langkah untuk melihat data, pertanyaan,
+    analisis, dan kesimpulan melalui diagram 2D yang mudah dibaca.
+    </p>
+  </div>
+
+  <div class="guided-progress-heading">
+    <span id="guided-step-count">LANGKAH 1 DARI 4</span>
+    <span id="guided-progress-percent">25%</span>
+  </div>
+
+  <div class="guided-progress-track">
+    <div id="guided-progress-bar"></div>
+  </div>
+
+  <div class="guided-layout">
+
+    <article class="guided-scene-card">
+
+      <div class="guided-scene-heading">
+        <span class="section-kicker">VISUAL 2D SESUAI LANGKAH</span>
+        <span class="guided-live">
+          <i></i> SLIDE
+        </span>
+      </div>
+
+      <div id="guided-scene" class="guided-slide-visual" aria-live="polite"></div>
+
+      <p id="guided-scene-caption">
+        Ringkasan visual setiap langkah akan tampil di sini.
+      </p>
+
+      <div class="guided-scene-tip">
+        Gunakan tombol sebelumnya/selanjutnya untuk berpindah slide.
+      </div>
+
+    </article>
+
+    <article class="guided-explanation-card">
+
+      <span class="section-kicker">PENJELASAN LANGKAH</span>
+
+      <h4 id="guided-step-title">
+        Kenali objek dan informasi
+      </h4>
+
+      <p id="guided-step-description">
+        Sistem akan memperkenalkan objek yang terdapat dalam soal.
+      </p>
+
+      <div class="guided-math-box">
+
+        <span>PROSES MATEMATIKA</span>
+
+        <strong id="guided-step-math">-</strong>
+
+      </div>
+
+      <div class="guided-step-note">
+        <strong>Yang perlu kamu pahami</strong>
+        <p id="guided-step-note">
+          Perhatikan objek yang ditampilkan sebelum melanjutkan.
+        </p>
+      </div>
+
+    </article>
+
+  </div>
+
+  <div class="guided-controls">
+
+    <button
+      id="guided-prev"
+      class="guided-control"
+      type="button"
+      disabled>
+      ← Sebelumnya
+    </button>
+
+    <button
+      id="guided-play"
+      class="guided-control guided-play"
+      type="button">
+      ▶ Putar otomatis
+    </button>
+
+    <button
+      id="guided-next"
+      class="guided-control guided-next"
+      type="button">
+      Selanjutnya →
+    </button>
+
+  </div>
+
+  <div class="guided-final-message" id="guided-final-message">
+    Kamu sudah menyelesaikan seluruh langkah pembelajaran.
+  </div>
+
+</section>
+
+<!-- AKHIR STEP BY STEP LEARNING -->
+
+
+
+    <div class="solver-result-grid">
+
+      <!-- VISUALISASI 2D -->
+
+      <article class="solver-visual-card">
+
+        <span class="section-kicker">
+          VISUAL 2D SESUAI SOAL
+        </span>
+
+        <div
+          id="solver-scene"
+          class="solver-scene solver-scene-2d"
+          role="group"
+          aria-label="Visualisasi 2D hasil analisis">
+        </div>
+
+        <div class="solver-scene-controls">
+          <p id="solver-scene-outcome" aria-live="polite">Visualisasi hasil soal akan tampil di sini.</p>
+          <button type="button" class="solver-interpretation-button" id="solver-animate-outcome">
+            Peragakan hasil
+          </button>
+        </div>
+
+        <p id="solver-visual-description">
+          Visualisasi akan muncul di sini.
+        </p>
+
+        <div class="solver-sample-wrapper">
+          <span class="section-kicker">
+            RUANG SAMPEL / KEMUNGKINAN
+          </span>
+
+          <div id="solver-sample-space"></div>
+          <p class="solver-sample-legend"><span aria-hidden="true">✓</span> Memenuhi kejadian</p>
+        </div>
+
+      </article>
+
+
+      <!-- PEMBAHASAN -->
+
+      <article class="solver-explanation-card">
+
+        <span class="section-kicker">
+          MATHEMATICAL EXPLANATION
+        </span>
+
+        <div class="solver-answer">
+          <span>HASIL AKHIR</span>
+
+          <strong id="solver-answer">-</strong>
+
+          <small id="solver-percentage">-</small>
+        </div>
+
+        <div class="solver-formula">
+          <span>Rumus penyelesaian</span>
+          <strong id="solver-fraction">-</strong>
+        </div>
+
+        <section id="solver-ai-breakdown" class="solver-ai-breakdown" hidden>
+          <div>
+            <strong>Diketahui</strong>
+            <ul id="solver-ai-known"></ul>
+          </div>
+          <div>
+            <strong>Ditanyakan</strong>
+            <p id="solver-ai-asked"></p>
+          </div>
+          <div>
+            <strong>Analisis</strong>
+            <p id="solver-ai-analysis"></p>
+          </div>
+        </section>
+
+        <div class="solver-understanding">
+          <strong>Makna soal</strong>
+          <p id="solver-understanding-text">Sistem akan menjelaskan kejadian yang sedang dicari.</p>
+        </div>
+
+        <h4>Langkah penyelesaian</h4>
+
+        <ol
+          id="solver-steps"
+          class="solver-steps">
+        </ol>
+
+        <div class="solver-conclusion">
+          <strong>Kesimpulan</strong>
+
+          <p id="solver-summary"></p>
+        </div>
+
+      </article>
+
+    </div>
+
+  </div>
+
+  <div class="solver-disclaimer">
+    <span>ⓘ</span>
+    Versi prototipe mendukung pola soal probabilitas tertentu.
+    Soal di luar cakupan akan ditandai agar tidak menghasilkan
+    jawaban yang tidak dapat diverifikasi.
+  </div>
+
+</section>

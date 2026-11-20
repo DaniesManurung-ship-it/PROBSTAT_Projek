@@ -13,6 +13,22 @@ import { DISTRIBUTIONS, DISTRIBUTION_BY_ID } from './distributions-data.js';
 
 const root = document.querySelector('#distributions-content');
 const tabsHost = document.querySelector('#distribution-tabs');
+const distributionIcons = {
+  binomial: '🎯',
+  multinomial: '🎲',
+  hypergeometric: '📦',
+  geometric: '⚡',
+  'negative-binomial': '🧮',
+  poisson: '⏱️',
+};
+const calculators = {
+  binomial: calculateBinomial,
+  multinomial: calculateMultinomial,
+  hypergeometric: calculateHypergeometric,
+  geometric: calculateGeometric,
+  'negative-binomial': calculateNegativeBinomial,
+  poisson: calculatePoisson,
+};
 if (!root || !tabsHost) {
   console.error('Fitur Distribusi Diskrit tidak dapat dimulai: elemen halaman tidak ditemukan.');
 } else {
@@ -37,14 +53,17 @@ function fieldMarkup({ id, label, value, helper, min, max, step = '1', required 
 
 function eventMarkup(options) {
   return `
-    <label class="distribution-field" for="distribution-event">
-      <span>Jenis kejadian</span>
-      <select id="distribution-event" data-field="eventType">
-        ${options.map(([value, label]) => `<option value="${value}">${label}</option>`).join('')}
-      </select>
-      <small>Pilih bentuk kejadian peluang yang ingin dihitung.</small>
-      <span class="distribution-field-error" data-error-for="eventType" aria-live="polite"></span>
-    </label>`;
+    <details class="distribution-event-options">
+      <summary>Opsi kejadian lanjutan</summary>
+      <label class="distribution-field" for="distribution-event">
+        <span>Jenis kejadian</span>
+        <select id="distribution-event" data-field="eventType">
+          ${options.map(([value, label]) => `<option value="${value}">${label}</option>`).join('')}
+        </select>
+        <small>Pilih bentuk kejadian peluang yang ingin dihitung.</small>
+        <span class="distribution-field-error" data-error-for="eventType" aria-live="polite"></span>
+      </label>
+    </details>`;
 }
 
 function standardEvents({ includeAtLeast = true, includeBetween = true, cumulativeLabel = 'Paling banyak' } = {}) {
@@ -62,9 +81,9 @@ function renderInputs(id) {
 
   if (id === 'binomial') {
     return `
-      ${fieldMarkup({ id: 'value-n', label: 'Jumlah percobaan (n)', value: 8, helper: 'Jumlah percobaan harus bilangan bulat positif.', min: 1, max: 1000 })}
-      ${fieldMarkup({ id: 'value-p', label: 'Peluang sukses (p)', value: '0.10', helper: 'Nilai antara 0 dan 1; contoh 0,10 berarti 10%.', min: 0, max: 1, step: 'any' })}
-      ${exactCount()}
+      ${fieldMarkup({ id: 'value-n', label: 'Banyak percobaan (n)', value: 10, helper: 'Jumlah percobaan harus bilangan bulat positif.', min: 1, max: 1000 })}
+      ${fieldMarkup({ id: 'value-p', label: 'Peluang sukses (p)', value: '0.5', helper: 'Nilai antara 0 dan 1; contoh 0,10 berarti 10%.', min: 0, max: 1, step: 'any' })}
+      ${exactCount('Jumlah sukses (x)', 5)}
       ${eventMarkup(standardEvents())}
       <div class="distribution-range-fields" data-range-fields hidden>
         ${fieldMarkup({ id: 'value-lower', label: 'Batas bawah (a)', value: 1, helper: 'Nilai awal rentang, dari 0 sampai n.', min: 0 })}
@@ -154,7 +173,10 @@ function initializeDistributionPage(rootElement, tabsElement) {
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'distribution-tab';
-      button.textContent = distribution.name;
+      const icon = document.createElement('span');
+      icon.setAttribute('aria-hidden', 'true');
+      icon.textContent = distributionIcons[distribution.id];
+      button.append(icon, document.createTextNode(distribution.name));
       button.id = `distribution-tab-${distribution.id}`;
       button.setAttribute('role', 'tab');
       button.setAttribute('aria-selected', String(distribution.id === activeId));
@@ -174,39 +196,33 @@ function initializeDistributionPage(rootElement, tabsElement) {
     rootElement.setAttribute('role', 'tabpanel');
     rootElement.setAttribute('aria-labelledby', `distribution-tab-${activeId}`);
     rootElement.innerHTML = `
-      <div class="distribution-intro">
-        <span class="section-kicker">MATERI DISTRIBUSI DISKRIT</span>
-        <h3>${data.name}</h3>
-        <p>${data.tagline} ${data.when}</p>
-        <div class="distribution-info-grid">
-          <article><b>Kapan digunakan?</b><p>${data.when}</p></article>
-          <article><b>Contoh situasi</b><p>${data.examples}</p></article>
-        </div>
-        <div class="distribution-conditions"><b>Syarat penggunaan</b><ul>${data.conditions.map((condition) => `<li>${condition}</li>`).join('')}</ul></div>
-      </div>
-      <div class="distribution-formula-card">
-        <span class="section-kicker">RUMUS DAN KOMPONEN</span>
-        <div class="distribution-formula" aria-label="Rumus ${data.name}">${data.formula}</div>
-        <div class="distribution-symbol-grid">${data.symbols.map(([symbol, meaning, example]) => `
-          <article><code>${symbol}</code><p>${meaning}</p><small>Contoh: ${example}</small></article>`).join('')}
-        </div>
-      </div>
-      <form class="distribution-calculator" id="distribution-calculator" novalidate>
-        <div class="distribution-calculator-heading">
-          <div><span class="section-kicker">KALKULATOR INTERAKTIF</span><h4>Kalkulator ${data.name}</h4></div>
-          <span class="distribution-live-tag">NILAI DAPAT DIUBAH</span>
-        </div>
-        <div class="distribution-input-grid">${renderInputs(activeId)}</div>
-        <div class="distribution-form-error" data-form-error role="alert" aria-live="assertive"></div>
-        <div class="distribution-actions">
-          <button type="submit" class="distribution-button primary">Hitung Peluang</button>
-          <button type="button" class="distribution-button secondary" data-reset>Reset ke contoh</button>
-        </div>
-      </form>
-      <div class="distribution-result" data-result hidden></div>`;
+      <div class="distribution-content-layout">
+        <form class="distribution-calculator" id="distribution-calculator" novalidate>
+          <div class="distribution-calculator-heading">
+            <div><span class="section-kicker">PARAMETER INPUT</span><h3 class="distribution-card-title">${data.name}</h3></div>
+            <span class="distribution-live-tag">✦ Interaktif</span>
+          </div>
+          <div class="formula-banner">
+            <span class="label">Rumus probabilitas teoretis</span>
+            <div class="formula-math" aria-label="Rumus ${data.name}">${data.formula}</div>
+            <p class="formula-desc">${data.tagline}</p>
+          </div>
+          <div class="distribution-input-grid">${renderInputs(activeId)}</div>
+          <div class="distribution-form-error" data-form-error role="alert" aria-live="assertive"></div>
+          <div class="distribution-actions">
+            <button type="submit" class="distribution-button primary">⚡ Hitung Probabilitas</button>
+            <button type="button" class="distribution-button secondary" data-reset>Reset</button>
+          </div>
+        </form>
+        <div class="distribution-result" data-result hidden></div>
+      </div>`;
 
     bindCalculator();
     if (lastResult) renderResult(lastResult);
+    else {
+      lastResult = calculators[activeId](readParameters());
+      renderResult(lastResult);
+    }
   }
 
   function readField(id, { integer = false, text = false } = {}) {
@@ -415,15 +431,7 @@ function initializeDistributionPage(rootElement, tabsElement) {
       clearErrors();
       try {
         const parameters = readParameters();
-        const calculate = {
-          binomial: calculateBinomial,
-          multinomial: calculateMultinomial,
-          hypergeometric: calculateHypergeometric,
-          geometric: calculateGeometric,
-          'negative-binomial': calculateNegativeBinomial,
-          poisson: calculatePoisson,
-        }[activeId];
-        lastResult = calculate(parameters);
+        lastResult = calculators[activeId](parameters);
         renderResult(lastResult);
       } catch (error) {
         if (!(error instanceof Error)) throw error;
@@ -498,37 +506,60 @@ function initializeDistributionPage(rootElement, tabsElement) {
 
     const heading = document.createElement('div');
     heading.className = 'distribution-result-heading';
-    heading.innerHTML = '<span class="section-kicker">HASIL PERHITUNGAN</span><span class="distribution-result-badge"></span>';
-    heading.querySelector('.distribution-result-badge').textContent = result.distribution;
+    heading.innerHTML = '<span class="section-kicker">HASIL PERHITUNGAN</span><span class="distribution-result-badge">TERVERIFIKASI</span>';
     host.appendChild(heading);
-
-    const event = document.createElement('p');
-    event.className = 'distribution-result-event';
-    event.textContent = result.event;
-    host.appendChild(event);
 
     const primary = document.createElement('div');
     primary.className = 'distribution-result-primary';
-    primary.innerHTML = '<span>Peluang desimal</span><strong></strong><span>Persentase</span><b></b>';
-    primary.querySelector('strong').textContent = formatDecimal(result.probability);
-    primary.querySelector('b').textContent = `${result.percentage.toFixed(2).replace('.', ',')}%`;
+    const primaryLabel = document.createElement('span');
+    primaryLabel.textContent = `Peluang hasil spesifik ${result.event}`;
+    const primaryValue = document.createElement('strong');
+    primaryValue.textContent = `${result.percentage.toFixed(2)}%`;
+    const primaryExact = document.createElement('small');
+    primaryExact.textContent = `Nilai eksak: ${formatDecimal(result.probability)}`;
+    primary.append(primaryLabel, primaryValue, primaryExact);
     host.appendChild(primary);
 
-    const parameters = document.createElement('details');
-    parameters.className = 'distribution-result-parameters';
-    const summary = document.createElement('summary');
-    summary.textContent = 'Lihat parameter dan bentuk rumus';
-    parameters.appendChild(summary);
-    const parameterText = document.createElement('p');
-    parameterText.textContent = `Parameter: ${formatParameters(result.parameters)}. Rumus: ${result.formula}`;
-    parameters.appendChild(parameterText);
-    host.appendChild(parameters);
+    const moments = distributionMoments(result);
+    const metrics = document.createElement('div');
+    metrics.className = 'distribution-result-summary-grid';
+    moments.forEach(({ label, value, note }) => {
+      const card = document.createElement('article');
+      card.className = 'distribution-result-metric';
+      const metricLabel = document.createElement('span');
+      metricLabel.textContent = label;
+      const metricValue = document.createElement('strong');
+      metricValue.textContent = value;
+      const metricNote = document.createElement('small');
+      metricNote.textContent = note;
+      card.append(metricLabel, metricValue, metricNote);
+      metrics.appendChild(card);
+    });
+    host.appendChild(metrics);
+
+    renderVisualization(host, result);
 
     const stepsSection = document.createElement('section');
     stepsSection.className = 'distribution-steps';
     const stepsTitle = document.createElement('h4');
-    stepsTitle.textContent = 'Pembahasan langkah demi langkah';
+    stepsTitle.textContent = '📝 Langkah Penyelesaian Matematis';
     stepsSection.appendChild(stepsTitle);
+
+    const calculation = document.createElement('pre');
+    calculation.className = 'distribution-steps-output';
+    const substitution = result.steps.find((step) => step.title === 'Substitusi nilai');
+    const arithmetic = result.steps.find((step) => step.title === 'Perhitungan');
+    calculation.textContent = [substitution?.explanation, arithmetic?.explanation].filter(Boolean).join('\n');
+    stepsSection.appendChild(calculation);
+
+    const details = document.createElement('details');
+    details.className = 'distribution-result-details';
+    const summary = document.createElement('summary');
+    summary.textContent = 'Lihat parameter dan pembahasan lengkap';
+    details.appendChild(summary);
+    const parameterText = document.createElement('p');
+    parameterText.textContent = `Parameter: ${formatParameters(result.parameters)}. Rumus: ${result.formula}`;
+    details.appendChild(parameterText);
     const steps = document.createElement('ol');
     result.steps.forEach((step) => {
       const item = document.createElement('li');
@@ -539,17 +570,16 @@ function initializeDistributionPage(rootElement, tabsElement) {
       item.append(title, explanation);
       steps.appendChild(item);
     });
-    stepsSection.appendChild(steps);
+    details.appendChild(steps);
+    stepsSection.appendChild(details);
     host.appendChild(stepsSection);
-
-    renderVisualization(host, result);
   }
 
   render();
 }
 
 function formatDecimal(value) {
-  return value.toFixed(6).replace('.', ',');
+  return value.toFixed(5);
 }
 
 function formatParameters(parameters) {
@@ -561,11 +591,48 @@ function formatParameters(parameters) {
   }).join(', ');
 }
 
+function distributionMoments(result) {
+  const { distribution, parameters } = result;
+  let mean;
+  let variance;
+  let variable = 'X';
+
+  if (distribution === 'Binomial') {
+    mean = parameters.n * parameters.p;
+    variance = mean * (1 - parameters.p);
+  } else if (distribution === 'Multinomial') {
+    const category = parameters.categories[0];
+    variable = category.name;
+    mean = parameters.n * category.p;
+    variance = mean * (1 - category.p);
+  } else if (distribution === 'Hipergeometrik') {
+    const probability = parameters.K / parameters.N;
+    mean = parameters.n * probability;
+    variance = parameters.N > 1
+      ? parameters.n * probability * (1 - probability) * (parameters.N - parameters.n) / (parameters.N - 1)
+      : 0;
+  } else if (distribution === 'Geometrik') {
+    mean = 1 / parameters.p;
+    variance = (1 - parameters.p) / (parameters.p ** 2);
+  } else if (distribution === 'Binomial Negatif') {
+    mean = parameters.k / parameters.p;
+    variance = parameters.k * (1 - parameters.p) / (parameters.p ** 2);
+  } else {
+    mean = parameters.lambda;
+    variance = parameters.lambda;
+  }
+
+  return [
+    { label: `Ekspektasi / rata-rata (${variable})`, value: mean.toFixed(2), note: `Nilai harapan E(${variable})` },
+    { label: `Varians (${variable}²)`, value: variance.toFixed(2), note: `Deviasi standar (σ): ${Math.sqrt(variance).toFixed(2)}` },
+  ];
+}
+
 function renderVisualization(host, result) {
   const section = document.createElement('section');
   section.className = 'distribution-visualization';
   const heading = document.createElement('div');
-  heading.innerHTML = '<span class="section-kicker">VISUALISASI PENDUKUNG</span><h4>Grafik peluang distribusi</h4><p>Grafik mengikuti parameter dan kejadian yang dihitung. Nilai peluang berasal dari fungsi matematika.</p>';
+  heading.innerHTML = '<h4>Grafik Sebaran Probabilitas</h4><span class="distribution-visual-badge">Visual Interaktif</span>';
   section.appendChild(heading);
 
   if (result.distribution === 'Hipergeometrik') {

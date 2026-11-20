@@ -1,0 +1,13 @@
+/* ======================================
+   SCENE HEIGHT OVERRIDES (responsive)
+====================================== */
+.coin-scene { height: clamp(360px, 50vw, 520px); }
+.balls-scene { height: clamp(360px, 50vw, 520px); }
+.cards-scene { height: clamp(360px, 46vw, 500px); }
+
+@media (max-width: 480px) {
+  .coin-scene { height: 320px; }
+  .balls-scene { height: 320px; }
+  .cards-scene { height: 320px; }
+}
+

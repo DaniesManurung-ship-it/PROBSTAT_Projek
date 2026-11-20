@@ -38,6 +38,11 @@ const eventTypes = new Set([
   'unknown'
 ]);
 
+const visualizationShapes = new Set(['sphere', 'cube', 'card', 'coin', 'cylinder', 'token']);
+const visualizationColors = new Set([
+  'red', 'blue', 'yellow', 'white', 'green', 'purple', 'orange', 'black', 'gray', 'gold', 'neutral'
+]);
+
 const fields = [
   'status',
   'category',
@@ -84,15 +89,50 @@ function isValidSolution(solution) {
   if (solution === null) return true;
   if (!solution || typeof solution !== 'object' || Array.isArray(solution)) return false;
   const keys = Object.keys(solution);
-  return keys.length === 3 &&
-    ['formula', 'answer', 'steps'].every((key) => Object.hasOwn(solution, key)) &&
+  const expectedKeys = [
+    'known', 'asked', 'analysis', 'formula', 'answer', 'steps', 'conclusion', 'visualization'
+  ];
+  const visualization = solution.visualization;
+  const items = visualization?.items;
+  const itemKeys = ['shape', 'label', 'color', 'count', 'favorable'];
+  return keys.length === expectedKeys.length &&
+    expectedKeys.every((key) => Object.hasOwn(solution, key)) &&
+    Array.isArray(solution.known) &&
+    solution.known.length > 0 &&
+    solution.known.length <= 12 &&
+    solution.known.every((item) => typeof item === 'string' && item.trim().length > 0) &&
+    ['asked', 'analysis', 'conclusion'].every((key) =>
+      typeof solution[key] === 'string' && solution[key].trim().length > 0
+    ) &&
     typeof solution.formula === 'string' &&
     solution.formula.trim().length > 0 &&
     typeof solution.answer === 'string' &&
     solution.answer.trim().length > 0 &&
     Array.isArray(solution.steps) &&
     solution.steps.length > 0 &&
-    solution.steps.every((step) => typeof step === 'string' && step.trim().length > 0);
+    solution.steps.length <= 10 &&
+    solution.steps.every((step) => typeof step === 'string' && step.trim().length > 0) &&
+    visualization &&
+    typeof visualization === 'object' &&
+    !Array.isArray(visualization) &&
+    Object.keys(visualization).length === 3 &&
+    typeof visualization.title === 'string' &&
+    visualization.title.trim().length > 0 &&
+    typeof visualization.caption === 'string' &&
+    visualization.caption.trim().length > 0 &&
+    Array.isArray(items) &&
+    items.length > 0 &&
+    items.length <= 12 &&
+    items.every((item) =>
+      item && typeof item === 'object' && !Array.isArray(item) &&
+      Object.keys(item).length === itemKeys.length &&
+      itemKeys.every((key) => Object.hasOwn(item, key)) &&
+      visualizationShapes.has(item.shape) &&
+      typeof item.label === 'string' && item.label.trim().length > 0 &&
+      visualizationColors.has(item.color) &&
+      Number.isSafeInteger(item.count) && item.count >= 1 && item.count <= 1000 &&
+      typeof item.favorable === 'boolean'
+    );
 }
 
 function checkProbabilityData(data) {
@@ -169,12 +209,12 @@ function checkProbabilityData(data) {
 
   if (data.category === 'balls') {
     const counts = data.ballCounts;
-    const colors = ['merah', 'biru', 'kuning'];
+    const colors = ['merah', 'biru', 'kuning', 'putih'];
     const hasCounts = counts && colors.every((color) => isCount(counts[color]));
     const total = hasCounts ? colors.reduce((sum, color) => sum + counts[color], 0) : 0;
 
     if (!hasCounts || total < 1 || total > 30) {
-      addMissing('jumlah bola merah, biru, dan kuning (total maksimal 30)');
+      addMissing('jumlah bola merah, biru, kuning, dan putih (total maksimal 30)');
     }
 
     if (!colors.includes(data.ballTarget)) addMissing('warna bola yang dicari');
@@ -257,7 +297,7 @@ export function validateInterpretation(value) {
     typeof value.interpretation !== 'string' ||
     !['angka', 'gambar', 'unknown'].includes(value.coinSide) ||
     !['red', 'black', 'spade', 'ace', 'face', 'red_ace', 'unknown'].includes(value.cardEvent) ||
-    !['merah', 'biru', 'kuning', 'unknown'].includes(value.ballTarget) ||
+    !['merah', 'biru', 'kuning', 'putih', 'unknown'].includes(value.ballTarget) ||
     !['with', 'without', 'unspecified', 'not_applicable'].includes(value.replacement) ||
     !['permutation', 'combination', 'not_applicable'].includes(value.countingType) ||
     !['math_given_physics', 'physics_given_math', 'unknown'].includes(value.conditionalEvent) ||
@@ -274,7 +314,7 @@ export function validateInterpretation(value) {
   }
 
   if (value.ballCounts !== null) {
-    const expectedColors = ['merah', 'biru', 'kuning'];
+    const expectedColors = ['merah', 'biru', 'kuning', 'putih'];
     const keys = Object.keys(value.ballCounts);
     if (keys.length !== expectedColors.length ||
       !expectedColors.every((color) => keys.includes(color)) ||
@@ -386,7 +426,7 @@ export function toCanonicalProblem(data) {
     const draw = data.drawCount === 2
       ? `mengambil dua bola ${data.ballTarget} ${data.replacement === 'with' ? 'dengan pengembalian' : 'tanpa pengembalian'}`
       : `mengambil bola ${data.ballTarget}`;
-    return `Dalam sebuah kotak terdapat ${counts.merah} bola merah, ${counts.biru} bola biru, dan ${counts.kuning} bola kuning. Berapa peluang ${draw}?`;
+    return `Dalam sebuah kotak terdapat ${counts.merah} bola merah, ${counts.biru} bola biru, ${counts.kuning} bola kuning, dan ${counts.putih} bola putih. Berapa peluang ${draw}?`;
   }
 
   if (data.category === 'counting') {

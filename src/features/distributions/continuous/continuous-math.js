@@ -67,6 +67,195 @@ export function uniformCdf(x, a, b) {
   return Math.max(0, Math.min(1, (x - a) / (b - a)));
 }
 
+function logGamma(value) {
+  const coefficients = [
+    676.5203681218851, -1259.1392167224028, 771.3234287776531,
+    -176.6150291621406, 12.507343278686905, -0.13857109526572012,
+    9.984369578019572e-6, 1.5056327351493116e-7
+  ];
+  if (value < 0.5) {
+    return Math.log(Math.PI) - Math.log(Math.sin(Math.PI * value)) - logGamma(1 - value);
+  }
+  const shifted = value - 1;
+  let series = 0.9999999999998099;
+  for (let index = 0; index < coefficients.length; index += 1) {
+    series += coefficients[index] / (shifted + index + 1);
+  }
+  const t = shifted + coefficients.length - 0.5;
+  return 0.5 * Math.log(2 * Math.PI) + (shifted + 0.5) * Math.log(t) - t + Math.log(series);
+}
+
+function betaContinuedFraction(a, b, x) {
+  const maxIterations = 200;
+  const epsilon = 3e-14;
+  const minimum = 1e-300;
+  const qab = a + b;
+  const qap = a + 1;
+  const qam = a - 1;
+  let c = 1;
+  let d = 1 - qab * x / qap;
+  if (Math.abs(d) < minimum) d = minimum;
+  d = 1 / d;
+  let fraction = d;
+
+  for (let iteration = 1; iteration <= maxIterations; iteration += 1) {
+    const even = 2 * iteration;
+    let coefficient = iteration * (b - iteration) * x / ((qam + even) * (a + even));
+    d = 1 + coefficient * d;
+    if (Math.abs(d) < minimum) d = minimum;
+    c = 1 + coefficient / c;
+    if (Math.abs(c) < minimum) c = minimum;
+    d = 1 / d;
+    fraction *= d * c;
+
+    coefficient = -(a + iteration) * (qab + iteration) * x / ((a + even) * (qap + even));
+    d = 1 + coefficient * d;
+    if (Math.abs(d) < minimum) d = minimum;
+    c = 1 + coefficient / c;
+    if (Math.abs(c) < minimum) c = minimum;
+    d = 1 / d;
+    const delta = d * c;
+    fraction *= delta;
+    if (Math.abs(delta - 1) < epsilon) return fraction;
+  }
+  throw new RangeError('CDF Student-t tidak konvergen untuk parameter tersebut.');
+}
+
+function regularizedBeta(x, a, b) {
+  if (x <= 0) return 0;
+  if (x >= 1) return 1;
+  const factor = Math.exp(
+    logGamma(a + b) - logGamma(a) - logGamma(b) +
+    a * Math.log(x) + b * Math.log1p(-x)
+  );
+  if (x < (a + 1) / (a + b + 2)) {
+    return factor * betaContinuedFraction(a, b, x) / a;
+  }
+  return 1 - factor * betaContinuedFraction(b, a, 1 - x) / b;
+}
+
+export function exponentialPdf(x, lambda) {
+  if (!(lambda > 0) || !Number.isFinite(lambda)) throw new RangeError('Laju λ harus lebih dari 0.');
+  return x < 0 ? 0 : lambda * Math.exp(-lambda * x);
+}
+
+export function exponentialCdf(x, lambda) {
+  if (!(lambda > 0) || !Number.isFinite(lambda)) throw new RangeError('Laju λ harus lebih dari 0.');
+  return x <= 0 ? 0 : -Math.expm1(-lambda * x);
+}
+
+export function studentTPdf(t, df) {
+  if (!(df >= 1) || !Number.isFinite(df)) throw new RangeError('Derajat bebas df harus bilangan hingga minimal 1.');
+  if (!Number.isFinite(t)) return 0;
+  return Math.exp(
+    logGamma((df + 1) / 2) - logGamma(df / 2) -
+    0.5 * Math.log(df * Math.PI) -
+    ((df + 1) / 2) * Math.log1p((t * t) / df)
+  );
+}
+
+export function studentTCdf(t, df) {
+  if (!(df >= 1) || !Number.isFinite(df)) throw new RangeError('Derajat bebas df harus bilangan hingga minimal 1.');
+  assertFinite(t, 'Nilai t');
+  if (t === 0) return 0.5;
+  const beta = regularizedBeta(df / (df + t * t), df / 2, 0.5);
+  return t > 0 ? 1 - beta / 2 : beta / 2;
+}
+
+function calculateContinuousEvent({ eventType, c, d, cdf, variable }) {
+  if (eventType === 'lessThan' || eventType === 'lessOrEqual') {
+    return { probability: cdf(c), lower: -Infinity, upper: c };
+  }
+  if (eventType === 'greaterThan' || eventType === 'greaterOrEqual') {
+    return { probability: 1 - cdf(c), lower: c, upper: Infinity };
+  }
+  if (eventType === 'between') {
+    if (c > d) throw new RangeError('Batas bawah harus kurang dari atau sama dengan batas atas.');
+    return { probability: cdf(d) - cdf(c), lower: c, upper: d };
+  }
+  if (eventType === 'exact') {
+    return { probability: 0, lower: c, upper: c };
+  }
+  throw new RangeError(`Jenis kejadian ${variable} tidak dikenal.`);
+}
+
+export function calculateExponential({ lambda, eventType = 'between', c = 0, d = 2 }) {
+  [lambda, c, d].forEach((value, index) => assertFinite(value, ['λ', 'c', 'd'][index]));
+  if (!(lambda > 0)) throw new RangeError('Laju λ harus lebih dari 0.');
+  const outcome = calculateContinuousEvent({
+    eventType, c, d, variable: 'Eksponensial',
+    cdf: (value) => exponentialCdf(value, lambda)
+  });
+  const mean = 1 / lambda;
+  const variance = 1 / (lambda * lambda);
+  const standardDeviation = mean;
+  const probability = clampProbability(outcome.probability);
+  const formula = eventType === 'between'
+    ? 'P(c ≤ X ≤ d) = F(d) − F(c); F(x) = 1 − e^(−λx), x ≥ 0'
+    : eventType === 'lessThan' || eventType === 'lessOrEqual'
+      ? 'P(X ≤ c) = F(c) = 1 − e^(−λc), c ≥ 0'
+      : eventType === 'exact'
+        ? 'P(X = c) = 0 untuk setiap titik pada distribusi kontinu'
+        : 'P(X ≥ c) = e^(−λc), c ≥ 0';
+  return makeResult({
+    distribution: 'Eksponensial',
+    probability,
+    event: eventText('X', eventType, c, d),
+    parameters: { lambda, c, d },
+    intermediate: { mean, variance, standardDeviation, ...outcome },
+    formula,
+    steps: [
+      makeStep('Identifikasi distribusi', 'Distribusi Eksponensial memodelkan waktu tunggu dengan laju kejadian tetap λ.'),
+      makeStep('Nilai yang diketahui', `λ = ${lambda}; E(X) = 1/λ = ${mean.toFixed(4)} dan Var(X) = 1/λ² = ${variance.toFixed(4)}.`),
+      makeStep('Terjemahkan kejadian', eventText('X', eventType, c, d)),
+      makeStep('Pilih rumus', formula),
+      makeStep('Perhatikan dukungan distribusi', 'Nilai X tidak dapat negatif; CDF bernilai 0 untuk batas di bawah 0.'),
+      makeStep('Hitung peluang', `Peluang = ${probability.toFixed(6)} atau ${(probability * 100).toFixed(2)}%.`),
+      makeStep('Periksa hasil', 'Peluang berada di antara 0 dan 1; nilai yang dihitung menggunakan CDF Eksponensial.'),
+      makeStep('Arti hasil', `Sekitar ${(probability * 100).toFixed(2)}% waktu tunggu diperkirakan memenuhi kejadian tersebut.`)
+    ],
+    chart: { type: 'exponential', lambda, mean, lower: outcome.lower, upper: outcome.upper, eventType },
+    extra: { mean, variance, standardDeviation }
+  });
+}
+
+export function calculateStudentT({ df, eventType = 'between', c = -1.5, d = 1.5 }) {
+  assertFinite(df, 'Derajat bebas df');
+  [c, d].forEach((value, index) => assertFinite(value, ['Batas c', 'Batas d'][index]));
+  if (!Number.isInteger(df) || df < 1) throw new RangeError('Derajat bebas df harus bilangan bulat minimal 1.');
+  const outcome = calculateContinuousEvent({
+    eventType, c, d, variable: 't',
+    cdf: (value) => studentTCdf(value, df)
+  });
+  const probability = clampProbability(outcome.probability);
+  const mean = df > 1 ? 0 : null;
+  const variance = df > 2 ? df / (df - 2) : Infinity;
+  const standardDeviation = Number.isFinite(variance) ? Math.sqrt(variance) : null;
+  const formula = `f(t) = Γ((ν+1)/2) / (√(νπ) Γ(ν/2)) · (1 + t²/ν)^(-(ν+1)/2), ν = ${df}`;
+  return makeResult({
+    distribution: 'Student-t',
+    probability,
+    event: eventText('t', eventType, c, d),
+    parameters: { df, c, d },
+    intermediate: { mean, variance, standardDeviation, ...outcome },
+    formula,
+    steps: [
+      makeStep('Identifikasi distribusi', 'Distribusi Student-t digunakan untuk inferensi mean ketika simpangan baku populasi tidak diketahui, terutama pada sampel kecil.'),
+      makeStep('Nilai yang diketahui', `Derajat bebas ν = df = ${df}; mean ${df > 1 ? '0' : 'tidak terdefinisi'}${df > 2 ? ` dan varians = ${variance.toFixed(4)}` : ` dan varians ${df === 2 ? 'tidak terdefinisi' : 'tidak terdefinisi'}`}.`),
+      makeStep('Terjemahkan kejadian', eventText('t', eventType, c, d)),
+      makeStep('Pilih rumus', 'Peluang interval dihitung dari selisih CDF Student-t pada kedua batas.'),
+      makeStep('Evaluasi CDF', eventType === 'between'
+        ? `F(${d}) − F(${c}) = ${studentTCdf(d, df).toFixed(6)} − ${studentTCdf(c, df).toFixed(6)}.`
+        : `CDF Student-t dievaluasi pada batas ${c}.`),
+      makeStep('Hitung peluang', `Peluang = ${probability.toFixed(6)} atau ${(probability * 100).toFixed(2)}%.`),
+      makeStep('Periksa hasil', 'CDF Student-t simetris terhadap 0 dan peluang berada di antara 0 dan 1.'),
+      makeStep('Arti hasil', `Sekitar ${(probability * 100).toFixed(2)}% nilai t diperkirakan memenuhi kejadian tersebut.`)
+    ],
+    chart: { type: 'student_t', df, mu: 0, lower: outcome.lower, upper: outcome.upper, eventType },
+    extra: { mean, variance, standardDeviation }
+  });
+}
+
 function eventText(variable, eventType, c, d, k, a, b, mode) {
   if (mode === 'quantile') return 'Cari x sehingga peluang yang ditentukan tercapai';
   if (mode === 'symmetricInterval') return 'Interval simetris di sekitar mean';

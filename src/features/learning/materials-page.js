@@ -297,14 +297,8 @@ export function initMaterialsPage() {
   root.innerHTML = `
     <div class="materials-learning">
       <header class="materials-learning__intro">
-        <div>
-          <span class="section-kicker">PETA BELAJAR</span>
-          <h2 id="materials-title">Materi Probabilitas &amp; Statistika</h2>
-          <p>Pelajari konsep bertahap, coba kalkulator, lalu uji pemahamanmu.</p>
-        </div>
         <div class="materials-learning__progress" aria-live="polite">
           <strong data-course-progress>0 dari 26 selesai</strong>
-          <div class="learning-progress-track"><span data-course-progress-bar></span></div>
         </div>
       </header>
       <div class="materials-learning__tools">
@@ -324,9 +318,6 @@ export function initMaterialsPage() {
           <div><span class="lesson-dialog__eyebrow"></span><h2 id="lesson-dialog-title"></h2></div>
           <button class="lesson-dialog__close" type="button" aria-label="Tutup materi">×</button>
         </header>
-        <div class="lesson-dialog__reading-progress" aria-label="Progres membaca">
-          <span data-reading-progress></span>
-        </div>
         <div class="lesson-dialog__layout">
           <nav class="lesson-toc" aria-label="Daftar isi materi">
             <strong>Daftar isi</strong>
@@ -360,7 +351,6 @@ export function initMaterialsPage() {
   function renderProgress() {
     const completed = lessons.filter(({ number }) => progress.has(number)).length;
     root.querySelector('[data-course-progress]').textContent = `${completed} dari 26 selesai`;
-    root.querySelector('[data-course-progress-bar]').style.width = `${completed / lessons.length * 100}%`;
   }
 
   function renderCategories() {
@@ -463,7 +453,6 @@ export function initMaterialsPage() {
     root.querySelector('[data-lesson-prev]').disabled = activeLessonIndex === 0;
     root.querySelector('[data-lesson-next]').disabled = activeLessonIndex === lessons.length - 1;
     body.scrollTop = 0;
-    root.querySelector('[data-reading-progress]').style.width = progress.has(lesson.number) ? '100%' : '0%';
     const calculator = calculatorMarkup(lesson.number);
     article.innerHTML = `
       <section id="lesson-objective" class="lesson-objective">
@@ -507,10 +496,9 @@ export function initMaterialsPage() {
   }
 
   function updateReadingProgress() {
+    const lesson = lessons[activeLessonIndex];
     const remaining = body.scrollHeight - body.clientHeight;
     const fraction = remaining <= 0 ? 1 : Math.min(1, Math.max(0, body.scrollTop / remaining));
-    const lesson = lessons[activeLessonIndex];
-    root.querySelector('[data-reading-progress]').style.width = `${Math.round(fraction * 100)}%`;
     if (fraction >= 0.98 && !progress.has(lesson.number)) {
       progress.add(lesson.number);
       saveProgress(progress);

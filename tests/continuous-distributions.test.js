@@ -2,12 +2,18 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
   calculateBinomialNormal,
+  calculateExponential,
   calculateNormal,
   calculateSampleMean,
+  calculateStudentT,
   calculateUniform,
+  exponentialCdf,
+  exponentialPdf,
   normalCdf,
   normalPdf,
   normalQuantile,
+  studentTCdf,
+  studentTPdf,
   uniformCdf
 } from '../src/features/distributions/continuous/continuous-math.js';
 
@@ -74,4 +80,30 @@ test('binomial-normal approximation uses continuity corrections and warnings', (
   assert.equal(calculateBinomialNormal({ n: 10, p: 0.1, eventType: 'atLeast', k: 4 }).warnings.length, 1);
   assert.throws(() => calculateBinomialNormal({ n: 5, p: 0, k: 2 }), RangeError);
   assert.throws(() => calculateBinomialNormal({ n: 10, p: 0.5, eventType: 'integerBetween', a: 8, b: 2 }), RangeError);
+});
+
+test('exponential probabilities, moments, support, and validation', () => {
+  const leftTail = calculateExponential({ lambda: 0.5, eventType: 'lessThan', c: 3 });
+  closeTo(leftTail.probability, 1 - Math.exp(-1.5));
+  closeTo(leftTail.mean, 2);
+  closeTo(leftTail.variance, 4);
+  closeTo(calculateExponential({ lambda: 0.5, eventType: 'between', c: 1, d: 3 }).probability, Math.exp(-0.5) - Math.exp(-1.5));
+  closeTo(calculateExponential({ lambda: 0.5, eventType: 'greaterThan', c: -1 }).probability, 1);
+  assert.equal(exponentialCdf(-1, 0.5), 0);
+  assert.equal(exponentialPdf(-1, 0.5), 0);
+  closeTo(exponentialCdf(1e-8, 2), 2e-8, 1e-15);
+  assert.throws(() => calculateExponential({ lambda: 0 }), RangeError);
+  assert.throws(() => calculateExponential({ lambda: 1, eventType: 'between', c: 3, d: 2 }), RangeError);
+});
+
+test('Student-t PDF and CDF are accurate, symmetric, and validate degrees of freedom', () => {
+  closeTo(studentTPdf(0, 1), 1 / Math.PI, 1e-12);
+  closeTo(studentTCdf(1, 1), 0.75, 1e-12);
+  closeTo(studentTCdf(-1, 1), 0.25, 1e-12);
+  closeTo(studentTCdf(2.015048, 5), 0.95, 2e-6);
+  closeTo(calculateStudentT({ df: 5, eventType: 'between', c: -1.5, d: 1.5 }).probability, 0.806, 0.002);
+  assert.equal(calculateStudentT({ df: 1, eventType: 'lessThan', c: 0 }).mean, null);
+  assert.equal(calculateStudentT({ df: 2 }).variance, Infinity);
+  assert.throws(() => calculateStudentT({ df: 1.5 }), RangeError);
+  assert.throws(() => calculateStudentT({ df: 5, eventType: 'between', c: 1, d: -1 }), RangeError);
 });

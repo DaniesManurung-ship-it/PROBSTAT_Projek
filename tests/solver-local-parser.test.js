@@ -18,7 +18,7 @@ const createElementStub = () => ({
     contains() { return false; }
   },
   appendChild(child) { this.children.push(child); return child; },
-  replaceChildren() { this.children = []; },
+  replaceChildren(...children) { this.children = children; },
   addEventListener() {},
   removeEventListener() {},
   focus() {},
@@ -28,6 +28,7 @@ const createElementStub = () => ({
     return {
       fillStyle: '',
       fillRect() {},
+      strokeRect() {},
       beginPath() {},
       arc() {},
       fill() {},
@@ -101,11 +102,28 @@ test('mesin lokal menghitung dua bola merah yang diambil sekaligus tanpa pengemb
     'Berapa peluang mengambil dua bola merah tanpa pengembalian?'
   );
 
-  assert.equal(result.model, 'balls');
+  assert.equal(result.model, 'balls', JSON.stringify(result));
   assert.equal(result.favorable, 12);
   assert.equal(result.total, 72);
   assert.equal(result.fraction, '1/6');
+  assert.equal(result.drawCount, 2);
+  assert.equal(result.replacement, 'without');
   assert.ok(Math.abs(result.percentage - 100 / 6) < 1e-12);
+});
+
+test('mesin lokal menghitung bola putih dan menyimpan warnanya untuk visualisasi', () => {
+  const result = analyzeProblem(
+    'Dalam sebuah kotak terdapat 4 bola putih, 3 bola merah, dan 2 bola biru. Berapa peluang mengambil bola putih?'
+  );
+
+  assert.equal(result.model, 'balls', JSON.stringify(result));
+  assert.equal(result.counts.putih, 4);
+  assert.equal(result.counts.merah, 3);
+  assert.equal(result.counts.biru, 2);
+  assert.equal(result.favorable, 4);
+  assert.equal(result.total, 9);
+  assert.equal(result.target, 'putih');
+  assert.equal(result.drawCount, 1);
 });
 
 test('menghitung kartu As merah sebagai irisan As dan kartu merah', () => {
@@ -241,9 +259,21 @@ test('mengirim soal yang dikenali parser lokal ke Gemini sebelum memutuskan hasi
 
 test('menampilkan jawaban Gemini bila kategori soal belum tersedia di mesin lokal', async () => {
   const solution = {
+    known: ['Ruang sampel berisi dua hasil yang sama mungkin.'],
+    asked: 'Peluang satu dari dua hasil.',
+    analysis: 'Peluang adalah jumlah hasil yang memenuhi dibagi seluruh hasil.',
     formula: 'P(A) = |A| / |S|',
     answer: '1/2',
-    steps: ['Ruang sampel berisi dua hasil yang sama mungkin.', 'Satu hasil memenuhi kejadian.']
+    steps: ['Ada 2 hasil yang sama mungkin.', 'Satu hasil memenuhi kejadian, sehingga peluangnya 1/2.'],
+    conclusion: 'Peluang kejadian tersebut adalah 1/2 atau 50%.',
+    visualization: {
+      title: 'Dua hasil yang sama mungkin',
+      caption: 'Satu dari dua hasil ditandai sebagai kejadian yang dicari.',
+      items: [
+        { shape: 'token', label: 'Memenuhi', color: 'green', count: 1, favorable: true },
+        { shape: 'token', label: 'Lainnya', color: 'blue', count: 1, favorable: false }
+      ]
+    }
   };
   const interpretation = {
     status: 'ai_solved',
@@ -291,8 +321,16 @@ test('menampilkan jawaban Gemini bila kategori soal belum tersedia di mesin loka
     assert.equal(document.getElementById('solver-answer').textContent, '1/2');
     assert.equal(document.getElementById('solver-fraction').textContent, 'P(A) = |A| / |S|');
     assert.equal(document.getElementById('solver-steps').children.length, 2);
-    assert.equal(document.getElementById('solver-scene').hidden, true);
-    assert.equal(document.getElementById('guided-learning').hidden, true);
+    assert.equal(document.getElementById('solver-summary').textContent, solution.conclusion);
+    assert.equal(document.getElementById('solver-ai-breakdown').hidden, false);
+    assert.equal(document.getElementById('solver-ai-known').children.length, 1);
+    assert.equal(document.getElementById('solver-ai-asked').textContent, solution.asked);
+    assert.equal(document.getElementById('solver-ai-analysis').textContent, solution.analysis);
+    assert.equal(document.getElementById('solver-scene').hidden, false);
+    assert.equal(document.getElementById('solver-scene').children[0].className, 'solver-2d-stage');
+    assert.equal(document.getElementById('solver-scene').children[0].children[0].children.length, 2);
+    assert.equal(document.getElementById('guided-learning').hidden, false);
+    assert.equal(document.getElementById('solver-sample-space').children.length, 2);
     assert.match(document.getElementById('solver-status').textContent, /diselesaikan oleh Gemini/);
   } finally {
     globalThis.fetch = previousFetch;

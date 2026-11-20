@@ -1,0 +1,171 @@
+/* ==========================================
+   INTERACTIVE BALL LEARNING
+========================================== */
+
+.ball-learning-panel {
+  margin-top: 22px;
+  padding: 24px;
+  border: 1px solid rgba(93, 161, 255, .22);
+  border-radius: 18px;
+  background: linear-gradient(
+    145deg,
+    #14243a,
+    #0b1728
+  );
+  color: #edf4ff;
+}
+
+.ball-learning-heading > span {
+  color: #65b9ff;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.ball-learning-heading h3 {
+  margin: 10px 0;
+  font-size: 21px;
+}
+
+.ball-learning-heading p {
+  color: #a5b8d2;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.ball-learning-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 22px 0;
+}
+
+.ball-learning-stats > div {
+  padding: 16px 12px;
+  border: 1px solid #293e5a;
+  border-radius: 12px;
+  background: #101e31;
+}
+
+.ball-learning-stats span {
+  display: block;
+  color: #9db0c9;
+  font-size: 11px;
+  margin-bottom: 9px;
+}
+
+.ball-learning-stats strong {
+  font-size: 23px;
+  color: #65b9ff;
+}
+
+.ball-draw-button,
+.ball-reset-button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 750;
+  cursor: pointer;
+  transition: .2s ease;
+}
+
+.ball-draw-button {
+  border: 0;
+  background: linear-gradient(
+    100deg,
+    #2388ed,
+    #52b5ff
+  );
+  color: white;
+}
+
+.ball-draw-button:hover {
+  filter: brightness(1.12);
+  transform: translateY(-2px);
+}
+
+.ball-draw-button:disabled {
+  opacity: .5;
+  cursor: wait;
+}
+
+.ball-reset-button {
+  margin-top: 10px;
+  border: 1px solid #3a506c;
+  background: transparent;
+  color: #c5d9f3;
+}
+
+.ball-reset-button:hover {
+  background: #1d3048;
+}
+
+.ball-draw-result {
+  margin-top: 18px;
+  padding: 16px;
+  border-radius: 10px;
+  background: rgba(63, 135, 205, .1);
+  border: 1px solid rgba(90, 160, 230, .2);
+  color: #b9dfff;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.ball-learning-explanation {
+  margin-top: 20px;
+  padding-top: 18px;
+  border-top: 1px solid #293e5a;
+}
+
+.ball-learning-explanation h4 {
+  font-size: 15px;
+}
+
+.ball-learning-explanation p {
+  color: #b4c5da;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.ball-formula {
+  margin: 16px 0;
+  padding: 15px;
+  border-radius: 10px;
+  background: rgba(25, 183, 137, .09);
+  border: 1px solid rgba(25, 183, 137, .25);
+  color: #53e0b1;
+  font-size: 18px;
+  font-weight: 800;
+  text-align: center;
+}
+
+.ball-learning-explanation small {
+  color: #8fa4bd;
+  font-size: 11px;
+  line-height: 1.7;
+}
+
+@media (max-width: 600px) {
+  .ball-learning-panel {
+    padding: 16px;
+  }
+
+  .ball-learning-stats {
+    gap: 7px;
+  }
+
+  .ball-learning-stats > div {
+    padding: 12px 8px;
+  }
+
+  .ball-learning-stats span {
+    font-size: 9px;
+  }
+
+  .ball-learning-stats strong {
+    font-size: 18px;
+  }
+}
+
+

@@ -1,0 +1,139 @@
+<section class="coin-section" id="coin-lab">
+  <div class="section-heading-row">
+    <div>
+      <span class="section-kicker">06 / EKSPERIMEN KOIN 3D</span>
+      <h2>Jelajahi peluang dengan sampai 3 koin</h2>
+      <p class="section-subtitle">
+        Tentukan jumlah koin dan banyak sisi ANGKA yang dicari. Lihat peluang
+        teoritisnya, lalu bandingkan dengan hasil pelemparan.
+      </p>
+    </div>
+  </div>
+
+  <div class="coin-lab-layout">
+    <article class="coin-scene-card">
+      <span class="coin-card-kicker">OBJEK 3D INTERAKTIF</span>
+
+      <div id="coin-scene" class="coin-scene"></div>
+
+      <div class="coin-scene-controls">
+        <button class="btn btn-primary" id="flip-coin" type="button">
+          ↻ Lempar koin
+        </button>
+
+        <button class="btn btn-quiet" id="reset-coin" type="button">
+          Reset
+        </button>
+      </div>
+
+      <div class="coin-simulation-controls">
+        <label for="coin-trial-count">Jumlah simulasi</label>
+        <select id="coin-trial-count" class="coin-select">
+          <option value="10">10 kali</option>
+          <option value="50">50 kali</option>
+          <option value="100">100 kali</option>
+        </select>
+        <button class="btn btn-quiet" id="run-coin-simulation" type="button">
+          Jalankan simulasi
+        </button>
+      </div>
+
+      <p id="coin-status" class="coin-status" aria-live="polite">
+        Tekan tombol Lempar koin untuk memulai.
+      </p>
+    </article>
+
+    <article class="coin-summary-card">
+      <span class="coin-card-kicker">HASIL EKSPERIMEN</span>
+
+      <div class="coin-config">
+        <label for="coin-count">
+          Jumlah koin
+          <select id="coin-count" class="coin-select">
+            <option value="1">1 koin</option>
+            <option value="2">2 koin</option>
+            <option value="3" selected>3 koin</option>
+          </select>
+        </label>
+
+        <label for="coin-target">
+          Kejadian yang dicari
+          <select id="coin-target" class="coin-select"></select>
+        </label>
+      </div>
+
+      <div class="coin-stat-grid">
+        <div class="coin-stat">
+          <span>Jumlah pelemparan</span>
+          <strong id="coin-total">0</strong>
+        </div>
+
+        <div class="coin-stat">
+          <span>Kejadian ditemukan</span>
+          <strong id="coin-hits">0</strong>
+          <small id="coin-hit-percent">0%</small>
+        </div>
+
+        <div class="coin-stat">
+          <span>Peluang teoritis</span>
+          <strong id="coin-theory">0%</strong>
+        </div>
+
+        <div class="coin-stat">
+          <span>Frekuensi percobaan</span>
+          <strong id="coin-frequency">0%</strong>
+        </div>
+      </div>
+
+      <div class="coin-chart-section">
+        <div class="coin-chart-heading">
+          <h3>Grafik jumlah sisi ANGKA</h3>
+          <span id="coin-chart-total">Belum ada simulasi</span>
+        </div>
+        <div id="coin-frequency-chart" class="frequency-chart coin-frequency-chart"
+          role="img" aria-label="Grafik frekuensi jumlah sisi ANGKA"></div>
+        <div class="frequency-legend">
+          <span><i class="legend-dot regular"></i> Jumlah ANGKA lainnya</span>
+          <span><i class="legend-dot favorable"></i> Kejadian yang dicari</span>
+        </div>
+        <p class="coin-chart-note">
+          Tinggi batang menunjukkan berapa kali jumlah ANGKA muncul. Angka kecil di atas batang adalah peluang teoritisnya.
+        </p>
+      </div>
+
+      <div class="coin-last-result">
+        <span>HASIL KOIN TERAKHIR</span>
+        <strong id="coin-last-result">Belum ada</strong>
+      </div>
+
+      <div class="coin-progress-heading">
+        <span>Frekuensi kejadian yang dicari</span>
+        <b id="coin-progress-theory">Teori: 0%</b>
+      </div>
+
+      <div class="coin-progress">
+        <i id="coin-hit-bar"></i>
+        <span id="coin-theory-marker"></span>
+      </div>
+
+      <div class="coin-explanation" aria-live="polite">
+        <h3 id="coin-explanation-title">Cara menghitung peluang</h3>
+        <p id="coin-explanation-formula"></p>
+        <p id="coin-explanation-steps"></p>
+        <p id="coin-favorable-outcomes"></p>
+      </div>
+
+      <p id="coin-insight" class="coin-insight" aria-live="polite"></p>
+    </article>
+  </div>
+
+  <footer class="coin-page-footer">
+    <span>PROBABILITY LAB — Sistem Pembelajaran Matematika &amp; Eksperimen Interaktif</span>
+    <nav aria-label="Navigasi footer">
+      <a href="#page-home">Beranda</a>
+      <a href="#page-dice">Lab Dadu</a>
+      <a href="#page-learning">Materi Lengkap</a>
+      <a href="#coin-lab">Kembali ke Atas ↑</a>
+    </nav>
+  </footer>
+</section>

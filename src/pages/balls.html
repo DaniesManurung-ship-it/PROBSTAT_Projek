@@ -1,0 +1,149 @@
+<section class="balls-section" id="balls-lab">
+  <div class="balls-heading">
+    <span class="section-kicker">08 / BALL PROBABILITY EXPERIMENT</span>
+    <h2>Memahami peluang melalui pengambilan bola</h2>
+    <p>
+      Atur jumlah bola, pilih warna yang dicari, lalu
+      saksikan bagaimana peluang berubah ketika bola diambil.
+    </p>
+  </div>
+
+  <div class="balls-layout">
+    <article class="balls-scene-card">
+      <div class="balls-card-heading">
+        <span class="section-kicker">INTERACTIVE 3D CONTAINER</span>
+        <span class="balls-badge" id="ball-total-badge">10 Bola dalam Wadah</span>
+      </div>
+
+      <div id="balls-scene" class="balls-scene"></div>
+
+      <div class="balls-legend">
+        <span><i class="legend-red"></i> Merah: <b id="legend-red">5</b></span>
+        <span><i class="legend-blue"></i> Biru: <b id="legend-blue">3</b></span>
+        <span><i class="legend-yellow"></i> Kuning: <b id="legend-yellow">2</b></span>
+      </div>
+
+      <div class="balls-actions">
+        <button id="ball-draw" class="balls-button balls-primary" type="button">
+          <span aria-hidden="true">◎</span> Ambil satu bola
+        </button>
+        <button id="ball-reset" class="balls-button" type="button">
+          <span aria-hidden="true">↻</span> Reset eksperimen
+        </button>
+      </div>
+
+      <div class="balls-quick-actions">
+        <span>Aksi Cepat:</span>
+        <button id="ball-draw-5" type="button">Ambil 5 Bola</button>
+        <button id="ball-shake" type="button">✦ Kocok Wadah</button>
+      </div>
+
+      <p id="ball-status" class="balls-status" aria-live="polite">
+        Atur jumlah bola, lalu mulai eksperimen.
+      </p>
+    </article>
+
+    <article class="balls-panel">
+      <span class="section-kicker">PENGATURAN EKSPERIMEN</span>
+
+      <div class="balls-config-grid">
+        <label for="ball-red-count">
+          <span><i class="legend-dot legend-red"></i> Merah</span>
+          <input id="ball-red-count" type="number" min="0" max="30" value="5">
+        </label>
+        <label for="ball-blue-count">
+          <span><i class="legend-dot legend-blue"></i> Biru</span>
+          <input id="ball-blue-count" type="number" min="0" max="30" value="3">
+        </label>
+        <label for="ball-yellow-count">
+          <span><i class="legend-dot legend-yellow"></i> Kuning</span>
+          <input id="ball-yellow-count" type="number" min="0" max="30" value="2">
+        </label>
+      </div>
+
+      <div class="balls-apply-row">
+        <button id="ball-apply" class="balls-button balls-apply" type="button">
+          ✓ Terapkan konfigurasi
+        </button>
+        <span>Total awal: <b id="config-total-label">10</b> bola</span>
+      </div>
+
+      <div class="balls-select-grid">
+        <label for="ball-target-color">
+          Warna yang ingin dicari
+          <select id="ball-target-color" class="balls-select">
+            <option value="red">Bola Merah</option>
+            <option value="blue">Bola Biru</option>
+            <option value="yellow">Bola Kuning</option>
+          </select>
+        </label>
+        <label for="ball-mode">
+          Metode pengambilan
+          <select id="ball-mode" class="balls-select">
+            <option value="without">Tanpa pengembalian (Hypergeometrik)</option>
+            <option value="with">Dengan pengembalian (Binomial)</option>
+          </select>
+        </label>
+      </div>
+
+      <div class="balls-divider"></div>
+      <span class="section-kicker">HASIL PERCOBAAN</span>
+
+      <div class="balls-stat-grid">
+        <div class="balls-stat">
+          <span>Total pengambilan</span>
+          <strong id="ball-total-draws">0</strong>
+        </div>
+        <div class="balls-stat balls-stat-blue">
+          <span>Bola tersisa</span>
+          <strong id="ball-remaining">10</strong>
+        </div>
+        <div class="balls-stat balls-stat-green">
+          <span>Kejadian ditemukan</span>
+          <strong id="ball-hits">0</strong>
+        </div>
+        <div class="balls-stat balls-stat-cyan">
+          <span>Peluang teoritis awal</span>
+          <strong id="ball-theory">50.00%</strong>
+        </div>
+      </div>
+
+      <div class="balls-result-grid">
+        <div class="balls-last-result">
+          <span>HASIL TERAKHIR</span>
+          <strong id="ball-last">Belum ada</strong>
+        </div>
+        <div class="balls-next-chance">
+          <span>PELUANG BERIKUTNYA P(A|S)</span>
+          <strong id="ball-next-chance">50.00%</strong>
+          <small id="ball-next-detail">(5 dari 10 tersisa)</small>
+        </div>
+      </div>
+
+      <div class="balls-frequency">
+        <div class="balls-rate-heading">
+          <span>Frekuensi hasil percobaan (Empiris):</span>
+          <strong id="ball-empirical">0.00%</strong>
+        </div>
+        <div class="balls-rate-track">
+          <div id="ball-hit-bar"></div>
+        </div>
+        <div class="balls-rate-scale">
+          <span>0%</span>
+          <span id="ball-theory-label">▲ Teoretis awal: 50.0%</span>
+          <span>100%</span>
+        </div>
+      </div>
+
+      <div id="ball-insight" class="balls-insight">
+        Belum ada percobaan. Mulai mengambil bola untuk memahami perubahan peluang.
+      </div>
+
+      <div class="balls-formula">
+        <span>RUMUS MATEMATIS INTERAKTIF:</span>
+        <strong id="ball-formula-display">P(A) = n(A) / n(S) = 5 / 10 = 50.00%</strong>
+        <small id="ball-formula-note">Metode: Tanpa pengembalian (model hipergeometrik).</small>
+      </div>
+    </article>
+  </div>
+</section>

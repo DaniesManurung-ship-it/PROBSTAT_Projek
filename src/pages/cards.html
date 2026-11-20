@@ -1,0 +1,116 @@
+<section class="cards-section" id="cards-lab">
+
+  <div class="cards-heading">
+    <span class="section-kicker">07 / PLAYING CARD EXPERIMENT</span>
+    <h2>Jelajahi peluang melalui kartu remi</h2>
+    <p>
+      Ambil kartu dari satu dek, perhatikan simbolnya,
+      dan pelajari bagaimana peluang terbentuk.
+    </p>
+  </div>
+
+  <div class="cards-layout">
+
+    <!-- AREA VISUALISASI 3D -->
+
+    <article class="cards-scene-card">
+
+      <span class="section-kicker">
+        DECK OF 52 CARDS
+      </span>
+
+      <div id="cards-scene" class="cards-scene"></div>
+
+      <div class="cards-actions">
+
+        <button
+          class="cards-button cards-primary"
+          id="draw-card"
+          type="button">
+          🂠 Ambil Kartu
+        </button>
+
+        <button
+          class="cards-button"
+          id="reset-cards"
+          type="button">
+          Reset Dek
+        </button>
+
+      </div>
+
+      <p id="cards-status" class="cards-status" aria-live="polite">
+        Pilih kejadian, lalu ambil kartu untuk memulai eksperimen.
+      </p>
+
+    </article>
+
+
+    <!-- PANEL STATISTIK -->
+
+    <article class="cards-stats-card">
+
+      <span class="section-kicker">
+        ANALISIS PELUANG KARTU
+      </span>
+
+      <label for="card-event">
+        Kejadian yang ingin dicari
+      </label>
+
+      <select id="card-event" class="cards-select">
+            <option value="red">Kartu merah (Hati &amp; Wajik) - 26 kartu</option>
+        <option value="black">Kartu hitam</option>
+        <option value="ace">Kartu As</option>
+        <option value="face">Kartu bergambar (J, Q, K)</option>
+        <option value="spade">Kartu sekop</option>
+      </select>
+
+      <div class="cards-stat-grid">
+
+        <div class="cards-stat">
+          <span>Kartu diambil</span>
+          <strong id="cards-total">0</strong>
+        </div>
+
+        <div class="cards-stat">
+          <span>Sisa kartu</span>
+          <strong id="cards-remaining">52</strong>
+        </div>
+
+        <div class="cards-stat">
+          <span>Kejadian ditemukan</span>
+          <strong id="cards-hits">0</strong>
+        </div>
+
+        <div class="cards-stat">
+          <span>Peluang teoritis</span>
+          <strong id="cards-theory">50%</strong>
+        </div>
+
+      </div>
+
+      <div class="cards-result">
+        <span>KARTU TERAKHIR</span>
+        <strong id="cards-last">Belum ada</strong>
+      </div>
+
+      <div class="cards-rate-heading">
+        <span>Frekuensi hasil percobaan</span>
+        <strong id="cards-hit-rate">0%</strong>
+      </div>
+
+      <div class="cards-rate-track">
+        <div id="cards-hit-bar"></div>
+      </div>
+
+      <div id="cards-insight" class="cards-insight">
+        Belum ada percobaan. Mulailah mengambil kartu
+        untuk memahami peluangnya.
+      </div>
+
+    </article>
+
+  </div>
+
+</section>

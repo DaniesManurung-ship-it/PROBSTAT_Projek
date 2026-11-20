@@ -57,6 +57,20 @@ function startBallsLab() {
     return;
   }
 
+  const extras = {
+    totalBadge: $('ball-total-badge'),
+    legendRed: $('legend-red'),
+    legendBlue: $('legend-blue'),
+    legendYellow: $('legend-yellow'),
+    configTotal: $('config-total-label'),
+    nextDetail: $('ball-next-detail'),
+    theoryLabel: $('ball-theory-label'),
+    formula: $('ball-formula-display'),
+    formulaNote: $('ball-formula-note'),
+    drawFive: $('ball-draw-5'),
+    shake: $('ball-shake')
+  };
+
   /* ======================================
      STATE
   ====================================== */
@@ -85,7 +99,7 @@ function startBallsLab() {
 
   const scene = new THREE.Scene();
   const themeColors = getSceneThemeColors();
-  scene.background = new THREE.Color(themeColors.background || '#edf7ef');
+  scene.background = new THREE.Color('#f8fafc');
 
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
   camera.position.set(3.4, 2.5, 5.7);
@@ -122,8 +136,8 @@ function startBallsLab() {
   floor.position.y = -1.35;
   scene.add(floor);
   const unsubscribeTheme = subscribeToThemeChange((theme, colors) => {
-    scene.background.set(colors.background);
-    floor.material.color.set(colors.floor);
+    scene.background.set('#f8fafc');
+    floor.material.color.set('#e2e8f0');
     blueLight.color.set(theme === 'dark' ? 0x398bff : 0x80bd8b);
     blueLight.intensity = theme === 'dark' ? 22 : 14;
   });
@@ -429,6 +443,26 @@ function startBallsLab() {
     ui.nextChance.textContent = `${nextChance.toFixed(2)}%`;
     ui.bar.style.width        = `${empirical}%`;
 
+    if (extras.totalBadge) extras.totalBadge.textContent =
+      `${availableTotal} Bola dalam Wadah`;
+    if (extras.configTotal) extras.configTotal.textContent = initialTotal;
+    if (extras.legendRed) extras.legendRed.textContent =
+      remainingBalls.filter((ball) => ball.color === 'red').length;
+    if (extras.legendBlue) extras.legendBlue.textContent =
+      remainingBalls.filter((ball) => ball.color === 'blue').length;
+    if (extras.legendYellow) extras.legendYellow.textContent =
+      remainingBalls.filter((ball) => ball.color === 'yellow').length;
+    if (extras.nextDetail) extras.nextDetail.textContent =
+      `(${favorableRemaining} dari ${availableTotal} tersisa)`;
+    if (extras.theoryLabel) extras.theoryLabel.textContent =
+      `▲ Teoretis awal: ${theoretical.toFixed(1)}%`;
+    if (extras.formula) extras.formula.textContent =
+      `P(A) = n(A) / n(S) = ${favorableRemaining} / ${availableTotal} = ${nextChance.toFixed(2)}%`;
+    if (extras.formulaNote) extras.formulaNote.textContent =
+      ui.mode.value === 'with'
+        ? 'Metode: Dengan pengembalian (model binomial).'
+        : 'Metode: Tanpa pengembalian (model hipergeometrik).';
+
     const modeName = ui.mode.value === 'with'
       ? 'dengan pengembalian' : 'tanpa pengembalian';
 
@@ -680,6 +714,38 @@ function startBallsLab() {
   ui.apply.addEventListener('click', applyConfig);
   ui.draw.addEventListener('click', drawBall);
   ui.reset.addEventListener('click', resetExperiment);
+
+  if (extras.drawFive) {
+    extras.drawFive.addEventListener('click', () => {
+      if (animation) return;
+      let remaining = 5;
+      const takeOne = () => {
+        if (remaining <= 0) return;
+        if (ui.mode.value === 'without' && remainingBalls.length === 0) return;
+        drawBall();
+        remaining -= 1;
+        const timer = setInterval(() => {
+          if (!animation) {
+            clearInterval(timer);
+            if (remaining > 0) takeOne();
+          }
+        }, 100);
+      };
+      takeOne();
+    });
+  }
+
+  if (extras.shake) {
+    extras.shake.addEventListener('click', () => {
+      if (animation) return;
+      ui.status.textContent = 'Wadah dikocok. Susunan bola telah diacak untuk pengambilan acak.';
+      for (const ball of allBalls) {
+        ball.mesh.position.copy(ball.home);
+        ball.mesh.position.x += (Math.random() - .5) * .12;
+        ball.mesh.position.z += (Math.random() - .5) * .12;
+      }
+    });
+  }
 
   ui.target.addEventListener('change', () => {
     initialTargetCount = initialCounts[ui.target.value];

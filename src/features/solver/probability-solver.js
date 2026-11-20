@@ -9,6 +9,7 @@ import {
 } from './interpretation-contract.js';
 import { solveDiceInterpretation } from './dice-interpretation-engine.js';
 import { solveBinomialInterpretation } from './binomial-interpretation-engine.js';
+import { createDie as createPipDie } from '../../visualization/three/create-die.js';
 
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -26,11 +27,18 @@ const ui = {
   submit: $('solver-submit'),
   status: $('solver-status'),
   output: $('solver-output'),
+  animateOutcome: $('solver-animate-outcome'),
+  sceneOutcome: $('solver-scene-outcome'),
   answer: $('solver-answer'),
   percentage: $('solver-percentage'),
   fraction: $('solver-fraction'),
   steps: $('solver-steps'),
   summary: $('solver-summary'),
+  understanding: $('solver-understanding-text'),
+  aiBreakdown: $('solver-ai-breakdown'),
+  aiKnown: $('solver-ai-known'),
+  aiAsked: $('solver-ai-asked'),
+  aiAnalysis: $('solver-ai-analysis'),
   scene: $('solver-scene'),
   guidedLearning: $('guided-learning'),
   visualDescription: $('solver-visual-description'),
@@ -265,7 +273,7 @@ function solveSingleDie(text) {
           'Karena tidak ada sisi dengan nilai tersebut, peluangnya adalah 0/6.'
         ],
         description:
-          'Dadu 3D dan enam kemungkinan sisi. Tidak ada sisi yang bernilai dalam kejadian yang diminta, sehingga hasilnya nol.',
+          'Diagram 2D dadu menampilkan enam kemungkinan sisi. Tidak ada sisi yang bernilai dalam kejadian yang diminta, sehingga hasilnya nol.',
         summary:
           `Nilai ${value} tidak mungkin muncul pada dadu bersisi enam, sehingga peluangnya 0%.`
       });
@@ -291,7 +299,7 @@ function solveSingleDie(text) {
       `Peluang = ${favorableValues.length}/6 = ${simplifyFraction(favorableValues.length, 6)}.`
     ],
     description:
-      'Dadu 3D dan enam kemungkinan sisi. Sisi berwarna hijau merupakan kejadian yang dicari.',
+      'Diagram 2D dadu menampilkan enam kemungkinan sisi. Sisi berwarna hijau merupakan kejadian yang dicari.',
     summary:
       `Terdapat ${favorableValues.length} hasil yang memenuhi kondisi dari enam kemungkinan.`
   });
@@ -336,7 +344,7 @@ function solveCoin(text) {
       'Peluang = 1/2 = 50%.'
     ],
     description:
-      'Koin 3D dengan dua sisi. Sisi yang menjadi kejadian yang dicari ditandai dengan warna hijau.',
+      'Diagram 2D koin menampilkan dua sisi. Sisi yang menjadi kejadian yang dicari ditandai dengan warna hijau.',
     summary:
       `Peluang muncul sisi ${event.toLowerCase()} adalah 1 dari 2 kemungkinan.`
   });
@@ -433,16 +441,16 @@ function solveCard(text) {
 
 function solveBalls(text) {
   const counts = {
-    merah: Number(
-      text.match(/(\d+)\s*(?:buah\s*)?bola\s*merah/)?.[1] || 0
-    ),
-    biru: Number(
-      text.match(/(\d+)\s*(?:buah\s*)?bola\s*biru/)?.[1] || 0
-    ),
-    kuning: Number(
-      text.match(/(\d+)\s*(?:buah\s*)?bola\s*kuning/)?.[1] || 0
-    )
+    merah: 0,
+    biru: 0,
+    kuning: 0,
+    putih: 0
   };
+  for (const color of Object.keys(counts)) {
+    counts[color] = Number(
+      text.match(new RegExp(`(\\d+)\\s*(?:buah\\s*)?bola\\s*${color}`))?.[1] || 0
+    );
+  }
 
   const total = Object.values(counts).reduce(
     (sum, number) => sum + number,
@@ -452,8 +460,8 @@ function solveBalls(text) {
   if (total === 0 || total > 30) return null;
 
   const targetMatch =
-    text.match(/keduanya\s+(merah|biru|kuning)/) ||
-    text.match(/peluang.{0,65}(?:bola\s+)?(merah|biru|kuning)/);
+    text.match(/keduanya\s+(merah|biru|kuning|putih)/) ||
+    text.match(/peluang.{0,65}(?:bola\s+)?(merah|biru|kuning|putih)/);
 
   if (!targetMatch) return null;
 
@@ -462,8 +470,7 @@ function solveBalls(text) {
   const targetCount = counts[target];
 
   const twoDraws =
-    /\bdua\s+(?:buah\s+)?bola\b/.test(text) ||
-    /\b2\s+(?:buah\s+)?bola\b/.test(text) ||
+    /\b(?:mengambil|diambil|ambil|terambil|mendapatkan|mendapat)\s+(?:(?:sebanyak|secara)\s+)?(?:dua|2)\s+(?:buah\s+)?bola\b/.test(text) ||
     /\bkeduanya\b/.test(text);
 
   const withoutReplacement =
@@ -537,9 +544,11 @@ function solveBalls(text) {
     ),
     counts,
     target,
+    drawCount: twoDraws ? 2 : 1,
+    replacement: twoDraws ? (withoutReplacement ? 'without' : 'with') : 'not_applicable',
     steps,
     description:
-      'Wadah 3D menampilkan komposisi bola sesuai soal. Warna yang dicari ditandai dalam penjelasan.',
+      'Diagram 2D menampilkan komposisi bola sesuai soal. Warna yang dicari ditandai dalam penjelasan.',
     summary: twoDraws
       ? `Peluang mendapatkan dua bola ${target} adalah ${simplifyFraction(favorable, denominator)}.`
       : `Peluang mengambil satu bola ${target} adalah ${simplifyFraction(favorable, denominator)}.`
@@ -595,7 +604,7 @@ if (conditionalResult) {
   if (text.includes('bola')) {
     return solveBalls(text) || {
       error:
-        'Informasi bola belum lengkap. Cantumkan jumlah bola merah, biru, kuning, dan warna yang ingin dicari.'
+        'Informasi bola belum lengkap. Cantumkan jumlah bola merah, biru, kuning, putih, dan warna yang ingin dicari.'
     };
   }
 
@@ -631,6 +640,8 @@ let visualizationGroup;
 let animationFrame;
 let resizeObserver;
 let unsubscribeTheme;
+let sceneOutcomeAnimation = null;
+let currentVisualProblem = null;
 
 function createTexture(label, background, foreground) {
   const canvas = document.createElement('canvas');
@@ -657,57 +668,8 @@ function createTexture(label, background, foreground) {
   return texture;
 }
 
-function createDie(number) {
-  const layouts = {
-    1: [[256, 256]],
-    2: [[130, 130], [382, 382]],
-    3: [[130, 130], [256, 256], [382, 382]],
-    4: [[130, 130], [382, 130], [130, 382], [382, 382]],
-    5: [[130, 130], [382, 130], [256, 256], [130, 382], [382, 382]],
-    6: [[130, 110], [382, 110], [130, 256], [382, 256], [130, 402], [382, 402]]
-  };
-
-  const canvas = document.createElement('canvas');
-
-  canvas.width = canvas.height = 512;
-
-  const ctx = canvas.getContext('2d');
-
-  ctx.fillStyle = '#f6f3e9';
-  ctx.fillRect(0, 0, 512, 512);
-
-  ctx.fillStyle = '#172a42';
-
-  for (const [x, y] of layouts[number]) {
-    ctx.beginPath();
-    ctx.arc(x, y, 43, 0, Math.PI * 2);
-    ctx.fill();
-  }
-
-  const texture = new THREE.CanvasTexture(canvas);
-
-  texture.colorSpace = THREE.SRGBColorSpace;
-
-  return texture;
-}
-
 function makeDie() {
-  const materials = [1, 2, 3, 4, 5, 6].map(
-    (number) =>
-      new THREE.MeshStandardMaterial({
-        map: createDie(number),
-        roughness: 0.45
-      })
-  );
-
-  const mesh = new THREE.Mesh(
-    new THREE.BoxGeometry(0.8, 0.8, 0.8),
-    materials
-  );
-
-  mesh.castShadow = true;
-
-  return mesh;
+  return createPipDie();
 }
 
 function clearVisualization() {
@@ -733,14 +695,17 @@ function clearVisualization() {
 
 function addDice(problem = {}) {
   const group = new THREE.Group();
-  const count = problem.diceCount || 2;
+  const count = problem.diceCount || (problem.model === 'dice-single' ? 1 : 2);
   const spacing = count === 2 ? 1.2 : 1;
 
   for (let index = 0; index < count; index += 1) {
     const die = makeDie();
     die.position.x = (index - (count - 1) / 2) * spacing;
+    die.position.y = -0.52;
     die.rotation.set(0.4 + index * 0.2, 0.5 - index * 0.15, 0.2 + index * 0.1);
-    if (count === 3) die.scale.setScalar(0.85);
+    die.scale.setScalar(count === 3 ? 0.72 : count === 1 ? 1.08 : 0.88);
+    die.userData.isSolverDie = true;
+    die.userData.basePosition = die.position.clone();
     group.add(die);
   }
 
@@ -748,12 +713,7 @@ function addDice(problem = {}) {
 }
 
 function addSingleDie() {
-  const die = makeDie();
-
-  die.scale.setScalar(1.2);
-  die.rotation.set(0.5, 0.5, 0.3);
-
-  return die;
+  return addDice({ model: 'dice-single', diceCount: 1 });
 }
 
 function addCoin() {
@@ -764,12 +724,12 @@ function addCoin() {
   });
 
   const front = new THREE.MeshStandardMaterial({
-    map: createTexture('1', '#f7df9c', '#74420e'),
+    map: createTexture('ANGKA', '#f7df9c', '#74420e'),
     metalness: 0.6
   });
 
   const back = new THREE.MeshStandardMaterial({
-    map: createTexture('★', '#eed08b', '#70420f'),
+    map: createTexture('GAMBAR', '#eed08b', '#70420f'),
     metalness: 0.6
   });
 
@@ -781,15 +741,19 @@ function addCoin() {
   );
 
   coin.rotation.x = Math.PI / 2;
+  coin.userData.isSolverCoin = true;
 
   return coin;
 }
 
-function addCards() {
+function addCards(problem = {}) {
   const group = new THREE.Group();
 
-  const back = createTexture('#', '#17365b', '#d9c58e');
-  const front = createTexture('A', '#fffaf0', '#bd3547');
+  const outcome = problem.sample?.find((item) => item.favorable) || problem.sample?.[0];
+  const label = outcome?.value || 'A♥';
+  const isRed = /[♥♦]/.test(label);
+  const back = createTexture('P3D', '#17365b', '#d9c58e');
+  const front = createTexture(label, '#fffaf0', isRed ? '#bd3547' : '#172a42');
 
   for (let i = 0; i < 5; i++) {
     const materials = [
@@ -809,10 +773,122 @@ function addCards() {
     card.position.x = i * 0.08 - 0.15;
     card.position.y = i * 0.025;
     card.rotation.y = -0.15 + i * 0.08;
+    if (i === 4) {
+      card.userData.isSolverCard = true;
+      card.userData.outcome = label;
+      card.userData.basePosition = card.position.clone();
+    }
 
     group.add(card);
   }
 
+  return group;
+}
+
+function addAiVisualization(problem) {
+  const group = new THREE.Group();
+  const colors = {
+    red: '#e75059',
+    blue: '#368ce8',
+    yellow: '#f2c94c',
+    white: '#f7f8fb',
+    green: '#3bb987',
+    purple: '#9b75db',
+    orange: '#f2934b',
+    black: '#283342',
+    gray: '#aeb8c2',
+    gold: '#d8ad4c',
+    neutral: '#6f8aa6'
+  };
+  const items = problem.aiSolution.visualization.items;
+  const columns = Math.min(items.length, 4);
+  let visibleObjects = 0;
+
+  function makeObject(shape, color, favorable) {
+    const material = new THREE.MeshStandardMaterial({
+      color,
+      roughness: shape === 'coin' || shape === 'token' ? 0.32 : 0.48,
+      metalness: shape === 'coin' || shape === 'token' ? 0.35 : 0.02,
+      emissive: favorable ? color : color === '#f7f8fb' ? '#30343a' : '#000000',
+      emissiveIntensity: favorable ? 0.24 : 0.12
+    });
+    const geometries = {
+      sphere: () => new THREE.SphereGeometry(0.25, 28, 20),
+      cube: () => new THREE.BoxGeometry(0.42, 0.42, 0.42),
+      card: () => new THREE.BoxGeometry(0.34, 0.48, 0.035),
+      coin: () => new THREE.CylinderGeometry(0.24, 0.24, 0.075, 32),
+      cylinder: () => new THREE.CylinderGeometry(0.19, 0.19, 0.44, 24),
+      token: () => new THREE.CylinderGeometry(0.24, 0.24, 0.09, 32)
+    };
+    const object = new THREE.Mesh(geometries[shape](), material);
+    if (shape === 'coin') object.rotation.x = Math.PI / 2;
+    object.userData.isAiVisualObject = true;
+    object.userData.favorable = favorable;
+    object.castShadow = true;
+    return object;
+  }
+
+  function addLabel(item, x, z, favorable) {
+    const canvas = document.createElement('canvas');
+    canvas.width = 512;
+    canvas.height = 144;
+    const context = canvas.getContext('2d');
+    context.fillStyle = 'rgba(10, 23, 40, .9)';
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.strokeStyle = favorable ? '#55d6a5' : '#7390ae';
+    context.lineWidth = 6;
+    context.strokeRect(4, 4, canvas.width - 8, canvas.height - 8);
+    context.fillStyle = '#f2f7ff';
+    context.font = 'bold 42px Arial';
+    context.textAlign = 'center';
+    context.textBaseline = 'middle';
+    const label = item.label.length > 18 ? `${item.label.slice(0, 17)}…` : item.label;
+    context.fillText(`${label}  ×${item.count}`, canvas.width / 2, canvas.height / 2);
+
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.colorSpace = THREE.SRGBColorSpace;
+    const mesh = new THREE.Mesh(
+      new THREE.PlaneGeometry(0.95, 0.27),
+      new THREE.MeshBasicMaterial({ map: texture, transparent: true, depthWrite: false })
+    );
+    mesh.position.set(x, 0.73, z);
+    mesh.renderOrder = 2;
+    group.add(mesh);
+  }
+
+  items.forEach((item, index) => {
+    const column = index % columns;
+    const row = Math.floor(index / columns);
+    const rows = Math.ceil(items.length / columns);
+    const x = (column - (columns - 1) / 2) * 1.05;
+    const z = (row - (rows - 1) / 2) * 0.95;
+    const color = colors[item.color] || colors.neutral;
+    const count = Math.min(item.count, 4, 32 - visibleObjects);
+    if (count <= 0) return;
+
+    for (let objectIndex = 0; objectIndex < count; objectIndex += 1) {
+      const object = makeObject(item.shape, color, item.favorable);
+      object.position.set(
+        x + (objectIndex % 2 ? 0.17 : -0.17),
+        0.02 + Math.floor(objectIndex / 2) * 0.18,
+        z + (objectIndex % 2 ? -0.13 : 0.13)
+      );
+      object.userData.basePosition = object.position.clone();
+      group.add(object);
+      visibleObjects += 1;
+    }
+
+    addLabel(item, x, z, item.favorable);
+  });
+
+  if (camera) {
+    camera.position.set(3.2, 3.8, 5.5);
+    camera.lookAt(0, 0, 0);
+  }
+  if (controls) {
+    controls.target.set(0, 0, 0);
+    controls.update();
+  }
   return group;
 }
 
@@ -867,13 +943,15 @@ function addBalls(problem) {
   const colors = {
     merah: '#e75059',
     biru: '#368ce8',
-    kuning: '#f2c94c'
+    kuning: '#f2c94c',
+    putih: '#f7f8fb'
   };
 
   const counts = problem.counts || {
     merah: 5,
     biru: 3,
-    kuning: 2
+    kuning: 2,
+    putih: 0
   };
 
   // Wadah transparan
@@ -904,7 +982,8 @@ function addBalls(problem) {
         new THREE.MeshStandardMaterial({
           color: colors[color],
           roughness: 0.25,
-          metalness: 0.04
+          metalness: 0.04,
+          emissive: color === 'putih' ? '#333740' : '#000000'
         })
       );
 
@@ -912,7 +991,7 @@ function addBalls(problem) {
 
       ball.position.set(
         Math.cos(angle) * radius,
-        -0.65 + layer * 0.37,
+        -0.72 + layer * 0.28,
         Math.sin(angle) * radius
       );
 
@@ -1082,10 +1161,180 @@ function addVenn(problem) {
 
 
 
-function showVisualization(problem) {
+function chooseFavorableSample(problem) {
+  if (!Array.isArray(problem.sample)) return null;
+  const favorable = problem.sample.filter((item) => item.favorable);
+  const candidates = favorable.length ? favorable : problem.sample;
+  return candidates[Math.floor(Math.random() * candidates.length)] || null;
+}
+
+function describeVisualOutcome(problem, item) {
+  if (problem.model === 'dice' || problem.model === 'dice-single') {
+    const values = item.values || (
+      Number.isInteger(item.value) ? [item.value] : [item.first, item.second].filter(Number.isInteger)
+    );
+    const eventType = problem.interpretation?.eventType || 'sum_equals';
+    const target = problem.interpretation?.target;
+    let result;
+    if (values.length === 1) {
+      const value = values[0];
+      result = eventType === 'even' || eventType === 'odd'
+        ? `mata dadu ${value} (${value % 2 === 0 ? 'genap' : 'ganjil'})`
+        : eventType === 'factor_of'
+          ? `${value} ${target % value === 0 ? 'merupakan' : 'bukan'} faktor dari ${target}`
+          : `mata dadu ${value}`;
+    } else if (eventType === 'product_equals') {
+      result = `${values.join(' × ')} = ${values.reduce((product, value) => product * value, 1)}`;
+    } else if (eventType === 'same_faces') {
+      result = `mata dadu ${values.join(' dan ')} (${values.every((value) => value === values[0]) ? 'semua sama' : 'berbeda'})`;
+    } else if (['at_least_one_face_equals', 'at_most_one_face_equals'].includes(eventType)) {
+      const matches = values.filter((value) => value === target).length;
+      result = `${matches} dari ${values.length} dadu menunjukkan ${target}`;
+    } else {
+      result = `${values.join(' + ')} = ${values.reduce((sum, value) => sum + value, 0)}`;
+    }
+    return `Peragaan hasil: ${result}. ${item.favorable ? 'Hasil ini memenuhi kejadian yang dicari.' : 'Hasil ini tidak memenuhi kejadian yang dicari.'}`;
+  }
+
+  if (problem.model === 'balls') {
+    const requested = problem.drawCount || 1;
+    const replacement = problem.replacement === 'with'
+      ? ' Bola dikembalikan sebelum pengambilan berikutnya.'
+      : '';
+    return `Peragaan pengambilan ${requested} bola ${problem.target}. Warna dan jumlah bola mengikuti komposisi di soal.${replacement}`;
+  }
+
+  if (problem.model === 'coin') {
+    return `Peragaan koin: sisi ${String(item.value).toLowerCase()} menghadap ke atas.`;
+  }
+
+  if (problem.model === 'cards') {
+    return `Peragaan kartu ${item.value}: kartu ini ${item.favorable ? 'memenuhi' : 'tidak memenuhi'} kejadian yang dicari.`;
+  }
+
+  return problem.description;
+}
+
+function animateProblemOutcome3D(problem) {
+  if (!visualizationGroup || !currentVisualProblem) return;
+
+  sceneOutcomeAnimation = null;
+  visualizationGroup.rotation.y = 0;
+  const item = chooseFavorableSample(problem);
+
+  if (problem.model === 'dice' || problem.model === 'dice-single') {
+    if (!item) return;
+    const values = item.values || (
+      Number.isInteger(item.value) ? [item.value] : [item.first, item.second].filter(Number.isInteger)
+    );
+    const dice = visualizationGroup.children.filter((object) => object.userData.isSolverDie);
+    const items = dice.map((die, index) => {
+      const value = values[index] || 1;
+      const face = die.userData.faceDefinitions.find((definition) => definition.value === value);
+      const target = new THREE.Quaternion().setFromUnitVectors(
+        face.normal,
+        new THREE.Vector3(0, 1, 0)
+      );
+      die.userData.basePosition = die.userData.basePosition || die.position.clone();
+      return {
+        die,
+        target,
+        start: die.quaternion.clone(),
+        settleStart: null,
+        basePosition: die.userData.basePosition.clone()
+      };
+    });
+    sceneOutcomeAnimation = { type: 'dice', elapsed: 0, duration: 1.8, items };
+    ui.sceneOutcome.textContent = describeVisualOutcome(problem, item);
+    ui.animateOutcome.textContent = 'Lempar ulang dadu';
+  } else if (problem.model === 'balls') {
+    const targetBalls = visualizationGroup.children.filter(
+      (object) => object.userData.isBall && object.userData.ballColor === problem.target
+    );
+    const requested = problem.drawCount || 1;
+    const selected = targetBalls.slice(0, requested);
+    if (!selected.length) {
+      ui.sceneOutcome.textContent = `Tidak ada bola ${problem.target} di dalam wadah, jadi tidak ada bola target yang dapat diambil.`;
+      ui.animateOutcome.textContent = 'Coba peragakan lagi';
+      return;
+    }
+    const items = selected.map((ball, index) => {
+      const basePosition = ball.userData.originalPosition.clone();
+      ball.position.copy(basePosition);
+      ball.scale.setScalar(1);
+      return {
+        ball,
+        basePosition,
+        targetPosition: basePosition.clone().set(
+          1.2 + index * 0.45,
+          basePosition.y + 1.45,
+          0.35
+        )
+      };
+    });
+    sceneOutcomeAnimation = { type: 'balls', elapsed: 0, duration: 0.9, items };
+    ui.sceneOutcome.textContent = selected.length < requested && problem.replacement !== 'with'
+      ? `Hanya ada ${selected.length} bola ${problem.target}; tidak cukup untuk mengambil ${requested} sekaligus.`
+      : describeVisualOutcome(problem, item);
+    ui.animateOutcome.textContent = 'Ambil bola target';
+  } else if (problem.model === 'coin') {
+    const coin = visualizationGroup;
+    const target = new THREE.Quaternion().setFromEuler(new THREE.Euler(
+      item?.value === 'ANGKA' ? 0 : Math.PI,
+      0,
+      0
+    ));
+    sceneOutcomeAnimation = {
+      type: 'coin',
+      elapsed: 0,
+      duration: 1.6,
+      items: [{ coin, start: coin.quaternion.clone(), target, settleStart: null }]
+    };
+    ui.sceneOutcome.textContent = describeVisualOutcome(problem, item);
+    ui.animateOutcome.textContent = 'Lempar ulang koin';
+  } else if (problem.model === 'cards') {
+    const card = visualizationGroup.children.find((object) => object.userData.isSolverCard);
+    if (!card || !item) return;
+    card.position.copy(card.userData.basePosition);
+    sceneOutcomeAnimation = {
+      type: 'card',
+      elapsed: 0,
+      duration: 0.75,
+      items: [{ card, basePosition: card.userData.basePosition.clone() }]
+    };
+    ui.sceneOutcome.textContent = describeVisualOutcome(problem, item);
+    ui.animateOutcome.textContent = 'Tampilkan kartu';
+  } else if (problem.model === 'ai') {
+    const objects = [];
+    visualizationGroup.traverse((object) => {
+      if (object.userData.isAiVisualObject) objects.push(object);
+    });
+    const favorable = objects.filter((object) => object.userData.favorable);
+    if (!objects.length) return;
+    for (const object of objects) {
+      object.position.copy(object.userData.basePosition);
+      object.scale.setScalar(favorable.length
+        ? object.userData.favorable ? 1.28 : 0.82
+        : 1.12);
+    }
+    const labels = problem.aiSolution.visualization.items
+      .filter((visualItem) => visualItem.favorable)
+      .map((visualItem) => `${visualItem.label} (${visualItem.count})`);
+    ui.sceneOutcome.textContent = labels.length
+      ? `Objek yang ditandai sesuai kejadian: ${labels.join(', ')}.`
+      : 'Objek soal ditampilkan dalam bentuk 3D. Tidak ada objek yang ditandai sebagai hasil yang memenuhi kejadian.';
+    ui.animateOutcome.textContent = 'Sorot ulang hasil';
+  }
+
+  ui.animateOutcome.disabled = Boolean(sceneOutcomeAnimation);
+}
+
+function showVisualization3D(problem) {
 
   // Bersihkan visualisasi sebelumnya
   clearVisualization();
+  sceneOutcomeAnimation = null;
+  currentVisualProblem = problem;
 
   // Daftar seluruh mesin visualisasi
   const builders = {
@@ -1102,7 +1351,9 @@ function showVisualization(problem) {
 
     counting: addCounting,
 
-    conditional: addVenn
+    conditional: addVenn,
+
+    ai: addAiVisualization
 
   };
 
@@ -1114,6 +1365,7 @@ function showVisualization(problem) {
 
     ui.visualDescription.textContent =
       'Visualisasi untuk jenis soal ini belum tersedia.';
+    ui.animateOutcome.hidden = true;
 
     return;
   }
@@ -1131,7 +1383,18 @@ function showVisualization(problem) {
 
     // Tampilkan penjelasan visual
     ui.visualDescription.textContent =
-      problem.description;
+      problem.aiSolution?.visualization?.caption || problem.description;
+    const supportsReplay = renderer && ['dice', 'dice-single', 'balls', 'coin', 'cards', 'ai'].includes(problem.model);
+    ui.animateOutcome.hidden = !supportsReplay;
+    ui.animateOutcome.disabled = false;
+    if (supportsReplay && problem.model !== 'ai') {
+      animateProblemOutcome3D(problem);
+    } else if (problem.model === 'ai') {
+      ui.sceneOutcome.textContent = 'Putar objek dengan mouse. Gunakan tombol untuk menyorot objek yang memenuhi kejadian.';
+      ui.animateOutcome.textContent = 'Sorot hasil soal';
+    } else {
+      ui.sceneOutcome.textContent = 'Putar objek dengan mouse untuk melihat visualisasi dari berbagai sudut.';
+    }
 
   } catch (error) {
 
@@ -1142,6 +1405,7 @@ function showVisualization(problem) {
 
     ui.visualDescription.textContent =
       'Visualisasi gagal dibuat. Periksa Console browser untuk detail error.';
+    ui.animateOutcome.hidden = true;
 
   }
 }
@@ -1461,6 +1725,35 @@ function resetBallExperiment() {
    SAMPLE SPACE RENDERING
 ========================================== */
 
+function createSolverDieFace(value) {
+  const face = document.createElement('span');
+  face.className = 'mini-die-face solver-sample-die';
+  face.setAttribute('aria-hidden', 'true');
+
+  const positions = {
+    1: [4],
+    2: [0, 8],
+    3: [0, 4, 8],
+    4: [0, 2, 6, 8],
+    5: [0, 2, 4, 6, 8],
+    6: [0, 2, 3, 5, 6, 8]
+  };
+  const pips = positions[value];
+
+  if (!pips) {
+    face.classList.add('solver-sample-die-number');
+    face.textContent = String(value);
+    return face;
+  }
+
+  for (let index = 0; index < 9; index += 1) {
+    const pip = document.createElement('i');
+    if (pips.includes(index)) pip.className = 'pip';
+    face.appendChild(pip);
+  }
+  return face;
+}
+
 function renderSamples(problem) {
   ui.sample.replaceChildren();
 
@@ -1472,10 +1765,22 @@ function renderSamples(problem) {
 
     if (problem.model === 'dice') {
       const values = item.values || [item.first, item.second];
-      chip.textContent = values.join('+');
-
       const eventType = problem.interpretation?.eventType || 'sum_equals';
       const target = problem.interpretation?.target;
+      chip.classList.add('solver-sample-item--dice');
+      chip.setAttribute('aria-label', `Dadu ${values.join(', ')}${item.favorable ? ', memenuhi kejadian' : ''}`);
+      const dice = document.createElement('span');
+      dice.className = 'solver-sample-dice';
+      values.forEach((value, index) => {
+        if (index > 0) {
+          const separator = document.createElement('i');
+          separator.className = 'solver-sample-die-separator';
+          separator.textContent = '+';
+          dice.appendChild(separator);
+        }
+        dice.appendChild(createSolverDieFace(value));
+      });
+      chip.appendChild(dice);
       const matches = values.filter((value) => value === target).length;
       const detail = {
         sum_equals: `jumlah ${item.sum}`,
@@ -1487,6 +1792,10 @@ function renderSamples(problem) {
         at_most_one_face_equals: `${matches} dadu menunjukkan ${target}`
       }[eventType] || `jumlah ${item.sum}`;
       chip.title = `Dadu ${values.join(', ')}; ${detail}`;
+    } else if (problem.model === 'dice-single') {
+      chip.classList.add('solver-sample-item--dice');
+      chip.setAttribute('aria-label', `Dadu ${item.value}${item.favorable ? ', memenuhi kejadian' : ''}`);
+      chip.appendChild(createSolverDieFace(item.value));
     } else {
       chip.textContent = item.value;
     }
@@ -1501,6 +1810,7 @@ function renderSamples(problem) {
 
 function showSolution(problem) {
   ui.output.hidden = false;
+  if (ui.aiBreakdown) ui.aiBreakdown.hidden = true;
   const hasGuidedVisualization = problem.model !== 'binomial';
   ui.scene.hidden = !hasGuidedVisualization;
   if (ui.guidedLearning) ui.guidedLearning.hidden = !hasGuidedVisualization;
@@ -1544,6 +1854,8 @@ if (problem.kind === 'binomial') {
 
   ui.summary.textContent =
     problem.summary;
+  ui.understanding.textContent =
+    problem.interpretation?.interpretation || problem.description || 'Tentukan kejadian yang dicari, lalu bandingkan hasil yang memenuhi dengan seluruh kemungkinan.';
 
   renderSamples(problem);
 
@@ -1659,9 +1971,10 @@ function initializeScene() {
         requestAnimationFrame(render);
 
       if (visualizationGroup) {
-        visualizationGroup.rotation.y += 0.0015;
+        if (!sceneOutcomeAnimation) visualizationGroup.rotation.y += 0.0015;
       }
 
+      updateSceneOutcomeAnimation(performance.now());
       controls.update();
 
       renderer.render(scene, camera);
@@ -1688,6 +2001,75 @@ function resizeScene() {
   camera.updateProjectionMatrix();
 
   renderer.setSize(width, height, false);
+}
+
+function updateSceneOutcomeAnimation(now) {
+  if (!sceneOutcomeAnimation) return;
+
+  const animation = sceneOutcomeAnimation;
+  animation.elapsed += animation.lastTime
+    ? Math.min((now - animation.lastTime) / 1000, 0.05)
+    : 0;
+  animation.lastTime = now;
+  const progress = Math.min(animation.elapsed / animation.duration, 1);
+  const eased = 1 - Math.pow(1 - progress, 3);
+
+  if (animation.type === 'dice' || animation.type === 'coin') {
+    for (const item of animation.items) {
+      if (progress < 0.72) {
+        const tumble = progress / 0.72;
+        const spin = new THREE.Quaternion().setFromEuler(new THREE.Euler(
+          tumble * Math.PI * 4.5,
+          tumble * Math.PI * 5.5,
+          tumble * Math.PI * 3.5
+        ));
+        const object = item.die || item.coin;
+        object.quaternion.copy(spin).multiply(item.start);
+        if (item.die) {
+          object.position.copy(item.basePosition);
+          object.position.y += Math.sin(tumble * Math.PI) * 1.5;
+        }
+      } else {
+        const object = item.die || item.coin;
+        if (!item.settleStart) item.settleStart = object.quaternion.clone();
+        const settleProgress = (progress - 0.72) / 0.28;
+        object.quaternion.copy(item.settleStart).slerp(item.target, 1 - (1 - settleProgress) ** 3);
+        if (item.die) object.position.copy(item.basePosition);
+      }
+    }
+  } else if (animation.type === 'balls') {
+    for (const item of animation.items) {
+      item.ball.position.lerpVectors(item.basePosition, item.targetPosition, eased);
+      item.ball.scale.setScalar(1 + Math.sin(progress * Math.PI) * 0.18);
+    }
+  } else if (animation.type === 'card') {
+    const { card, basePosition } = animation.items[0];
+    card.position.copy(basePosition);
+    card.position.y += Math.sin(progress * Math.PI) * 1.05;
+    card.rotation.y = -0.15 + eased * 0.3;
+  }
+
+  if (progress === 1) {
+    if (animation.type === 'dice' || animation.type === 'coin') {
+      for (const item of animation.items) {
+        const object = item.die || item.coin;
+        object.quaternion.copy(item.target);
+        if (item.die) object.position.copy(item.basePosition);
+      }
+    } else if (animation.type === 'balls') {
+      for (const item of animation.items) {
+        item.ball.position.copy(item.targetPosition);
+        item.ball.scale.setScalar(1);
+      }
+    } else if (animation.type === 'card') {
+      const { card, basePosition } = animation.items[0];
+      card.position.copy(basePosition);
+      card.position.y += 0.25;
+      card.rotation.y = 0.15;
+    }
+    sceneOutcomeAnimation = null;
+    ui.animateOutcome.disabled = false;
+  }
 }
 
 /* ==========================================
@@ -1781,9 +2163,28 @@ function solveConfirmedInterpretation(interpretation, source, confirmedByUser = 
 
 function showAiSolution(interpretation) {
   const { solution } = interpretation;
+  const problem = {
+    model: 'ai',
+    title: solution.visualization.title,
+    description: interpretation.interpretation || solution.conclusion,
+    aiSolution: solution
+  };
   ui.output.hidden = false;
-  ui.scene.hidden = true;
-  if (ui.guidedLearning) ui.guidedLearning.hidden = true;
+  ui.scene.hidden = false;
+  ui.animateOutcome.hidden = false;
+  ui.animateOutcome.disabled = false;
+  ui.animateOutcome.textContent = 'Sorot hasil soal';
+  ui.sceneOutcome.textContent = 'Visualisasi 3D objek pada soal akan ditampilkan di sini.';
+  if (ui.guidedLearning) ui.guidedLearning.hidden = false;
+  ui.aiBreakdown.hidden = false;
+  ui.aiKnown.replaceChildren();
+  solution.known.forEach((fact) => {
+    const item = document.createElement('li');
+    item.textContent = fact;
+    ui.aiKnown.appendChild(item);
+  });
+  ui.aiAsked.textContent = solution.asked;
+  ui.aiAnalysis.textContent = solution.analysis;
   ui.answer.textContent = solution.answer;
   ui.percentage.textContent = 'Dihitung oleh Gemini';
   ui.fraction.textContent = solution.formula;
@@ -1793,11 +2194,162 @@ function showAiSolution(interpretation) {
     item.textContent = step;
     ui.steps.appendChild(item);
   });
-  ui.summary.textContent = interpretation.interpretation;
+  ui.summary.textContent = solution.conclusion;
+  ui.understanding.textContent = solution.asked;
   ui.sample.replaceChildren();
-  ui.visualDescription.textContent =
-    'Perhitungan ini dibuat oleh Gemini karena belum didukung mesin lokal; periksa kembali langkahnya.';
+  solution.visualization.items.forEach((visualItem) => {
+    const item = document.createElement('span');
+    item.className = `solver-sample-item${visualItem.favorable ? ' favorable' : ''}`;
+    item.textContent = `${visualItem.label}: ${visualItem.count}${visualItem.favorable ? ' — memenuhi kejadian' : ''}`;
+    ui.sample.appendChild(item);
+  });
+  showVisualization(problem);
+  window.dispatchEvent(new CustomEvent('probability:solution-ready', { detail: problem }));
   ui.output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function add2dLabel(parent, text, className = '') {
+  const label = document.createElement('span');
+  label.className = className;
+  label.textContent = text;
+  parent.appendChild(label);
+  return label;
+}
+
+function renderSolver2D(problem, selected = null) {
+  const sceneCard = document.createElement('div');
+  sceneCard.className = 'solver-2d-stage';
+  const visual = document.createElement('div');
+  visual.className = 'solver-2d-objects';
+  const outcome = selected || chooseFavorableSample(problem);
+
+  if (problem.model === 'dice' || problem.model === 'dice-single') {
+    const values = outcome
+      ? outcome.values || (Number.isInteger(outcome.value)
+        ? [outcome.value]
+        : [outcome.first, outcome.second].filter(Number.isInteger))
+      : [];
+    values.forEach((value, index) => {
+      if (index) add2dLabel(visual, problem.interpretation?.eventType === 'product_equals' ? '×' : '+', 'solver-2d-operator');
+      const die = createSolverDieFace(value);
+      die.classList.add('solver-2d-die');
+      die.setAttribute('aria-label', `Dadu menunjukkan ${value}`);
+      visual.appendChild(die);
+    });
+    if (values.length > 1) {
+      add2dLabel(visual, '=', 'solver-2d-operator');
+      const total = problem.interpretation?.eventType === 'product_equals'
+        ? values.reduce((product, value) => product * value, 1)
+        : values.reduce((sum, value) => sum + value, 0);
+      add2dLabel(visual, String(total), 'solver-2d-result');
+    }
+    if (!values.length) add2dLabel(visual, 'Ruang sampel dadu', 'solver-2d-placeholder');
+  } else if (problem.model === 'balls') {
+    const counts = problem.counts || {};
+    Object.entries(counts).forEach(([color, count]) => {
+      if (count < 1) return;
+      const item = document.createElement('div');
+      item.className = `solver-2d-item${color === problem.target ? ' favorable' : ''}`;
+      const dot = document.createElement('i');
+      dot.className = 'solver-2d-ball';
+      dot.dataset.color = color.toLowerCase();
+      item.appendChild(dot);
+      add2dLabel(item, color);
+      add2dLabel(item, `${count} bola`, 'solver-2d-count');
+      visual.appendChild(item);
+    });
+    if (!visual.childElementCount) add2dLabel(visual, problem.description || 'Komposisi bola', 'solver-2d-placeholder');
+  } else if (problem.model === 'coin') {
+    const coins = problem.sample?.length ? problem.sample.slice(0, 3) : [{ value: 'ANGKA', favorable: true }];
+    coins.forEach((sample) => {
+      const coin = document.createElement('div');
+      coin.className = `solver-2d-coin${sample.favorable ? ' favorable' : ''}`;
+      add2dLabel(coin, sample.value === 'ANGKA' ? 'A' : 'G', 'solver-2d-coin-symbol');
+      add2dLabel(coin, sample.value || 'Koin', 'solver-2d-count');
+      visual.appendChild(coin);
+    });
+  } else if (problem.model === 'cards') {
+    const cards = outcome ? [outcome] : (problem.sample || []).slice(0, 3);
+    cards.forEach((sample) => {
+      const card = document.createElement('div');
+      card.className = `solver-2d-card${sample.favorable ? ' favorable' : ''}${/[♥♦]/.test(sample.value || '') ? ' red-suit' : ''}`;
+      add2dLabel(card, sample.value || 'A', 'solver-2d-card-value');
+      add2dLabel(card, sample.favorable ? '✓' : '♠', 'solver-2d-card-suit');
+      visual.appendChild(card);
+    });
+    if (!cards.length) add2dLabel(visual, 'Kartu terpilih', 'solver-2d-placeholder');
+  } else if (problem.model === 'ai' && problem.aiSolution?.visualization?.items) {
+    problem.aiSolution.visualization.items.forEach((item) => {
+      const object = document.createElement('div');
+      object.className = `solver-2d-item${item.favorable ? ' favorable' : ''}`;
+      const shape = document.createElement('i');
+      shape.className = `solver-2d-shape shape-${item.shape}`;
+      shape.dataset.color = item.color.toLowerCase();
+      object.appendChild(shape);
+      add2dLabel(object, item.label);
+      add2dLabel(object, `×${item.count}`, 'solver-2d-count');
+      visual.appendChild(object);
+    });
+  } else if (problem.kind === 'counting' || problem.model === 'counting') {
+    add2dLabel(visual, problem.formula || problem.fraction || 'Kombinasi', 'solver-2d-formula');
+    add2dLabel(visual, '=', 'solver-2d-operator');
+    add2dLabel(visual, String(problem.answerValue ?? problem.favorable ?? ''), 'solver-2d-result');
+  } else if (problem.model === 'conditional') {
+    const diagram = document.createElement('div');
+    diagram.className = 'solver-2d-venn';
+    add2dLabel(diagram, 'A', 'solver-2d-set solver-2d-set-a');
+    add2dLabel(diagram, 'B', 'solver-2d-set solver-2d-set-b');
+    add2dLabel(visual, problem.fraction || 'P(A | B)', 'solver-2d-formula');
+    visual.appendChild(diagram);
+  } else {
+    add2dLabel(visual, problem.formula || problem.description || 'Hasil analisis', 'solver-2d-formula');
+    add2dLabel(visual, problem.fraction || '', 'solver-2d-result');
+  }
+
+  sceneCard.appendChild(visual);
+  const caption = problem.aiSolution?.visualization?.caption || problem.description || problem.summary || 'Diagram 2D hasil analisis.';
+  add2dLabel(sceneCard, caption, 'solver-2d-caption');
+  return sceneCard;
+}
+
+function showVisualization(problem) {
+  currentVisualProblem = problem;
+  sceneOutcomeAnimation = null;
+  if (!ui.scene) return;
+  ui.scene.hidden = false;
+  if (ui.guidedLearning) ui.guidedLearning.hidden = false;
+  ui.scene.replaceChildren(renderSolver2D(problem));
+  ui.scene.classList.add('solver-scene-2d');
+  ui.sceneOutcome.textContent = 'Diagram 2D menandai hasil yang memenuhi kejadian.';
+  ui.visualDescription.textContent = problem.aiSolution?.visualization?.caption || problem.description || 'Diagram 2D menyesuaikan objek dan kejadian pada soal.';
+  ui.animateOutcome.hidden = !problem.sample?.length && problem.model !== 'ai';
+  ui.animateOutcome.disabled = false;
+  ui.animateOutcome.textContent = 'Peragakan hasil';
+}
+
+function animateProblemOutcome(problem) {
+  if (!ui.scene) return;
+  const item = chooseFavorableSample(problem);
+  if (!item && problem.model !== 'ai') return;
+  ui.scene.replaceChildren(renderSolver2D(problem, item));
+  ui.scene.classList.remove('is-animating');
+  void ui.scene.offsetWidth;
+  ui.scene.classList.add('is-animating');
+  if (problem.model === 'ai') {
+    const matched = problem.aiSolution.visualization.items
+      .filter((visualItem) => visualItem.favorable)
+      .map((visualItem) => `${visualItem.label} (${visualItem.count})`);
+    ui.sceneOutcome.textContent = matched.length
+      ? `Objek yang memenuhi kejadian disorot: ${matched.join(', ')}.`
+      : 'Tidak ada objek yang ditandai memenuhi kejadian.';
+  } else {
+    ui.sceneOutcome.textContent = describeVisualOutcome(problem, item);
+  }
+  ui.animateOutcome.disabled = true;
+  window.setTimeout(() => {
+    ui.scene.classList.remove('is-animating');
+    ui.animateOutcome.disabled = false;
+  }, 450);
 }
 
 function processInterpretation(interpretation, diagnostics, question) {
@@ -1886,6 +2438,12 @@ ui.confirm.addEventListener('click', () => {
   solveConfirmedInterpretation({ ...pendingInterpretation }, 'gemini', true);
 });
 
+ui.animateOutcome.addEventListener('click', () => {
+  if (currentVisualProblem && !ui.animateOutcome.disabled) {
+    animateProblemOutcome(currentVisualProblem);
+  }
+});
+
 ui.change.addEventListener('click', () => {
   ui.correction.hidden = false;
   ui.correctionInput.focus();
@@ -1963,21 +2521,10 @@ ui.question.addEventListener(
    INITIALIZATION
 ========================================== */
 
-initializeScene();
-
 window.addEventListener(
   'pagehide',
   () => {
     cancelAnimationFrame(animationFrame);
-
-    resizeObserver?.disconnect();
-    unsubscribeTheme?.();
-
-    controls?.dispose();
-
-    clearVisualization();
-
-    renderer?.dispose();
   },
   { once: true }
 );

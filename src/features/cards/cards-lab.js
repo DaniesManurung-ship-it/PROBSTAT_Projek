@@ -125,29 +125,24 @@ function createBackTexture() {
   canvas.height = 720;
   const ctx = canvas.getContext('2d');
 
-  ctx.fillStyle = '#17365b';
+  ctx.fillStyle = '#9f1239';
   ctx.fillRect(0, 0, 512, 720);
-  ctx.strokeStyle = '#74a9e8';
+  ctx.strokeStyle = 'rgba(255,255,255,.82)';
   ctx.lineWidth = 9;
   ctx.strokeRect(25, 25, 462, 670);
-  ctx.strokeStyle = '#aacff4';
+  ctx.strokeStyle = 'rgba(255,255,255,.18)';
   ctx.lineWidth = 3;
 
-  for (let i = -720; i < 800; i += 55) {
+  for (let i = -720; i < 800; i += 32) {
     ctx.beginPath();
     ctx.moveTo(i, 0);
     ctx.lineTo(i + 720, 720);
     ctx.stroke();
   }
 
-  ctx.strokeStyle = '#f0d58c';
-  ctx.lineWidth = 5;
-  ctx.strokeRect(75, 100, 362, 520);
-  ctx.fillStyle = '#f0d58c';
-  ctx.font = 'bold 130px Georgia';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('P3D', 256, 360);
+  ctx.strokeStyle = 'rgba(255,255,255,.78)';
+  ctx.lineWidth = 4;
+  ctx.strokeRect(70, 95, 372, 530);
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -196,7 +191,7 @@ function startCardsLab() {
 
   const scene = new THREE.Scene();
   const themeColors = getSceneThemeColors();
-  scene.background = new THREE.Color(themeColors.background || '#edf7ef');
+  scene.background = new THREE.Color('#f8fafc');
 
   const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100);
   camera.position.set(0, 0.5, 6.5);
@@ -224,8 +219,8 @@ function startCardsLab() {
   blueLight.position.set(-3, 1, -2);
   scene.add(blueLight);
   const unsubscribeTheme = subscribeToThemeChange((theme, colors) => {
-    scene.background.set(colors.background);
-    table.material.color.set(colors.floor);
+    scene.background.set('#f8fafc');
+    table.material.color.set('#e2e8f0');
     blueLight.color.set(theme === 'dark' ? 0x438fff : 0x80bd8b);
     blueLight.intensity = theme === 'dark' ? 20 : 14;
   });
@@ -256,7 +251,7 @@ function startCardsLab() {
 
   const cardRoot = new THREE.Group();
   cardRoot.add(cardMesh);
-  cardRoot.position.set(-1.1, -0.03, 0.25);
+  cardRoot.position.set(0, -0.03, 0.25);
   cardRoot.rotation.y = Math.PI;
   scene.add(cardRoot);
 
@@ -268,7 +263,7 @@ function startCardsLab() {
 
   const deckGroup = new THREE.Group();
   deckGroup.add(deckMesh);
-  deckGroup.position.set(-1.1, -0.03, -0.12);
+  deckGroup.position.set(0, -0.03, -0.12);
   scene.add(deckGroup);
 
   /* ======================================
@@ -522,7 +517,7 @@ function startCardsLab() {
     frontMaterial.map = newTexture;
     frontMaterial.needsUpdate = true;
 
-    cardRoot.position.set(-1.1, -0.03, 0.25);
+    cardRoot.position.set(0, -0.03, 0.25);
     cardRoot.rotation.set(0, Math.PI, 0);
 
     flip = {
@@ -530,7 +525,7 @@ function startCardsLab() {
       start:         performance.now(),
       duration:      1700,
       startY:        -0.03,
-      startX:        -1.1,
+      startX:        0,
       startRotation: Math.PI,
       spins:         2
     };
@@ -556,7 +551,7 @@ function startCardsLab() {
     preDrawInfo = null;
 
     cardRoot.rotation.set(0, Math.PI, 0);
-    cardRoot.position.set(-1.1, -0.03, 0.25);
+    cardRoot.position.set(0, -0.03, 0.25);
 
     ui.last.textContent = 'Belum ada';
     ui.status.textContent =
@@ -571,7 +566,7 @@ function startCardsLab() {
   ====================================== */
 
   function finishFlip(card) {
-    cardRoot.position.set(0.85, -0.03, 0.25);
+    cardRoot.position.set(1.05, -0.03, 0.25);
     cardRoot.rotation.set(0, Math.PI * 6, 0);
 
     ui.last.textContent = `${card.rank} ${card.symbol}`;
@@ -611,7 +606,7 @@ function startCardsLab() {
       );
       const ease = 1 - Math.pow(1 - progress, 3);
 
-      cardRoot.position.x = flip.startX + (0.85 - flip.startX) * ease;
+      cardRoot.position.x = flip.startX + (1.05 - flip.startX) * ease;
       cardRoot.position.y = flip.startY + Math.sin(progress * Math.PI) * 0.85;
       cardRoot.rotation.y =
         flip.startRotation + (Math.PI + flip.spins * Math.PI * 2) * ease;

@@ -10,7 +10,7 @@ export const DISTRIBUTIONS = [
       'Peluang sukses p sama pada setiap percobaan.',
       'Semua percobaan saling independen.',
     ],
-    examples: 'Jumlah produk cacat dari 8 produk yang diperiksa, jika peluang cacat setiap produk adalah 0,10.',
+    examples: 'Dari 10 percobaan dengan peluang sukses 0,50, hitung peluang tepat 5 sukses.',
     formula: 'P(X = x) = C(n, x) × pˣ × (1 − p)ⁿ⁻ˣ',
     symbols: [
       ['P(X = x)', 'Peluang memperoleh tepat x sukses.', 'Peluang tepat 2 produk cacat.'],

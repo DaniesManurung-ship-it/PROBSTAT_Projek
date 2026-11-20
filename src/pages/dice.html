@@ -1,0 +1,116 @@
+<section class="workspace" id="lab">
+          <div class="visual-column">
+            <div class="panel-heading">
+              <div><span class="section-kicker">01 / EKSPERIMEN VIRTUAL</span><h2>Ruang eksperimen 3D</h2></div>
+              <span class="live-pill"><i></i> 3D LIVE</span>
+            </div>
+            <div class="scene-card">
+              <div class="scene-topline"><span><i class="tiny-orbit"></i> DRAG UNTUK MEMUTAR PANDANGAN</span><span class="scene-hint">SCENE 01 — DICE LAB</span></div>
+              <div class="dice-config" aria-label="Pengaturan dadu">
+                <label for="dice-count">Jumlah dadu
+                  <select id="dice-count" class="trial-select">
+                    <option value="1">1 dadu</option>
+                    <option value="2" selected>2 dadu</option>
+                    <option value="3">3 dadu</option>
+                  </select>
+                </label>
+                <label for="target-sum">Target jumlah
+                  <input id="target-sum" class="trial-select" type="number" step="1" value="7" inputmode="numeric" required>
+                </label>
+                <button class="btn btn-primary dice-apply-button" id="apply-dice-config" type="button" disabled>Terapkan</button>
+                <p id="dice-config-status" aria-live="polite">Atur dadu dan target jumlah, lalu tekan Terapkan. Target di luar jangkauan tetap bisa diterapkan.</p>
+              </div>
+              <div id="dice-scene" class="three-canvas" aria-label="Area visualisasi dadu tiga dimensi"></div>
+              <div class="dice-readout">
+                <div class="dice-values" id="dice-values" aria-label="Nilai setiap dadu"></div>
+                <div class="readout-equals">=</div>
+                <div class="sum-readout"><span>JUMLAH</span><b id="sum-value">2</b></div>
+              </div>
+              <div class="scene-controls">
+                <button class="btn btn-primary" id="roll-dice"><span>↻</span> Lempar dadu</button>
+                <label class="trial-count-control" for="trial-count">Jumlah percobaan
+                  <select id="trial-count" class="trial-select">
+                    <option value="10">10 kali</option>
+                    <option value="50">50 kali</option>
+                    <option value="100" selected>100 kali</option>
+                    <option value="500">500 kali</option>
+                    <option value="1000">1.000 kali</option>
+                  </select>
+                </label>
+                <button class="btn btn-quiet" id="run-experiment" type="button">Jalankan simulasi</button>
+              </div>
+              <p class="experiment-status scene-experiment-status" id="experiment-status" aria-live="polite">Pilih jumlah percobaan, lalu jalankan simulasi untuk membandingkan hasilnya dengan peluang teoritis.</p>
+              <p class="scene-footnote"><span>✦</span> Pilih kotak ungu untuk melihat susunan tertentu di dadu 3D. Gunakan mouse untuk memutar kamera.</p>
+            </div>
+            <div class="sample-panel">
+              <div class="sample-heading"><div><span class="section-kicker">02 / RUANG SAMPEL</span><h3 id="sample-heading">6 dari 36 kemungkinan</h3></div><span class="sample-count" id="sample-count">target jumlah 7</span></div>
+              <p class="muted small-copy">Setiap kotak adalah satu susunan hasil. Pilih kotak untuk melihat nilai dadu tersebut dalam visualisasi 3D.</p>
+              <div class="sample-grid" id="sample-grid" aria-label="36 kemungkinan hasil dua dadu"></div>
+              <p class="sample-explanation" id="sample-explanation" aria-live="polite"></p>
+              <div class="legend"><span><i class="legend-dot favorable"></i> <span id="favorable-legend">Jumlah = 7</span></span><span><i class="legend-dot regular"></i> Kemungkinan lainnya</span><span><i class="legend-dot selected"></i> Pilihanmu</span></div>
+            </div>
+          </div>
+
+          <aside class="explanation-column">
+            <div class="question-card">
+              <span class="section-kicker">SOAL YANG DIPELAJARI</span>
+              <div class="question-icon">?</div>
+              <h2 id="dice-question">Dua buah dadu dilempar secara bersamaan. Berapa peluang munculnya jumlah mata dadu 7?</h2>
+              <div class="question-tags"><span>RUANG SAMPEL</span><span>KEJADIAN</span><span>PELUANG TEORITIS</span></div>
+            </div>
+
+            <div class="steps-card">
+              <div class="steps-header"><div><span class="section-kicker">03 / IKUTI ALURNYA</span><h3>Bagaimana jawaban ditemukan?</h3></div><span class="step-counter" id="step-counter">01 / 04</span></div>
+              <div class="step-progress" id="step-progress"><i class="active"></i><i></i><i></i><i></i></div>
+              <div class="step-content" aria-live="polite">
+                <span class="step-label" id="step-label">LANGKAH 1</span>
+                <h4 id="step-title">Kenali seluruh kemungkinan</h4>
+                <p id="step-description">Setiap dadu memiliki 6 sisi. Karena ada dua dadu, setiap hasil dadu pertama dapat dipasangkan dengan 6 hasil dadu kedua.</p>
+                <div class="step-math" id="step-math">6 × 6 = <b>36 kemungkinan</b></div>
+              </div>
+              <div class="step-actions"><button class="btn btn-quiet" id="prev-step" disabled>← Kembali</button><button class="btn btn-next" id="next-step">Langkah berikutnya <span>→</span></button></div>
+            </div>
+
+            <div class="answer-card">
+              <div class="answer-top"><span class="section-kicker">04 / KESIMPULAN</span><span class="answer-badge">HASIL TEORITIS</span></div>
+              <div class="answer-value"><strong id="answer-fraction">1/6</strong><span id="answer-percent">= 16,67%</span></div>
+              <p id="answer-description">Enam dari 36 kemungkinan menghasilkan jumlah mata dadu 7.</p>
+              <div class="answer-bar"><i id="answer-bar"></i></div>
+              <div class="answer-bar-labels"><span>0%</span><b id="answer-count">6 dari 36 hasil</b><span>100%</span></div>
+            </div>
+          </aside>
+        </section>
+
+<section class="experiment-section" id="experiment" aria-labelledby="experiment-title">
+          <div class="section-heading-row">
+            <div>
+              <span class="section-kicker">05 / EKSPERIMEN BERULANG</span>
+              <h2 id="experiment-title">Apakah hasil percobaan selalu sama?</h2>
+              <p class="section-subtitle">Lakukan banyak pelemparan, amati frekuensi target, lalu bandingkan hasil percobaan dengan peluang teoritis. Simulasi mengikuti pengaturan dadu di atas.</p>
+            </div>
+          </div>
+
+          <div class="experiment-layout">
+            <article class="experiment-results panel-surface">
+              <div class="experiment-results-heading">
+                <div><span class="section-kicker">HASIL SIMULASI</span><h3>Frekuensi jumlah mata dadu</h3></div>
+                <div class="experiment-result-actions">
+                  <span class="target-tag" id="experiment-target">TARGET: 7</span>
+                  <button class="btn btn-quiet" id="reset-experiment" type="button">Reset hasil</button>
+                </div>
+              </div>
+              <div class="frequency-chart" id="frequency-chart" role="img" aria-label="Grafik frekuensi jumlah mata dadu"></div>
+              <div class="frequency-legend"><span><i class="legend-dot regular"></i> Jumlah lainnya</span><span><i class="legend-dot favorable"></i> Jumlah target</span></div>
+              <p class="experiment-preview-note">Grafik dan ringkasan diperbarui setiap kali simulasi dijalankan. Animasi 3D menampilkan maksimal 8 hasil contoh.</p>
+            </article>
+
+            <article class="experiment-summary panel-surface">
+              <div class="summary-metric"><span>JUMLAH PERCOBAAN</span><b id="trial-total">—</b></div>
+              <div class="summary-metric"><span id="hit-total-label">JUMLAH TARGET MUNCUL</span><b id="hit-total">—</b></div>
+              <div class="summary-metric"><span>PELUANG HASIL SIMULASI</span><b id="experimental-rate">—</b></div>
+              <div class="summary-metric"><span>PELUANG TEORITIS</span><b id="theoretical-rate">16,67%</b></div>
+              <div class="comparison-track" aria-label="Perbandingan persentase hasil simulasi"><i id="experiment-bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"></i></div>
+              <p id="experiment-insight" class="experiment-insight">Jalankan percobaan untuk membandingkan frekuensi hasil simulasi dengan peluang teoritis.</p>
+            </article>
+          </div>
+        </section>
